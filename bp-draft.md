@@ -144,15 +144,15 @@
 
    - 我们团队基于自动驾驶的感知数据集，已经成功完成了对 **Kitti** 和 **nuScenes** 数据集的格式转换工作（uniTraj也可以加进来）。这一成果展示了我们团队在数据标准化方面的技术能力，为实现数据集的统一格式打下了坚实的基础。这一转换的实践极大简化了不同数据集在算法训练中的适配过程。
 
-     ![kitti](C:\Users\uncle\OneDrive\docs\tongji\S3_1\Software-Engineering\Project\bp-stage\kitti-structure.png)
+     ![kitti](.\kitti-structure.png)
 
-     ![nuScene](C:\Users\uncle\OneDrive\docs\tongji\S3_1\Software-Engineering\Project\bp-stage\nuScene-structure.png)
+     ![nuScene](.\nuScene-structure.png)
 
 2. **数据集可视化工具的开发**
 
    - 为了更好地展示和分析数据，我们对转换后的 Kitti 和 nuScenes 数据集进行了可视化处理。通过这一工具，用户能够直观地查看和分析数据，为后续算法训练和调优提供了重要的支持。
 
-     ![](C:\Users\uncle\OneDrive\docs\tongji\S3_1\Software-Engineering\Project\bp-stage\dataset-viz.png)
+     ![](.\dataset-viz.png)
 
 ---
 
