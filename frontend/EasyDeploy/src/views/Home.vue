@@ -1,0 +1,90 @@
+<template>
+  <div>
+    <HeaderComponent />
+    <div class="search-bar-container">
+      <SearchBarComponent />
+    </div>
+    <div class="feature-container">
+      <FeatureComponent />
+    </div>
+    <div class="example-container">
+      <ExampleComponent />
+    </div>
+    <div class="statistic-container">
+      <StatisticComponent />
+    </div>
+    <div class="news-container">
+      <NewsComponent />
+    </div>
+    <div class="collaborators-container">
+      <CollaboratorsComponent />
+    </div>
+    <div class="footer-container">
+      <FooterComponent />
+    </div> 
+  </div>
+</template>
+
+<script>
+import HeaderComponent from '@/components/Home/HeaderComponent.vue';
+import SearchBarComponent from '@/components/Home/SearchBarComponent.vue';
+import FeatureComponent from '@/components/Home/FeatureComponent.vue';
+import ExampleComponent from '@/components/Home/ExampleComponent.vue';
+import StatisticComponent from '@/components/Home/StatisticComponent.vue';
+import NewsComponent from '@/components/Home/NewsComponent.vue';
+import CollaboratorsComponent from '@/components/Home/CollaboratorsComponent.vue';
+import FooterComponent from '@/components/Home/FooterComponent.vue';
+
+export default {
+  components: {
+    HeaderComponent,
+    SearchBarComponent,
+    FeatureComponent,
+    ExampleComponent,
+    StatisticComponent,
+    NewsComponent,
+    CollaboratorsComponent,
+    FooterComponent,
+  },
+};
+</script>
+
+<style scoped>
+.search-bar-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px; /* 控制搜索栏与Header之间的距离 */
+  z-index: 1; /* 确保搜索栏在背景上方 */
+}
+.feature-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 50px; 
+}
+.example-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 100px; 
+}
+.statistic-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 100px; 
+}
+.news-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 50px; 
+}
+.collaborators-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 50px; 
+}
+.footer-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 50px; 
+}
+
+</style>
