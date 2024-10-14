@@ -1,6 +1,8 @@
 <template>
+  <div>
     <HeaderComponent/>
     <TitleComponent/>
+  </div>
 </template>
 
 <script>
