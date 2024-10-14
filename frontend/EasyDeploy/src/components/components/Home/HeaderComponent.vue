@@ -8,6 +8,7 @@
       </div>
       <ul class="navbar-center">
         <li>首页</li>
+        <li>工作台</li>
         <li>浏览数据</li>
         <li>数据社区</li>
         <li>合作伙伴</li>
