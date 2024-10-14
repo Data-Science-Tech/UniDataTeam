@@ -1,0 +1,48 @@
+# General
+node_modules/
+dist/
+.DS_Store
+*.log
+.idea/
+.vscode/
+.env
+*.iml
+*.swp
+
+# Vue specific
+/build/
+/config/
+/test/unit/coverage/
+yarn.lock
+
+# Spring Boot specific
+/target/
+*.jar
+*.war
+*.class
+/log/
+*.log
+/build/
+
+# OS generated files
+Thumbs.db
+*.DS_Store
+
+# IDEs and editors
+/.project
+/.classpath
+/.factorypath
+/.settings/
+/.cache/
+/.gradle
+/out
+*.tmp
+*.bak
+*.swp
+
+# Maven specific
+/log/
+.mvn/
+logs/
+!src/main/log
+!/logs/keepfile
