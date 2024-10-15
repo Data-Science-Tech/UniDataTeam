@@ -85,6 +85,7 @@
 
   <script setup>
   import { ref } from 'vue';
+
   
   // 树形结构数据，存储操作系统、架构、发行版、版本、安装包类型
   const osTree = {
@@ -288,13 +289,9 @@
   margin-bottom: 8px; /* 按钮换行时的底部间隔 */
 }
 
-/* 容器样式 */
+
 div {
   margin: 20px 0;
-}
-
-/* 页面居中布局 */
-div {
   text-align: center;
 }
 
