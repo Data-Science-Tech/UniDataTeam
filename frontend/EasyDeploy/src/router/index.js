@@ -3,16 +3,16 @@ import Home from '../views/Home.vue';
 import ConfigurationSelection from '../components/Deploy/ConfigurationSelection.vue';
 
 const routes = [
-  // {
-  //   path: '/',
-  //   name: 'Home',
-  //   component: Home
-  // },
   {
     path: '/',
-    name: 'ConfigurationSelection',
-    component: ConfigurationSelection
+    name: 'Home',
+    component: Home
   },
+//   {
+//     path: '/',
+//     name: 'ConfigurationSelection',
+//     component: ConfigurationSelection
+//   },
   
 ];
 

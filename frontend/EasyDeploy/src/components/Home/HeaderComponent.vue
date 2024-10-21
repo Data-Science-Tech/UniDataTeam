@@ -2,36 +2,71 @@
   <div class="main-container">
     <!-- 导航栏 -->
     <nav class="navbar">
-      <div class="navbar-left">
-        <img src="@/assets/logo.png" alt="UDB Logo" class="logo" />
-        <span class="brand">Uni Data Bank</span>
+      <div class="logo">
+        <img src="@/assets/ha.png" alt="EZDP Logo" class="logo-1" />
+        <!img src="@/assets/OkHand.svg" alt="EZDP Logo" class="logo-2" />
+        <span class="brand">Easy Deploy</span>
       </div>
+
+      <div class="searchbar">
+        <SearchBarComponent/>
+      </div>
+
       <ul class="navbar-center">
         <li>首页</li>
-        <li>工作台</li>
-        <li>浏览数据</li>
-        <li>数据社区</li>
-        <li>合作伙伴</li>
-        <li>帮助中心</li>
+        <li>模型</li>
+        <li>数据集</li>
+        <li>云服务</li>
+        <li>使用文档</li>
+        <li>社区</li>
         <li>关于我们</li>
       </ul>
       <div class="navbar-right">
         <button class="login-btn">登录</button>
-        <button class="publish-btn">发布数据</button>
-        <button class="lang-btn">EN</button>
+        <button class="publish-btn">工作台</button>
       </div>
     </nav>
 
     <!-- 主内容区域 -->
-    <div class="hero-section">
+    <!-- <div class="hero-section">
       <h1>让AI 开发更高效</h1>
+    </div> -->
+
+    <div class="container">
+    <div class="left-section">
+        <img src="@/assets/ha.png" alt="EZDP Logo" class="logo-3" />
+        <h1 class="headintro">The AI community building the future.</h1>
+        <p class="des">
+          The platform where the machine learning community collaborates on models, datasets, and applications.
+        </p>
     </div>
+    <div class="right-section">
+      <h3>Tasks</h3>
+        <!-- Add your content or list here, this is just a placeholder -->
+        <ul>
+          <li>Text-to-Image</li>
+          <li>Image-to-Text</li>
+          <li>Text-to-Video</li>
+          <li>Document Question Answering</li>
+        </ul>
+        <div class="startbutton">
+            Let's deploy!  😀---->
+        </div>
+    </div>
+    </div>
+
+
   </div>
 </template>
 
 <script>
+import SearchBarComponent from '@/components/Home/SearchBarComponent.vue';
+
 export default {
   name: "MainPage",
+  components: {
+  SearchBarComponent,
+  },
 };
 </script>
 
@@ -48,32 +83,44 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 20px;
-  background-color: #000;
-  color: white;
-  border-bottom: 0.25px solid #ccc; /* 添加导航栏下方的细线 */
-}
-
-.navbar-left {
-  display: flex;
-  align-items: center;
+    /*padding: 10px 20px;*/
+  /*border-bottom: 0.25px solid #ccc;  添加导航栏下方的细线 */
 }
 
 .logo {
-  height: 40px;
-  margin-right: 10px;
+  display: flex;
+  align-items: center;
+  margin-left:10%;
+}
+
+.logo-1 {
+    height: 5vh;
+}
+
+.logo-2{
+    height:3vh;
 }
 
 .brand {
   font-size: 18px;
-  font-weight: bold;
+  font-weight: bolder;
+  font-family: 'Microsoft YaHei', sans-serif; 
+  margin-left: 1vh;
+}
+
+.searchbar{
+    padding:0;
 }
 
 .navbar-center {
   display: flex;
-  list-style: none;
+  list-style:none;
   padding: 0;
   margin: 0;
+  font-weight:bold;
+  font-family: 'Microsoft YaHei', sans-serif; 
+  font-size: 8%;
+  color:gray;
 }
 
 .navbar-center li {
@@ -89,7 +136,7 @@ export default {
   width: 0;
   height: 4px;
   background: white;
-  transition: width .3s;
+  transition: height 1s;
   position: absolute;
   bottom: -17px; /* 使下划线位于导航栏细线的上方 */
   left: 0;
@@ -101,48 +148,119 @@ export default {
 
 .navbar-right {
   display: flex;
-  align-items: center;
+  margin-right:10%;
 }
 
-.login-btn,
-.publish-btn,
-.lang-btn {
+.login-btn {
   background: none;
-  border: 1px solid white;
-  color: white;
+  border: 0;
+  color: rgb(0, 0, 0);
   padding: 5px 10px;
-  margin-left: 10px;
-  border-radius: 20px;
   cursor: pointer;
-  transition: background-color 0.3s, color 0.3s;
+  margin-right: 1ch;
+  font-weight:bold;
+  font-family: 'Microsoft YaHei', sans-serif; 
 }
 
 .publish-btn {
-  background-color: white;
-  color: black;
+  border: 2px whitesmoke;
+  background-color: rgb(231, 120, 120);
+  color: rgb(255, 255, 255);
+  border-radius: 15px;
+  padding: 5px 10px;
+  font-size: 2vh;
+  font-weight:bold;
+  font-family: 'Microsoft YaHei', sans-serif; 
 }
 
-.login-btn:hover,
-.publish-btn:hover,
-.lang-btn:hover {
-  background-color: white;
-  color: black;
-}
 
-/* 主内容区域样式 */
+/* 主内容区域样式 
 .hero-section {
   flex: 1;
   display: flex;
+
   justify-content: center;
   align-items: center;
-  background-image: url('@/assets/background-image.jpg');
-  background-size: contain;
-  background-position: center;
+  margin: 12%;
+  margin-top: 2%;
+  background-color: rgb(15, 15, 16);
+  border-radius: 30px;
   color: white;
 }
+*/
+.container {
+  display: flex;
+  background-color: white;
+  color: #fff;
+  border-radius: 25px; /* Smooth border */
+  margin: 12%;
+  margin-top: 3%;
+  margin-bottom: 10%;
+  height: 70%;
+  
+}
 
-.hero-section h1 {
-  font-size: 128px;
-  font-weight: bold;
+.left-section {
+  flex: 2;
+  margin-top: 2%;
+  background-color: #121022;
+  border-radius: 25px 0 0 25px; /* Left part with rounded corners */
+  padding: 10vh;
+}
+
+.headintro{
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: bolder;
+    font-size: 5vh;
+}
+
+.des{
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color:grey;
+}
+
+.right-wrapper {
+  flex: 3;
+  /* overflow: hidden; Ensure no overflow outside the rounded corners */
+  /*border-radius: 50px 25px 50px 50px;  Right part with rounded corners */
+}
+
+.right-section {
+  background-color: #040219;
+  padding: 30px;
+  transform: skewX(-5deg); /* Adds slight tilt */
+  margin-left: -50px; /* Pulls the section to fill the gap */
+  border-radius:5%;
+  width: 50%;
+}
+
+h1 {
+  font-size: 2.5rem;
+  margin-bottom: 15px;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+ul li {
+  margin: 10px 0;
+}
+
+.logo-3{
+    height: 40%;
+}
+
+.startbutton{
+    margin-top: 40%;
+    margin-left: 45%;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 3vh;
+    font-weight: bolder;
+    padding: 2ch;
+    background-color: rgb(243, 207, 24);
+    border: 5px white;
+    border-radius: 30px;
 }
 </style>
