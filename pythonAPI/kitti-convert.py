@@ -32,29 +32,10 @@ conn = sqlite3.connect(db_path)
 # 创建一个游标对象，来执行 SQL 语句
 cursor = conn.cursor()
 
-# 2. 创建表
-cursor.execute('''
-    CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        age INTEGER NOT NULL
-    )
-''')
-
-# 3. 插入数据
-# cursor.execute('INSERT INTO users (name, age) VALUES (?, ?)', ('Alice', 30))
-# cursor.execute('INSERT INTO users (name, age) VALUES (?, ?)', ('Bob', 25))
 
 # 提交更改
 conn.commit()
 
-# 4. 查询数据
-cursor.execute('SELECT * FROM users')
-rows = cursor.fetchall()
-
-# 输出查询结果
-for row in rows:
-    print(row)
 
 # 5. 关闭连接
 conn.close()
