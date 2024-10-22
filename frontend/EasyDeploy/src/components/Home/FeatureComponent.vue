@@ -1,11 +1,14 @@
 <template>
   <div class="service-container">
     <div class="header">
-      <h1>Uni Data Bank为您提供多元化的服务</h1>
-      <p>
-        我们为学术期刊、出版商和科研人员提供数据发布及相关服务。
-        UniDataBank将确保所有发布数据的长期保存和永久可访问。
-      </p>
+        <img src="@/assets/ha.png" alt="EZDP Logo" class="logo-1" />
+        <h1>什么是"轻松部署？"</h1>
+        <p>
+            您只需要准备好您的代码，即可在Easy Deploy提供的云开发平台上一键训练。
+        </p>
+        <p class="des">
+            无需花费大量时间配置环境，无需苦苦寻找预训练模型，无需耗费大量时间转换数据集，无需花费大量金钱配置高性能计算平台
+        </p>
     </div>
 
     <div class="options">
@@ -20,7 +23,7 @@
           alt="用户指南"
           class="icon"
         />
-        <p>用户指南</p>
+        <p>选择模型、数据集</p>
       </div>
       <div
         class="option"
@@ -33,7 +36,7 @@
           alt="数据社区"
           class="icon"
         />
-        <p>数据社区</p>
+        <p>选择计算环境</p>
       </div>
       <div
         class="option"
@@ -46,11 +49,11 @@
           alt="云端服务"
           class="icon"
         />
-        <p>云端服务</p>
+        <p>一键云端部署</p>
       </div>
     </div>
 
-    <div class="content">
+    <!-- <div class="content">
       <div class="features">
         <div class="feature" v-for="(feature, index) in features" :key="index">
           <h2>{{ feature.title }}</h2>
@@ -64,7 +67,7 @@
         </p>
         <button @click="goToLearnMore">了解更多</button>
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 
@@ -105,6 +108,32 @@ export default {
 </script>
 
 <style scoped>
+.logo-1 {
+    height: 16vh;
+}
+
+
+.header {
+  text-align: center;
+  margin: 0;
+}
+
+.header h1 {
+  font-size: 2vw;
+  margin-bottom: 3vw;
+}
+
+.header p {
+  color: #666;
+  font-size: 1.2vw;
+}
+
+.options {
+  display: flex;
+  justify-content: space-between;
+  margin: 5vw;
+}
+
 .service-container {
   font-family: Arial, sans-serif;
   padding: 20px;
@@ -112,31 +141,8 @@ export default {
   margin: 0 auto;
 }
 
-.header {
-  width: 80%;
-  margin: 0 auto;
-  text-align: center;
-}
-
-.header h1 {
-  font-size: 48px;
-  margin-bottom: 20px;
-}
-
-.header p {
-  color: #666;
-  font-size: 24px;
-}
-
-.options {
-  display: flex;
-  justify-content: space-between;
-  margin: 40px auto;
-  width: 95%;
-}
-
 .option {
-  background-color: #1f3648;
+  background-color: #091447;
   color: white;
   width: 32%;
   height: 200px;

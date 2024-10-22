@@ -8,6 +8,9 @@
   </div>
 </template>
 
-<style scoped>
-
+<style>
+.body{
+    font-family: 'Microsoft YaHei', sans-serif; 
+}
+    
 </style>

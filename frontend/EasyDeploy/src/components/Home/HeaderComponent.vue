@@ -41,14 +41,8 @@
         </p>
     </div>
     <div class="right-section">
-      <h3>Tasks</h3>
-        <!-- Add your content or list here, this is just a placeholder -->
-        <ul>
-          <li>Text-to-Image</li>
-          <li>Image-to-Text</li>
-          <li>Text-to-Video</li>
-          <li>Document Question Answering</li>
-        </ul>
+      <h3>Easy Deploy</h3>
+
         <div class="startbutton">
             Let's deploy!  😀---->
         </div>
@@ -127,7 +121,7 @@ export default {
   margin: 0 15px;
   cursor: pointer;
   position: relative;
-  font-size: 20px; /* 增大导航栏字体大小 */
+  font-size: 1vw; /* 增大导航栏字体大小 */
 }
 
 .navbar-center li::after {
@@ -206,17 +200,21 @@ export default {
   background-color: #121022;
   border-radius: 25px 0 0 25px; /* Left part with rounded corners */
   padding: 10vh;
+  transition: 1s;
 }
 
 .headintro{
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-weight: bolder;
     font-size: 5vh;
+    transition: 1s;
 }
 
 .des{
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color:grey;
+    font-size: 1vw;
+    transition: 1s;
 }
 
 .right-wrapper {
@@ -227,6 +225,7 @@ export default {
 
 .right-section {
   background-color: #040219;
+  transition: 1s;
   padding: 30px;
   transform: skewX(-5deg); /* Adds slight tilt */
   margin-left: -50px; /* Pulls the section to fill the gap */
@@ -234,22 +233,20 @@ export default {
   width: 50%;
 }
 
-h1 {
-  font-size: 2.5rem;
-  margin-bottom: 15px;
+.right-section h3{
+    margin-top: 10%;
+    margin-left: 10%;
+    font-family:Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+    font-size: 4vw;
+    font-weight:lighter;
+    color: rgb(18, 213, 148);
 }
 
-ul {
-  list-style: none;
-  padding: 0;
-}
 
-ul li {
-  margin: 10px 0;
-}
 
 .logo-3{
     height: 40%;
+    transition: 1s;
 }
 
 .startbutton{
@@ -262,5 +259,6 @@ ul li {
     background-color: rgb(243, 207, 24);
     border: 5px white;
     border-radius: 30px;
+    transition: 1s;
 }
 </style>

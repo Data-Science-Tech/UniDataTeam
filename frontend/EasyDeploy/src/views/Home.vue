@@ -53,8 +53,7 @@ export default {
 .search-bar-container {
   display: flex;
   justify-content: center;
-  margin-top: 20px; /* 控制搜索栏与Header之间的距离 */
-  z-index: 1; /* 确保搜索栏在背景上方 */
+  scale: 1.6;
 }
 .feature-container {
   display: flex;

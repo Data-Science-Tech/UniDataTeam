@@ -30,11 +30,10 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 100%;
   }
   
   input[type="text"] {
-    width: 300px; /* Set the width of the input box */
+    width: 20vw; /* Set the width of the input box */
     padding: 10px 15px;
     border: 1px solid #e4e4e4; /* Border styling */
     border-radius: 15px; /* Rounded edges */
