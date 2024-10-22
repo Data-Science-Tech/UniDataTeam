@@ -2,7 +2,7 @@
   <div class="service-container">
     <div class="header">
         <img src="@/assets/ha.png" alt="EZDP Logo" class="logo-1" />
-        <h1>什么是"轻松部署？"</h1>
+        <h1>什么是"轻松部署"?</h1>
         <p>
             您只需要准备好您的代码，即可在Easy Deploy提供的云开发平台上一键训练。
         </p>
