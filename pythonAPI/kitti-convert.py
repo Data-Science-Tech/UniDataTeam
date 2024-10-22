@@ -23,8 +23,9 @@ if not os.path.exists(db_folder):
 conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
 
+
 # 假设你有一个KITTI数据集路径
-kitti_dataset_path = f'D:\datasets\kitti\2011_09_26'
+kitti_dataset_path = r'D:\datasets\kitti\2011_09_26'
 
 def insert_sensor(sensor_type, sensor_name):
     cursor.execute('''
@@ -61,19 +62,37 @@ def insert_scene_info(scene_description, log_info_id):
     ''', (scene_description, log_info_id))
     return cursor.lastrowid
 
-def insert_sensor_data(timestamp, sensor_calibration_id, data_file_format, image_resolution):
+def insert_sensor_data(timestamp, sensor_calibration_id, data_file_format, image_resolution, previous_sensor_data_id=None):
     cursor.execute('''
-        INSERT INTO sensor_data (timestamp, sensor_calibration_id, data_file_format, image_resolution)
-        VALUES (?, ?, ?, ?)
-    ''', (timestamp, sensor_calibration_id, data_file_format, image_resolution))
-    return cursor.lastrowid
+        INSERT INTO sensor_data (timestamp, sensor_calibration_id, data_file_format, image_resolution, previous_sensor_data_id)
+        VALUES (?, ?, ?, ?, ?)
+    ''', (timestamp, sensor_calibration_id, data_file_format, image_resolution, previous_sensor_data_id))
+    sensor_data_id = cursor.lastrowid
+    return sensor_data_id
 
-def insert_sample_info(timestamp, scene_id, sensor_data_id):
+def update_previous_sensor_data(previous_sensor_data_id, current_sensor_data_id):
+    if previous_sensor_data_id:
+        cursor.execute('''
+            UPDATE sensor_data
+            SET next_sensor_data_id = ?
+            WHERE sensor_data_id = ?
+        ''', (current_sensor_data_id, previous_sensor_data_id))
+
+def insert_sample_info(timestamp, scene_id, sensor_data_id, previous_sample_id=None):
     cursor.execute('''
-        INSERT INTO sample_info (timestamp, scene_id, sensor_data_id)
-        VALUES (?, ?, ?)
-    ''', (timestamp, scene_id, sensor_data_id))
-    return cursor.lastrowid
+        INSERT INTO sample_info (timestamp, scene_id, sensor_data_id, previous_sample_id)
+        VALUES (?, ?, ?, ?)
+    ''', (timestamp, scene_id, sensor_data_id, previous_sample_id))
+    sample_id = cursor.lastrowid
+    return sample_id
+
+def update_previous_sample(previous_sample_id, current_sample_id):
+    if previous_sample_id:
+        cursor.execute('''
+            UPDATE sample_info
+            SET next_sample_id = ?
+            WHERE sample_id = ?
+        ''', (current_sample_id, previous_sample_id))
 
 def insert_sample_annotation(sample_id, category_description_id, bbox_center_position, bbox_size):
     cursor.execute('''
@@ -115,6 +134,10 @@ def process_kitti_data():
         scene_description = f'Scene for {scene_folder}'
         scene_id = insert_scene_info(scene_description, log_info_id)
 
+        previous_sample_id = None
+        previous_lidar_data_id = None
+        previous_camera_data_id = None
+
         # 读取并插入点云数据和时间戳信息
         velodyne_folder = os.path.join(scene_path, 'velodyne_points')
         if os.path.exists(velodyne_folder):
@@ -129,8 +152,12 @@ def process_kitti_data():
                         timestamp = timestamp.strip()  # 转换时间戳格式
                         bin_file = os.path.join(data_folder, f'{idx:010d}.bin')
                         if os.path.exists(bin_file):
-                            sensor_data_id = insert_sensor_data(timestamp, lidar_sensor_id, 'bin', None)
-                            insert_sample_info(timestamp, scene_id, sensor_data_id)
+                            sensor_data_id = insert_sensor_data(timestamp, lidar_sensor_id, 'bin', None, previous_lidar_data_id)
+                            update_previous_sensor_data(previous_lidar_data_id, sensor_data_id)
+                            previous_lidar_data_id = sensor_data_id
+                            sample_id = insert_sample_info(timestamp, scene_id, sensor_data_id, previous_sample_id)
+                            update_previous_sample(previous_sample_id, sample_id)
+                            previous_sample_id = sample_id
 
         # 读取并插入图像数据
         for image_index in range(4):  # image_00, image_01, image_02, image_03
@@ -149,32 +176,12 @@ def process_kitti_data():
                         timestamp = timestamp.strip()  # 将时间戳转换为标准格式（假设格式为"YYYY-MM-DD HH:MM:SS.ssssss"）
                         image_file = os.path.join(data_folder, f'{idx:010d}.png')
                         if os.path.exists(image_file):
-                            sensor_data_id = insert_sensor_data(timestamp, camera_sensor_id, 'png', '1242x375')
-                            insert_sample_info(timestamp, scene_id, sensor_data_id)
-
-        # 读取并插入标注信息
-        # tracklet_file = os.path.join(scene_path, 'tracklet_labels.xml')
-        # if os.path.exists(tracklet_file):
-        #     tree = ET.parse(tracklet_file)
-        #     root = tree.getroot()
-        #     for tracklet in root.findall('item'):  # 根据tracklet标签
-        #         object_type = tracklet.find('objectType').text
-        #         h = tracklet.find('h').text
-        #         w = tracklet.find('w').text
-        #         l = tracklet.find('l').text
-        #         first_frame = tracklet.find('first_frame').text
-
-        #         # 处理每个物体的位置信息（bbox）
-        #         poses = tracklet.find('poses')
-        #         if poses is not None:
-        #             for pose in poses.findall('item'):
-        #                 tx = pose.find('tx').text
-        #                 ty = pose.find('ty').text
-        #                 tz = pose.find('tz').text
-        #                 bbox_center_position = f'({tx}, {ty}, {tz})'
-        #                 bbox_size = f'({l}, {w}, {h})'
-        #                 # 插入标注信息（假设sample_id和category_description_id都为None）
-        #                 insert_sample_annotation(None, None, bbox_center_position, bbox_size)
+                            sensor_data_id = insert_sensor_data(timestamp, camera_sensor_id, 'png', '1242x375', previous_camera_data_id)
+                            update_previous_sensor_data(previous_camera_data_id, sensor_data_id)
+                            previous_camera_data_id = sensor_data_id
+                            sample_id = insert_sample_info(timestamp, scene_id, sensor_data_id, previous_sample_id)
+                            update_previous_sample(previous_sample_id, sample_id)
+                            previous_sample_id = sample_id
 
     # 提交事务
     conn.commit()
