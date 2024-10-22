@@ -1,0 +1,121 @@
+-- 1. 创建 sensor 表
+CREATE TABLE sensor (
+    sensor_id INTEGER PRIMARY KEY AUTOINCREMENT,  -- 传感器标识，主键，自增
+    sensor_type TEXT NOT NULL,                    -- 传感器类别，例如 Camera, LiDAR 等
+    sensor_name TEXT NOT NULL                     -- 传感器名称，例如品牌和型号
+);
+
+-- 2. 创建 sensor_calibration 表
+CREATE TABLE sensor_calibration (
+    sensor_calibration_id INTEGER PRIMARY KEY AUTOINCREMENT,  -- 传感器标定标识，主键，自增
+    sensor_id INTEGER NOT NULL,                               -- 传感器标识，外键
+    calibration_reference_frame TEXT NOT NULL,                -- 标定校准参考系
+    self_coordinates TEXT,                                    -- 自身坐标
+    translation_parameters TEXT,                              -- 平移校准参数
+    rotation_parameters TEXT,                                 -- 旋转校准参数
+    FOREIGN KEY (sensor_id) REFERENCES sensor(sensor_id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- 3. 创建 map_info 表
+CREATE TABLE map_info (
+    map_id INTEGER PRIMARY KEY AUTOINCREMENT,       -- 地图标识，主键，自增
+    map_type TEXT NOT NULL,                         -- 地图类别，例如路口、非机动车道等
+    is_rotated BOOLEAN DEFAULT 0,                   -- 是否偏转，默认值为 0
+    coordinate_system_name TEXT NOT NULL            -- 坐标系名称，例如 WGS84、GCJ-02 等
+);
+
+-- 4. 创建 log_info 表
+CREATE TABLE log_info (
+    log_info_id INTEGER PRIMARY KEY AUTOINCREMENT,  -- 日志信息标识，主键，自增
+    log_name TEXT NOT NULL,                         -- 日志名称
+    log_date TEXT NOT NULL,                         -- 日期，格式：YYYY-MM-DD
+    map_id INTEGER,                                 -- 地图标识，外键
+    vehicle_id INTEGER,                             -- 车辆标识
+    sensor_calibration_id INTEGER,                  -- 传感器标定标识，外键
+    FOREIGN KEY (map_id) REFERENCES map_info(map_id) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY (sensor_calibration_id) REFERENCES sensor_calibration(sensor_calibration_id) ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+-- 5. 创建 scene_info 表
+CREATE TABLE scene_info (
+    scene_id INTEGER PRIMARY KEY AUTOINCREMENT,     -- 场景标识，主键，自增
+    scene_description TEXT NOT NULL,                -- 场景描述
+    log_info_id INTEGER,                            -- 日志信息标识，外键
+    sample_count INTEGER,                           -- 指定样本数量
+    first_sample_id INTEGER,                        -- 第一帧采集样本标识，外键
+    last_sample_id INTEGER,                         -- 最后一帧采集样本标识，外键
+    FOREIGN KEY (log_info_id) REFERENCES log_info(log_info_id) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY (first_sample_id) REFERENCES sample_info(sample_id) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY (last_sample_id) REFERENCES sample_info(sample_id) ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+-- 6. 创建 sensor_data 表
+CREATE TABLE sensor_data (
+    sensor_data_id INTEGER PRIMARY KEY AUTOINCREMENT,   -- 传感器数据标识，主键，自增
+    timestamp TEXT NOT NULL,                            -- 时间戳
+    sensor_calibration_id INTEGER,                      -- 传感器标定标识，外键
+    data_file_format TEXT NOT NULL,                     -- 数据文件格式
+    image_resolution TEXT,                              -- 图像像素
+    previous_sensor_data_id INTEGER,                    -- 上一帧传感器数据标识，外键
+    next_sensor_data_id INTEGER,                        -- 下一帧传感器数据标识，外键
+    FOREIGN KEY (sensor_calibration_id) REFERENCES sensor_calibration(sensor_calibration_id) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY (previous_sensor_data_id) REFERENCES sensor_data(sensor_data_id) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY (next_sensor_data_id) REFERENCES sensor_data(sensor_data_id) ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+-- 7. 创建 sample_info 表
+CREATE TABLE sample_info (
+    sample_id INTEGER PRIMARY KEY AUTOINCREMENT,     -- 采集样本标识，主键，自增
+    timestamp TEXT NOT NULL,                         -- 时间戳
+    scene_id INTEGER,                                -- 场景标识，外键
+    sensor_data_id INTEGER,                          -- 传感器数据标识，外键
+    previous_sample_id INTEGER,                      -- 上一帧采集样本标识，外键
+    next_sample_id INTEGER,                          -- 下一帧采集样本标识，外键
+    FOREIGN KEY (scene_id) REFERENCES scene_info(scene_id) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY (sensor_data_id) REFERENCES sensor_data(sensor_data_id) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY (previous_sample_id) REFERENCES sample_info(sample_id) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY (next_sample_id) REFERENCES sample_info(sample_id) ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+-- 8. 创建 sample_annotation 表
+CREATE TABLE sample_annotation (
+    annotation_id INTEGER PRIMARY KEY AUTOINCREMENT,     -- 样本标注标识，主键，自增
+    sample_id INTEGER NOT NULL,                          -- 采集样本标识，外键
+    category_description_id INTEGER,                     -- 类别描述标识，外键
+    attribute_id INTEGER,                                -- 属性标识，外键
+    bbox_center_position TEXT NOT NULL,                  -- 标注框中心位置
+    bbox_size TEXT NOT NULL,                             -- 标注框尺寸
+    bbox_pixel_count INTEGER,                            -- 标注框内像素数
+    bbox_point_count INTEGER,                            -- 标注框内雷达扫描点数
+    previous_annotation_id INTEGER,                      -- 上一帧样本标注标识，外键
+    next_annotation_id INTEGER,                          -- 下一帧样本标注标识，外键
+    FOREIGN KEY (sample_id) REFERENCES sample_info(sample_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (category_description_id) REFERENCES category_description(category_description_id) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY (attribute_id) REFERENCES attribute(attribute_id) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY (previous_annotation_id) REFERENCES sample_annotation(annotation_id) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY (next_annotation_id) REFERENCES sample_annotation(annotation_id) ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+-- 9. 创建 category_description 表
+CREATE TABLE category_description (
+    category_description_id INTEGER PRIMARY KEY AUTOINCREMENT,  -- 类别描述标识，主键，自增
+    category_subcategory_name TEXT NOT NULL,                    -- 分类_子类_名称
+    category_description TEXT                                   -- 类别的具体描述
+);
+
+-- 10. 创建 attribute 表
+CREATE TABLE attribute (
+    attribute_id INTEGER PRIMARY KEY AUTOINCREMENT,  -- 属性标识，主键，自增
+    attribute_name_value TEXT NOT NULL,              -- 属性名称与值
+    attribute_description TEXT                       -- 属性的具体描述
+);
+
+-- 11. 创建 semantic_segmentation 表
+CREATE TABLE semantic_segmentation (
+    semantic_segmentation_id INTEGER PRIMARY KEY AUTOINCREMENT,  -- 语义分割标识，主键，自增
+    sensor_data_id INTEGER NOT NULL,                             -- 传感器数据标识，外键
+    semantic_unit TEXT NOT NULL,                                 -- 语义单位大小
+    category_description_id INTEGER,                             -- 类别描述标识，外键
+    FOREIGN KEY (sensor_data_id) REFERENCES sensor_data(sensor_data_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (category_description_id) REFERENCES category_description(category_description_id) ON DELETE SET NULL ON UPDATE CASCADE
+);
