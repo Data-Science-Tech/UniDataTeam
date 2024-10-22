@@ -2,7 +2,6 @@ import sqlite3
 import os
 import cv2
 import numpy as np
-import open3d as o3d
 import matplotlib.pyplot as plt
 
 # 获取当前 Python 文件的绝对路径
@@ -39,16 +38,11 @@ def read_all_sensor_data():
                 nparr = np.frombuffer(image_resolution, np.uint8)
                 img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
                 if img is not None:
+                    plt.figure(figsize=(5, 5))
                     plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
                     plt.title(f"Sensor Data ID: {sensor_data_id} - RGB Image")
                     plt.axis('off')
                     plt.show()
-            elif data_file_format == 'bin':
-                # 展示点云数据
-                lidar_points = np.frombuffer(image_resolution, dtype=np.float32).reshape(-1, 4)  # 假设每个点有 x, y, z, intensity
-                pcd = o3d.geometry.PointCloud()
-                pcd.points = o3d.utility.Vector3dVector(lidar_points[:, :3])
-                o3d.visualization.draw_geometries([pcd], window_name=f"Sensor Data ID: {sensor_data_id} - LiDAR Point Cloud")
         else:
             print("No Image/Binary Data Available")
         print("-" * 50)
