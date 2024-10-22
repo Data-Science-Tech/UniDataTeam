@@ -62,11 +62,11 @@ def insert_scene_info(scene_description, log_info_id):
     ''', (scene_description, log_info_id))
     return cursor.lastrowid
 
-def insert_sensor_data(timestamp, sensor_calibration_id, data_file_format, image_resolution, previous_sensor_data_id=None):
+def insert_sensor_data(timestamp, sensor_calibration_id, data_file_format, image_data, previous_sensor_data_id=None):
     cursor.execute('''
         INSERT INTO sensor_data (timestamp, sensor_calibration_id, data_file_format, image_resolution, previous_sensor_data_id)
         VALUES (?, ?, ?, ?, ?)
-    ''', (timestamp, sensor_calibration_id, data_file_format, image_resolution, previous_sensor_data_id))
+    ''', (timestamp, sensor_calibration_id, data_file_format, image_data, previous_sensor_data_id))
     sensor_data_id = cursor.lastrowid
     return sensor_data_id
 
@@ -152,7 +152,9 @@ def process_kitti_data():
                         timestamp = timestamp.strip()  # 转换时间戳格式
                         bin_file = os.path.join(data_folder, f'{idx:010d}.bin')
                         if os.path.exists(bin_file):
-                            sensor_data_id = insert_sensor_data(timestamp, lidar_sensor_id, 'bin', None, previous_lidar_data_id)
+                            with open(bin_file, 'rb') as lidar_file:
+                                lidar_data = lidar_file.read()
+                            sensor_data_id = insert_sensor_data(timestamp, lidar_sensor_id, 'bin', lidar_data, previous_lidar_data_id)
                             update_previous_sensor_data(previous_lidar_data_id, sensor_data_id)
                             previous_lidar_data_id = sensor_data_id
                             sample_id = insert_sample_info(timestamp, scene_id, sensor_data_id, previous_sample_id)
@@ -176,7 +178,9 @@ def process_kitti_data():
                         timestamp = timestamp.strip()  # 将时间戳转换为标准格式（假设格式为"YYYY-MM-DD HH:MM:SS.ssssss"）
                         image_file = os.path.join(data_folder, f'{idx:010d}.png')
                         if os.path.exists(image_file):
-                            sensor_data_id = insert_sensor_data(timestamp, camera_sensor_id, 'png', '1242x375', previous_camera_data_id)
+                            with open(image_file, 'rb') as img_file:
+                                image_data = img_file.read()
+                            sensor_data_id = insert_sensor_data(timestamp, camera_sensor_id, 'png', image_data, previous_camera_data_id)
                             update_previous_sensor_data(previous_camera_data_id, sensor_data_id)
                             previous_camera_data_id = sensor_data_id
                             sample_id = insert_sample_info(timestamp, scene_id, sensor_data_id, previous_sample_id)
@@ -185,9 +189,11 @@ def process_kitti_data():
 
     # 提交事务
     conn.commit()
+    print("成功处理并插入了所有KITTI数据集的内容。")
 
 # 执行处理
 process_kitti_data()
 
 # 关闭连接
 conn.close()
+print("数据库连接已关闭。")

@@ -32,4 +32,6 @@ for table_name in tables:
 
 # 提交事务并关闭连接
 conn.commit()
+cursor.execute("VACUUM;")  # 释放存储空间
+print("数据库已清空")
 conn.close()
