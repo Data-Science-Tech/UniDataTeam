@@ -206,7 +206,7 @@ export default {
 .headintro{
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-weight: bolder;
-    font-size: 5vh;
+    font-size: 2.5vw;
     transition: 1s;
 }
 
@@ -224,7 +224,8 @@ export default {
 }
 
 .right-section {
-  background-color: #040219;
+  /*background-color: #040219;*/
+  background-image:url(../../assets/right-bg.png);
   transition: 1s;
   padding: 30px;
   transform: skewX(-5deg); /* Adds slight tilt */
@@ -252,7 +253,7 @@ export default {
 .startbutton{
     margin-top: 40%;
     margin-left: 45%;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
     font-size: 3vh;
     font-weight: bolder;
     padding: 2ch;
