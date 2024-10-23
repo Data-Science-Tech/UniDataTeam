@@ -1,4 +1,5 @@
 <template>
+    <HeaderComponent />
     <div class="container">
       <!-- 操作系统选择 -->
       <div class="form-group">
@@ -85,7 +86,6 @@
 
   <script setup>
   import { ref } from 'vue';
-
   
   // 树形结构数据，存储操作系统、架构、发行版、版本、安装包类型
   const osTree = {

@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Home from '../views/Home.vue';
-import ConfigurationSelection from '../components/Deploy/ConfigurationSelection.vue';
+import DeployMain from '../components/Deploy/DeployMain.vue';
 
 const routes = [
   {
@@ -8,11 +8,11 @@ const routes = [
     name: 'Home',
     component: Home
   },
-//   {
-//     path: '/',
-//     name: 'ConfigurationSelection',
-//     component: ConfigurationSelection
-//   },
+  {
+    path: '/DeployMain',
+    name: 'DeployMain',
+    component: DeployMain
+  },
   
 ];
 

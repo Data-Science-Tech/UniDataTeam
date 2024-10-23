@@ -1,6 +1,7 @@
 <template>
   <div>
     <HeaderComponent />
+    <PictureComponent />
     <div class="search-bar-container">
       <SearchBarComponent />
     </div>
@@ -26,6 +27,7 @@
 </template>
 
 <script>
+import PictureComponent from '@/components/Home/PictureComponent.vue';
 import HeaderComponent from '@/components/Home/HeaderComponent.vue';
 import SearchBarComponent from '@/components/Home/SearchBarComponent.vue';
 import FeatureComponent from '@/components/Home/FeatureComponent.vue';
@@ -37,6 +39,7 @@ import FooterComponent from '@/components/Home/FooterComponent.vue';
 
 export default {
   components: {
+    PictureComponent,
     HeaderComponent,
     SearchBarComponent,
     FeatureComponent,

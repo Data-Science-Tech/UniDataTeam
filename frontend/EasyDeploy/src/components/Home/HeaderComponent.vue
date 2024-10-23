@@ -13,7 +13,7 @@
       </div>
 
       <ul class="navbar-center">
-        <li>首页</li>
+        <li @click="gotoHome">首页</li>
         <li>模型</li>
         <li>数据集</li>
         <li>云服务</li>
@@ -23,7 +23,7 @@
       </ul>
       <div class="navbar-right">
         <button class="login-btn">登录</button>
-        <button class="publish-btn">工作台</button>
+        <button class="publish-btn" @click="gotoDeployMain">工作台</button>
       </div>
     </nav>
 
@@ -32,22 +32,7 @@
       <h1>让AI 开发更高效</h1>
     </div> -->
 
-    <div class="container">
-    <div class="left-section">
-        <img src="@/assets/ha.png" alt="EZDP Logo" class="logo-3" />
-        <h1 class="headintro">The AI community building the future.</h1>
-        <p class="des">
-          The platform where the machine learning community collaborates on models, datasets, and applications.
-        </p>
-    </div>
-    <div class="right-section">
-      <h3>Easy Deploy</h3>
-
-        <div class="startbutton">
-            Let's deploy!  😀---->
-        </div>
-    </div>
-    </div>
+    
 
 
   </div>
@@ -55,19 +40,32 @@
 
 <script>
 import SearchBarComponent from '@/components/Home/SearchBarComponent.vue';
+import DeployMain from '../Deploy/DeployMain.vue';
+
 
 export default {
   name: "MainPage",
   components: {
   SearchBarComponent,
+  DeployMain,
   },
+  methods: {
+    gotoDeployMain() {
+      console.log("push DeployMain")
+      this.$router.push('/DeployMain');
+    },
+    gotoHome(){
+      console.log("push Home")
+      this.$router.push('/');
+    }
+  }
 };
 </script>
 
 <style scoped>
 .main-container {
   width: 100%;
-  height: 100vh;
+  height: 8vh;
   display: flex;
   flex-direction: column;
 }
@@ -182,84 +180,4 @@ export default {
   color: white;
 }
 */
-.container {
-  display: flex;
-  background-color: white;
-  color: #fff;
-  border-radius: 25px; /* Smooth border */
-  margin: 12%;
-  margin-top: 3%;
-  margin-bottom: 10%;
-  height: 70%;
-  
-}
-
-.left-section {
-  flex: 2;
-  margin-top: 2%;
-  background-color: #121022;
-  border-radius: 25px 0 0 25px; /* Left part with rounded corners */
-  padding: 10vh;
-  transition: 1s;
-}
-
-.headintro{
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    font-weight: bolder;
-    font-size: 2.5vw;
-    transition: 1s;
-}
-
-.des{
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color:grey;
-    font-size: 1vw;
-    transition: 1s;
-}
-
-.right-wrapper {
-  flex: 3;
-  /* overflow: hidden; Ensure no overflow outside the rounded corners */
-  /*border-radius: 50px 25px 50px 50px;  Right part with rounded corners */
-}
-
-.right-section {
-  /*background-color: #040219;*/
-  background-image:url(../../assets/right-bg.png);
-  transition: 1s;
-  padding: 30px;
-  transform: skewX(-5deg); /* Adds slight tilt */
-  margin-left: -50px; /* Pulls the section to fill the gap */
-  border-radius:5%;
-  width: 50%;
-}
-
-.right-section h3{
-    margin-top: 10%;
-    margin-left: 10%;
-    font-family:Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
-    font-size: 4vw;
-    font-weight:lighter;
-    color: rgb(18, 213, 148);
-}
-
-
-
-.logo-3{
-    height: 40%;
-    transition: 1s;
-}
-
-.startbutton{
-    margin-top: 40%;
-    margin-left: 45%;
-    font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-    font-size: 3vh;
-    font-weight: bolder;
-    padding: 2ch;
-    background-color: rgb(243, 207, 24);
-    border: 5px white;
-    border-radius: 30px;
-    transition: 1s;
-}
 </style>
