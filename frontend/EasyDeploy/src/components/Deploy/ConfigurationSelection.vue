@@ -1,5 +1,4 @@
 <template>
-    <HeaderComponent />
     <div class="container">
       <!-- 操作系统选择 -->
       <div class="form-group">
@@ -294,6 +293,8 @@ div {
   margin: 20px 0;
   text-align: center;
 }
+
+
 
 .label {
   font-size: 28px;
