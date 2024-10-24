@@ -3,35 +3,35 @@
         <div class="content">
                 <Sidebar />
                 <div class="main-content">
-                        <h2 class="prompt">环境配置</h2>
                         <ConfigurationSelection />
-                        <h2 class="prompt">节点选择</h2>
-                        <ConfigurationSelection />
-                        <h2 class="prompt">虚拟环境搭建</h2>
-                        <ConfigurationSelection />
-                        <h2 class="prompt">日志与性能检测</h2>
-                        <ConfigurationSelection />
-                        <h2 class="prompt">性能参数</h2>
-                        <ConfigurationSelection />
-                        <h2 class="prompt">服务组件</h2>
-                        <ConfigurationSelection />
-                        <h2 class="prompt">性能加速</h2>
-                        <ConfigurationSelection />
+                        <NodeSelection />
+                        <VirtualEnv />
+                        <Log />
+                        <PerformanceParameters />
+                        <Service />
+                        <Acceleration />
                 </div>
         </div>
 </template>
 
 <script setup>
 import HeaderComponent from '@/components/Home/HeaderComponent.vue';
-import ConfigurationSelection from '@/components/Deploy/ConfigurationSelection.vue';
 import Sidebar from '@/components/Deploy/Sidebar.vue';
+import ConfigurationSelection from '@/components/Deploy/ConfigurationSelection.vue';
+import NodeSelection from '@/components/Deploy/NodeSelection.vue';
+import VirtualEnv from '@/components/Deploy/VirtualEvn.vue';
+import Log from '@/components/Deploy/Log.vue';
+import PerformanceParameters from '@/components/Deploy/PerformanceParameters.vue';
+import Service from '@/components/Deploy/Service.vue';
+import Acceleration from '@/components/Deploy/Acceleration.vue'
+
 
 
 </script>
 
 <style scoped>
 .sidebar {
-        width: 250px;
+        width: 150px;
         background-color: #d82d2d;
         padding: 20px;
         box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
