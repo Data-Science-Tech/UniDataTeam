@@ -55,7 +55,7 @@ CREATE TABLE sensor_data (
     timestamp TEXT NOT NULL,                            -- 时间戳
     sensor_calibration_id INTEGER,                      -- 传感器标定标识，外键
     data_file_format TEXT NOT NULL,                     -- 数据文件格式
-    image_resolution TEXT,                              -- 图像像素
+    image_resolution BLOB,                              -- 图像文件
     previous_sensor_data_id INTEGER,                    -- 上一帧传感器数据标识，外键
     next_sensor_data_id INTEGER,                        -- 下一帧传感器数据标识，外键
     FOREIGN KEY (sensor_calibration_id) REFERENCES sensor_calibration(sensor_calibration_id) ON DELETE SET NULL ON UPDATE CASCADE,
