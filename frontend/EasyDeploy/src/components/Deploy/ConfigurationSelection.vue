@@ -1,5 +1,8 @@
 <template>
     <div class="container">
+      <div class="title">
+        环境配置
+      </div>
       <!-- 操作系统选择 -->
       <div class="form-group">
         <h3 class="label">操作系统</h3>
@@ -294,8 +297,6 @@ div {
   text-align: center;
 }
 
-
-
 .label {
   font-size: 28px;
   font-weight: bold;
@@ -305,6 +306,24 @@ div {
   text-align: left;
   min-width: 30%;
 }
+
+.title {
+    font-size: 35px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .title::before {
+    content: '';
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #ff6666;
+    margin-right: 10px;
+  }
 
 /* 每个模块的外边距 */
 .el-button-group {
