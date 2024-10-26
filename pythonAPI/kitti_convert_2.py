@@ -225,5 +225,5 @@ def process_kitti_data(kitti_root, db_path):
 
 if __name__ == "__main__":
     kitti_root = "E:\\kitti\\mini_kitti"
-    db_path = r"E:\Tongji\Junior1\软件工程课程设计\my_test.db"
+    db_path = r"E:\Tongji\Junior1\软件工程课程设计\test_database_2.db"
     process_kitti_data(kitti_root, db_path)
