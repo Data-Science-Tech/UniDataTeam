@@ -16,23 +16,40 @@ device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cp
 
 # Step 1: 从数据库中读取数据
 class DatabaseDataset(Dataset):
-    def __init__(self, db_path):
+    def __init__(self, db_path, log_info_id, is_training=True):
         self.conn = sqlite3.connect(db_path)
         self.cursor = self.conn.cursor()
+        self.log_info_id = log_info_id
+        self.is_training = is_training
 
-        # 获取 "Car" 对应的 category_description_id
+        # 获取 sensor_calibration_id 对应于给定的 log_info_id
         self.cursor.execute("""
-            SELECT category_description_id FROM category_description WHERE category_subcategory_name = 'Car'
-        """)
+            SELECT sensor_calibration_id FROM log_info WHERE log_info_id = ?
+        """, (self.log_info_id,))
         result = self.cursor.fetchone()
         if result:
-            self.car_category_id = result[0]
+            self.sensor_calibration_id = result[0]
         else:
-            raise ValueError("Database does not contain a 'Car' category")
+            raise ValueError("Invalid log_info_id provided")
 
-        # 获取所有 sensor_data_id 和 BLOB 图像数据
-        self.cursor.execute("SELECT sensor_data_id, image_resolution FROM sensor_data")
+        # 获取所有 sensor_data_id 和 BLOB 图像数据对应于 sensor_calibration_id
+        self.cursor.execute("""
+            SELECT sensor_data_id, image_resolution FROM sensor_data WHERE sensor_calibration_id = ?
+        """, (self.sensor_calibration_id,))
         self.data = self.cursor.fetchall()
+
+        if self.is_training:
+            # 获取 "Car" 对应的 category_description_id（仅用于训练集，有标签数据）
+            self.cursor.execute("""
+                SELECT category_description_id FROM category_description WHERE category_subcategory_name = 'Car'
+            """)
+            result = self.cursor.fetchone()
+            if result:
+                self.car_category_id = result[0]
+            else:
+                self.car_category_id = None
+        else:
+            self.car_category_id = None
 
     def __len__(self):
         return len(self.data)
@@ -45,34 +62,40 @@ class DatabaseDataset(Dataset):
         image = cv2.imdecode(np_img, cv2.IMREAD_COLOR)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-        # 查询与当前图像关联的标注
-        self.cursor.execute("""
-            SELECT coordinates
-            FROM sample_annotation 
-            WHERE sample_id = ? AND category_description_id = ?
-        """, (sensor_data_id, self.car_category_id))
-        annotations = self.cursor.fetchall()
+        # 如果是训练集（有标签数据），查询与当前图像关联的标注
+        if self.is_training and self.car_category_id is not None:
+            self.cursor.execute("""
+                SELECT coordinates
+                FROM sample_annotation
+                JOIN sample_info ON sample_annotation.sample_id = sample_info.sample_id
+                WHERE sample_info.sensor_data_id = ? AND category_description_id = ?
+            """, (sensor_data_id, self.car_category_id))
+            annotations = self.cursor.fetchall()
 
-        # 转换为 (xmin, ymin, xmax, ymax) 格式
-        boxes = []
-        for coordinates in annotations:
-            xmin, ymin, xmax, ymax = map(float, coordinates[0].split(','))
-            boxes.append([xmin, ymin, xmax, ymax])
+            # 转换为 (xmin, ymin, xmax, ymax) 格式
+            boxes = []
+            for coordinates in annotations:
+                xmin, ymin, xmax, ymax = map(float, coordinates[0].split(','))
+                boxes.append([xmin, ymin, xmax, ymax])
 
-        if len(boxes) == 0:
-            boxes = torch.zeros((0, 4), dtype=torch.float32)
-            labels = torch.zeros((0,), dtype=torch.int64)
+            if len(boxes) == 0:
+                boxes = torch.zeros((0, 4), dtype=torch.float32)
+                labels = torch.zeros((0,), dtype=torch.int64)
+            else:
+                boxes = torch.as_tensor(boxes, dtype=torch.float32)
+                labels = torch.ones((boxes.shape[0],), dtype=torch.int64)
+
+            target = {'boxes': boxes, 'labels': labels}
+            return F.to_tensor(image), target
+
+        # 如果是测试集（没有标签数据），只返回图像
         else:
-            boxes = torch.as_tensor(boxes, dtype=torch.float32)
-            labels = torch.ones((boxes.shape[0],), dtype=torch.int64)
-
-        target = {'boxes': boxes, 'labels': labels}
-        return F.to_tensor(image), target
+            return F.to_tensor(image), {}
 
 
 db_path = r"E:\Tongji\Junior1\软件工程课程设计\test_database_2.db"
-dataset = DatabaseDataset(db_path)
-dataloader = DataLoader(dataset, batch_size=4, shuffle=True, collate_fn=lambda x: tuple(zip(*x)))
+dataset = DatabaseDataset(db_path, log_info_id=1, is_training=True)
+dataloader = DataLoader(dataset, batch_size=4, shuffle=False, collate_fn=lambda x: tuple(zip(*x)))
 
 # Step 2: 加载模型并训练
 weights = FasterRCNN_ResNet50_FPN_Weights.DEFAULT
@@ -110,15 +133,12 @@ torch.save(model.state_dict(), model_save_path)
 print(f"Model saved to {model_save_path}")
 
 # Step 3: 测试模型
-test_dataset = DatabaseDataset(db_path)
-num_samples = 5  # 随机选择 5 个样本进行测试
-subset_indices = random.sample(range(len(test_dataset)), num_samples)
-test_subset = Subset(test_dataset, subset_indices)
-test_dataloader = DataLoader(test_subset, batch_size=1, shuffle=False)
+test_dataset = DatabaseDataset(db_path, log_info_id=2, is_training=False)
+test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False, collate_fn=lambda x: tuple(zip(*x)))
 
 model.eval()
 with torch.no_grad():
-    for images, targets in test_dataloader:
+    for images, _ in test_dataloader:
         images = [img.to(device) for img in images]
         predictions = model(images)
 
