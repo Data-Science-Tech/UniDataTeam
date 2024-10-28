@@ -1,32 +1,38 @@
 -- 1. 创建 sensor 表
 CREATE TABLE sensor (
     sensor_id INT AUTO_INCREMENT PRIMARY KEY,
-    sensor_type VARCHAR(50) NOT NULL,
-    sensor_name VARCHAR(100) NOT NULL
+    sensor_type VARCHAR(255) NOT NULL,
+    sensor_name VARCHAR(255) NOT NULL
 ) ENGINE=InnoDB;
 
 -- 2. 创建 sensor_calibration 表
 CREATE TABLE sensor_calibration (
     sensor_calibration_id INT AUTO_INCREMENT PRIMARY KEY,
     sensor_id INT NOT NULL,
-    calibration_reference_frame VARCHAR(100) NOT NULL,
-    self_coordinates TEXT,
-    translation_parameters TEXT,
-    rotation_parameters TEXT
+    calibration_reference VARCHAR(255) NOT NULL,
+    self_coordinates_x DOUBLE,
+    self_coordinates_y DOUBLE,
+    self_coordinates_z DOUBLE,
+    translation_x DOUBLE,
+    translation_y DOUBLE,
+    translation_z DOUBLE,
+    rotation_roll DOUBLE,
+    rotation_pitch DOUBLE,
+    rotation_yaw DOUBLE
 ) ENGINE=InnoDB;
 
 -- 3. 创建 map_info 表
 CREATE TABLE map_info (
     map_id INT AUTO_INCREMENT PRIMARY KEY,
-    map_type VARCHAR(50) NOT NULL,
+    map_type VARCHAR(255) NOT NULL,
     is_rotated TINYINT(1) DEFAULT 0,
-    coordinate_system_name VARCHAR(50) NOT NULL
+    coordinate_system_name VARCHAR(65535) NOT NULL
 ) ENGINE=InnoDB;
 
 -- 4. 创建 log_info 表
 CREATE TABLE log_info (
     log_info_id INT AUTO_INCREMENT PRIMARY KEY,
-    log_name VARCHAR(100) NOT NULL,
+    log_name VARCHAR(65525) NOT NULL,
     log_date DATE NOT NULL,
     map_id INT,
     vehicle_id INT,
@@ -36,7 +42,7 @@ CREATE TABLE log_info (
 -- 5. 创建 scene_info 表
 CREATE TABLE scene_info (
     scene_id INT AUTO_INCREMENT PRIMARY KEY,
-    scene_description TEXT NOT NULL,
+    scene_description VARCHAR(65535) NOT NULL,
     log_info_id INT,
     sample_count INT,
     first_sample_id INT,
@@ -46,9 +52,9 @@ CREATE TABLE scene_info (
 -- 6. 创建 sensor_data 表
 CREATE TABLE sensor_data (
     sensor_data_id INT AUTO_INCREMENT PRIMARY KEY,
-    timestamp DATETIME NOT NULL,
+    timestamp TIMESTAMP NOT NULL,
     sensor_calibration_id INT,
-    data_file_format VARCHAR(50) NOT NULL,
+    data_file_format VARCHAR(255) NOT NULL,
     image_resolution MEDIUMBLOB,
     previous_sensor_data_id INT,
     next_sensor_data_id INT
@@ -57,7 +63,7 @@ CREATE TABLE sensor_data (
 -- 7. 创建 sample_info 表
 CREATE TABLE sample_info (
     sample_id INT AUTO_INCREMENT PRIMARY KEY,
-    timestamp DATETIME NOT NULL,
+    timestamp TIMESTAMP NOT NULL,
     scene_id INT,
     sensor_data_id INT,
     previous_sample_id INT,
@@ -70,8 +76,9 @@ CREATE TABLE sample_annotation (
     sample_id INT NOT NULL,
     category_description_id INT,
     attribute_id INT,
-    bbox_center_position TEXT NOT NULL,
-    bbox_size TEXT NOT NULL,
+    bbox_center_position_x DOUBLE NOT NULL,
+    bbox_center
+    bbox_size VARCHAR(255) NOT NULL,
     bbox_pixel_count INT,
     bbox_point_count INT,
     previous_annotation_id INT,
@@ -81,21 +88,21 @@ CREATE TABLE sample_annotation (
 -- 9. 创建 category_description 表
 CREATE TABLE category_description (
     category_description_id INT AUTO_INCREMENT PRIMARY KEY,
-    category_subcategory_name VARCHAR(100) NOT NULL,
-    category_description TEXT
+    category_subcategory_name VARCHAR(65535) NOT NULL,
+    category_description VARCHAR(65535)
 ) ENGINE=InnoDB;
 
 -- 10. 创建 attribute 表
 CREATE TABLE attribute (
     attribute_id INT AUTO_INCREMENT PRIMARY KEY,
-    attribute_name_value VARCHAR(100) NOT NULL,
-    attribute_description TEXT
+    attribute_name_value VARCHAR(65535) NOT NULL,
+    attribute_description VARCHAR(65535)
 ) ENGINE=InnoDB;
 
 -- 11. 创建 semantic_segmentation 表
 CREATE TABLE semantic_segmentation (
     semantic_segmentation_id INT AUTO_INCREMENT PRIMARY KEY,
     sensor_data_id INT NOT NULL,
-    semantic_unit VARCHAR(50) NOT NULL,
+    semantic_unit VARCHAR(65535) NOT NULL,
     category_description_id INT
 ) ENGINE=InnoDB;
