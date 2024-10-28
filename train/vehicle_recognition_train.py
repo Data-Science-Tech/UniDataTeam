@@ -1,4 +1,4 @@
-import sqlite3
+import mysql.connector
 import torch
 import cv2
 import numpy as np
@@ -13,18 +13,17 @@ import random
 
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
-
 # Step 1: 从数据库中读取数据
 class DatabaseDataset(Dataset):
-    def __init__(self, db_path, log_info_id, is_training=True):
-        self.conn = sqlite3.connect(db_path)
+    def __init__(self, db_config, log_info_id, is_training=True):
+        self.conn = mysql.connector.connect(**db_config)
         self.cursor = self.conn.cursor()
         self.log_info_id = log_info_id
         self.is_training = is_training
 
         # 获取 sensor_calibration_id 对应于给定的 log_info_id
         self.cursor.execute("""
-            SELECT sensor_calibration_id FROM log_info WHERE log_info_id = ?
+            SELECT sensor_calibration_id FROM log_info WHERE log_info_id = %s
         """, (self.log_info_id,))
         result = self.cursor.fetchone()
         if result:
@@ -34,7 +33,7 @@ class DatabaseDataset(Dataset):
 
         # 获取所有 sensor_data_id 和 BLOB 图像数据对应于 sensor_calibration_id
         self.cursor.execute("""
-            SELECT sensor_data_id, image_resolution FROM sensor_data WHERE sensor_calibration_id = ?
+            SELECT sensor_data_id, image_resolution FROM sensor_data WHERE sensor_calibration_id = %s
         """, (self.sensor_calibration_id,))
         self.data = self.cursor.fetchall()
 
@@ -65,17 +64,17 @@ class DatabaseDataset(Dataset):
         # 如果是训练集（有标签数据），查询与当前图像关联的标注
         if self.is_training and self.car_category_id is not None:
             self.cursor.execute("""
-                SELECT coordinates
+                SELECT 2d_box_xmin, 2d_box_xmax, 2d_box_ymin, 2d_box_ymax
                 FROM sample_annotation
                 JOIN sample_info ON sample_annotation.sample_id = sample_info.sample_id
-                WHERE sample_info.sensor_data_id = ? AND category_description_id = ?
+                WHERE sample_info.sensor_data_id = %s AND category_description_id = %s
             """, (sensor_data_id, self.car_category_id))
             annotations = self.cursor.fetchall()
 
             # 转换为 (xmin, ymin, xmax, ymax) 格式
             boxes = []
-            for coordinates in annotations:
-                xmin, ymin, xmax, ymax = map(float, coordinates[0].split(','))
+            for annotation in annotations:
+                xmin, xmax, ymin, ymax = annotation
                 boxes.append([xmin, ymin, xmax, ymax])
 
             if len(boxes) == 0:
@@ -92,9 +91,21 @@ class DatabaseDataset(Dataset):
         else:
             return F.to_tensor(image), {}
 
+    def close(self):
+        self.conn.close()
 
-db_path = r"E:\Tongji\Junior1\软件工程课程设计\test_database_2.db"
-dataset = DatabaseDataset(db_path, log_info_id=1, is_training=True)
+    def __del__(self):
+        self.close()
+
+# 数据库连接配置
+db_config = {
+    'host': 'localhost',
+    'user': 'root',
+    'password': 'root',
+    'database': 'car_perception_db'
+}
+
+dataset = DatabaseDataset(db_config, log_info_id=1, is_training=True)
 dataloader = DataLoader(dataset, batch_size=4, shuffle=False, collate_fn=lambda x: tuple(zip(*x)))
 
 # Step 2: 加载模型并训练
@@ -133,7 +144,7 @@ torch.save(model.state_dict(), model_save_path)
 print(f"Model saved to {model_save_path}")
 
 # Step 3: 测试模型
-test_dataset = DatabaseDataset(db_path, log_info_id=2, is_training=False)
+test_dataset = DatabaseDataset(db_config, log_info_id=2, is_training=False)
 test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False, collate_fn=lambda x: tuple(zip(*x)))
 
 model.eval()
@@ -162,3 +173,6 @@ with torch.no_grad():
             plt.imshow(img)
             plt.axis('off')
             plt.show()
+
+dataset.close()
+test_dataset.close()

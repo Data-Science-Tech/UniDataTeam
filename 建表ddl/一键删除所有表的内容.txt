@@ -1,0 +1,13 @@
+SET FOREIGN_KEY_CHECKS = 0;
+TRUNCATE TABLE attribute;
+TRUNCATE TABLE category_description;
+TRUNCATE TABLE log_info;
+TRUNCATE TABLE map_info;
+TRUNCATE TABLE sample_annotation;
+TRUNCATE TABLE sample_info;
+TRUNCATE TABLE scene_info;
+TRUNCATE TABLE semantic_segmentation;
+TRUNCATE TABLE sensor;
+TRUNCATE TABLE sensor_calibration;
+TRUNCATE TABLE sensor_data; 
+SET FOREIGN_KEY_CHECKS = 1;
