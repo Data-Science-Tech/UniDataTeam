@@ -5,9 +5,9 @@ from datetime import datetime
 def connect_database():
     """连接本地 MySQL 数据库"""
     return mysql.connector.connect(
-        host="localhost",
-        user="root",  # 替换为你的 MySQL 用户名
-        password="root",  # 替换为你的 MySQL 密码
+        host="122.51.133.37",
+        user="dev",  # 替换为你的 MySQL 用户名
+        password="dev123",  # 替换为你的 MySQL 密码
         database="car_perception_db"  # 替换为你的 MySQL 数据库名
     )
 

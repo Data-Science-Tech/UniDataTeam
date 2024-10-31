@@ -99,9 +99,9 @@ class DatabaseDataset(Dataset):
 
 # 数据库连接配置
 db_config = {
-    'host': 'localhost',
-    'user': 'root',
-    'password': 'root',
+    'host': '122.51.133.37',
+    'user': 'dev',
+    'password': 'dev123',
     'database': 'car_perception_db'
 }
 
