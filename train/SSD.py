@@ -98,12 +98,13 @@ dataloader = DataLoader(dataset, batch_size=4, shuffle=False, collate_fn=lambda 
 # Step 2: 加载模型并训练
 weights = SSDLite320_MobileNet_V3_Large_Weights.DEFAULT
 model = ssdlite320_mobilenet_v3_large(weights=weights)
-num_classes = 2  # Background + Car
-model.head.classification_head.num_classes = num_classes
+# num_classes = 2  # Background + Car
+# model.head.classification_head.num_classes = num_classes
 model.to(device)
+model.train()
 
-optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9, weight_decay=0.0005)
-num_epochs = 50
+optimizer = optim.SGD(model.parameters(), lr=0.002, momentum=0.9, weight_decay=0.0005)
+num_epochs = 35
 
 model.train()
 for epoch in range(num_epochs):
@@ -149,7 +150,7 @@ with torch.no_grad():
             scores = prediction['scores'].cpu().numpy()
 
             for box, score in zip(boxes, scores):
-                if score > 0.1:  # 降低阈值以显示更多检测结果
+                if score > 0.15:  # 降低阈值以显示更多检测结果
                     xmin, ymin, xmax, ymax = box
                     cv2.rectangle(img, (int(xmin), int(ymin)), (int(xmax), int(ymax)), (0, 255, 0), 2)
                     cv2.putText(img, f'{score:.2f}', (int(xmin), int(ymin) - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
