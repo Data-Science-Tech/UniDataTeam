@@ -1,40 +1,38 @@
--- 为 sensor_calibration 表添加外键约束
-ALTER TABLE sensor_calibration
-ADD CONSTRAINT fk_sensor_id FOREIGN KEY (sensor_id) REFERENCES sensor(sensor_id) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `annotation_attribute`
+  ADD CONSTRAINT `fk_annotation_attribute_annotation_id` FOREIGN KEY (`annotation_id`) REFERENCES `sample_annotation` (`annotation_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_annotation_attribute_attribute_id` FOREIGN KEY (`attribute_id`) REFERENCES `attribute` (`attribute_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
--- 为 log_info 表添加外键约束
-ALTER TABLE log_info
-ADD CONSTRAINT fk_log_map_id FOREIGN KEY (map_id) REFERENCES map_info(map_id) ON DELETE SET NULL ON UPDATE CASCADE,
-ADD CONSTRAINT fk_log_sensor_calibration_id FOREIGN KEY (sensor_calibration_id) REFERENCES sensor_calibration(sensor_calibration_id) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `instance`
+  ADD CONSTRAINT `fk_instance_category_id` FOREIGN KEY (`category_description_id`) REFERENCES `category_description` (`category_description_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
--- 为 scene_info 表添加外键约束
-ALTER TABLE scene_info
-ADD CONSTRAINT fk_scene_log_info_id FOREIGN KEY (log_info_id) REFERENCES log_info(log_info_id) ON DELETE SET NULL ON UPDATE CASCADE,
-ADD CONSTRAINT fk_scene_first_sample_id FOREIGN KEY (first_sample_id) REFERENCES sample_info(sample_id) ON DELETE SET NULL ON UPDATE CASCADE,
-ADD CONSTRAINT fk_scene_last_sample_id FOREIGN KEY (last_sample_id) REFERENCES sample_info(sample_id) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `log_info`
+  ADD CONSTRAINT `fk_log_map_id` FOREIGN KEY (`map_id`) REFERENCES `map_info` (`map_id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
--- 为 sensor_data 表添加外键约束
-ALTER TABLE sensor_data
-ADD CONSTRAINT fk_sensor_data_sensor_calibration_id FOREIGN KEY (sensor_calibration_id) REFERENCES sensor_calibration(sensor_calibration_id) ON DELETE SET NULL ON UPDATE CASCADE,
-ADD CONSTRAINT fk_sensor_data_previous_id FOREIGN KEY (previous_sensor_data_id) REFERENCES sensor_data(sensor_data_id) ON DELETE SET NULL ON UPDATE CASCADE,
-ADD CONSTRAINT fk_sensor_data_next_id FOREIGN KEY (next_sensor_data_id) REFERENCES sensor_data(sensor_data_id) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `sample_annotation`
+  ADD CONSTRAINT `fk_annotation_instance_id` FOREIGN KEY (`instance_id`) REFERENCES `instance` (`instance_id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_annotation_next_id` FOREIGN KEY (`next_annotation_id`) REFERENCES `sample_annotation` (`annotation_id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_annotation_previous_id` FOREIGN KEY (`previous_annotation_id`) REFERENCES `sample_annotation` (`annotation_id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_annotation_sample_id` FOREIGN KEY (`sample_id`) REFERENCES `sample_info` (`sample_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
--- 为 sample_info 表添加外键约束
-ALTER TABLE sample_info
-ADD CONSTRAINT fk_sample_scene_id FOREIGN KEY (scene_id) REFERENCES scene_info(scene_id) ON DELETE SET NULL ON UPDATE CASCADE,
-ADD CONSTRAINT fk_sample_sensor_data_id FOREIGN KEY (sensor_data_id) REFERENCES sensor_data(sensor_data_id) ON DELETE SET NULL ON UPDATE CASCADE,
-ADD CONSTRAINT fk_sample_previous_id FOREIGN KEY (previous_sample_id) REFERENCES sample_info(sample_id) ON DELETE SET NULL ON UPDATE CASCADE,
-ADD CONSTRAINT fk_sample_next_id FOREIGN KEY (next_sample_id) REFERENCES sample_info(sample_id) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `sample_info`
+  ADD CONSTRAINT `fk_sample_next_id` FOREIGN KEY (`next_sample_id`) REFERENCES `sample_info` (`sample_id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_sample_previous_id` FOREIGN KEY (`previous_sample_id`) REFERENCES `sample_info` (`sample_id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_sample_scene_id` FOREIGN KEY (`scene_id`) REFERENCES `scene_info` (`scene_id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
--- 为 sample_annotation 表添加外键约束
-ALTER TABLE sample_annotation
-ADD CONSTRAINT fk_annotation_sample_id FOREIGN KEY (sample_id) REFERENCES sample_info(sample_id) ON DELETE CASCADE ON UPDATE CASCADE,
-ADD CONSTRAINT fk_annotation_category_id FOREIGN KEY (category_description_id) REFERENCES category_description(category_description_id) ON DELETE SET NULL ON UPDATE CASCADE,
-ADD CONSTRAINT fk_annotation_attribute_id FOREIGN KEY (attribute_id) REFERENCES attribute(attribute_id) ON DELETE SET NULL ON UPDATE CASCADE,
-ADD CONSTRAINT fk_annotation_previous_id FOREIGN KEY (previous_annotation_id) REFERENCES sample_annotation(annotation_id) ON DELETE SET NULL ON UPDATE CASCADE,
-ADD CONSTRAINT fk_annotation_next_id FOREIGN KEY (next_annotation_id) REFERENCES sample_annotation(annotation_id) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `scene_info`
+  ADD CONSTRAINT `fk_scene_first_sample_id` FOREIGN KEY (`first_sample_id`) REFERENCES `sample_info` (`sample_id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_scene_last_sample_id` FOREIGN KEY (`last_sample_id`) REFERENCES `sample_info` (`sample_id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_scene_log_info_id` FOREIGN KEY (`log_info_id`) REFERENCES `log_info` (`log_info_id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
--- 为 semantic_segmentation 表添加外键约束
-ALTER TABLE semantic_segmentation
-ADD CONSTRAINT fk_segmentation_sensor_data_id FOREIGN KEY (sensor_data_id) REFERENCES sensor_data(sensor_data_id) ON DELETE CASCADE ON UPDATE CASCADE,
-ADD CONSTRAINT fk_segmentation_category_id FOREIGN KEY (category_description_id) REFERENCES category_description(category_description_id) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `semantic_segmentation`
+  ADD CONSTRAINT `fk_segmentation_category_id` FOREIGN KEY (`category_description_id`) REFERENCES `category_description` (`category_description_id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_segmentation_sensor_data_id` FOREIGN KEY (`sensor_data_id`) REFERENCES `sensor_data` (`sensor_data_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE `sensor_calibration`
+  ADD CONSTRAINT `fk_sensor_id` FOREIGN KEY (`sensor_id`) REFERENCES `sensor` (`sensor_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE `sensor_data`
+  ADD CONSTRAINT `fk_sensor_data_next_id` FOREIGN KEY (`next_sensor_data_id`) REFERENCES `sensor_data` (`sensor_data_id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_sensor_data_previous_id` FOREIGN KEY (`previous_sensor_data_id`) REFERENCES `sensor_data` (`sensor_data_id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_sensor_data_sample_id` FOREIGN KEY (`sample_id`) REFERENCES `sample_info` (`sample_id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_sensor_data_sensor_calibration_id` FOREIGN KEY (`sensor_calibration_id`) REFERENCES `sensor_calibration` (`sensor_calibration_id`) ON DELETE SET NULL ON UPDATE CASCADE;

@@ -1,115 +1,178 @@
--- 1. 创建 sensor 表
-CREATE TABLE sensor (
-    sensor_id INT AUTO_INCREMENT PRIMARY KEY,
-    sensor_type VARCHAR(255) NOT NULL,
-    sensor_name VARCHAR(255) NOT NULL
-) ENGINE=InnoDB;
+CREATE TABLE `annotation_attribute` (
+  `annotation_id` int NOT NULL,
+  `attribute_id` int NOT NULL,
+  PRIMARY KEY (`annotation_id`,`attribute_id`),
+  KEY `fk_annotation_attribute_annotation_id` (`annotation_id`),
+  KEY `fk_annotation_attribute_attribute_id` (`attribute_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- 2. 创建 sensor_calibration 表
-CREATE TABLE sensor_calibration (
-    sensor_calibration_id INT AUTO_INCREMENT PRIMARY KEY,
-    sensor_id INT NOT NULL,
-    calibration_reference VARCHAR(255) NOT NULL,
-    self_coordinates_x DOUBLE,
-    self_coordinates_y DOUBLE,
-    self_coordinates_z DOUBLE,
-    translation_x DOUBLE,
-    translation_y DOUBLE,
-    translation_z DOUBLE,
-    rotation_roll DOUBLE,
-    rotation_pitch DOUBLE,
-    rotation_yaw DOUBLE
-) ENGINE=InnoDB;
+CREATE TABLE `attribute` (
+  `attribute_id` int NOT NULL AUTO_INCREMENT,
+  `attribute_description` varchar(1024) DEFAULT NULL,
+  `attribute_name` varchar(1024) NOT NULL,
+  `attribute_value` varchar(1024) NOT NULL,
+  PRIMARY KEY (`attribute_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- 3. 创建 map_info 表
-CREATE TABLE map_info (
-    map_id INT AUTO_INCREMENT PRIMARY KEY,
-    map_type VARCHAR(255) NOT NULL,
-    is_rotated TINYINT(1) DEFAULT 0,
-    coordinate_system_name VARCHAR(1024) NOT NULL
-) ENGINE=InnoDB;
+CREATE TABLE `category_description` (
+  `category_description_id` int NOT NULL AUTO_INCREMENT,
+  `category_subcategory_name` varchar(1024) NOT NULL,
+  `category_description` varchar(1024) DEFAULT NULL,
+  PRIMARY KEY (`category_description_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- 4. 创建 log_info 表
-CREATE TABLE log_info (
-    log_info_id INT AUTO_INCREMENT PRIMARY KEY,
-    log_name VARCHAR(1024) NOT NULL,
-    log_date DATE NOT NULL,
-    map_id INT,
-    vehicle_id INT,
-    sensor_calibration_id INT
-) ENGINE=InnoDB;
+CREATE TABLE `instance` (
+  `instance_id` int NOT NULL AUTO_INCREMENT,
+  `category_description_id` int NOT NULL,
+  `instance_count` int DEFAULT '0',
+  `first_annotation_id` int DEFAULT NULL,
+  `last_annotation_id` int DEFAULT NULL,
+  PRIMARY KEY (`instance_id`),
+  KEY `fk_instance_category_id` (`category_description_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- 5. 创建 scene_info 表
-CREATE TABLE scene_info (
-    scene_id INT AUTO_INCREMENT PRIMARY KEY,
-    scene_description VARCHAR(1024) NOT NULL,
-    log_info_id INT,
-    sample_count INT,
-    first_sample_id INT,
-    last_sample_id INT
-) ENGINE=InnoDB;
+CREATE TABLE `log_info` (
+  `log_info_id` int NOT NULL AUTO_INCREMENT,
+  `log_name` varchar(1024) NOT NULL,
+  `log_date` date NOT NULL,
+  `map_id` int DEFAULT NULL,
+  `vehicle_id` int DEFAULT NULL,
+  PRIMARY KEY (`log_info_id`),
+  KEY `fk_log_map_id` (`map_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- 6. 创建 sensor_data 表
-CREATE TABLE sensor_data (
-    sensor_data_id INT AUTO_INCREMENT PRIMARY KEY,
-    timestamp TIMESTAMP NOT NULL,
-    sensor_calibration_id INT,
-    data_file_format VARCHAR(255) NOT NULL,
-    image_resolution MEDIUMBLOB,
-    previous_sensor_data_id INT,
-    next_sensor_data_id INT
-) ENGINE=InnoDB;
+CREATE TABLE `map_info` (
+  `map_id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `location` varchar(255) DEFAULT NULL,
+  `filename` varchar(1024) DEFAULT NULL,
+  `version` varchar(50) DEFAULT NULL,
+  `category` varchar(255) NOT NULL,
+  PRIMARY KEY (`map_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- 7. 创建 sample_info 表
-CREATE TABLE sample_info (
-    sample_id INT AUTO_INCREMENT PRIMARY KEY,
-    timestamp TIMESTAMP NOT NULL,
-    scene_id INT,
-    sensor_data_id INT,
-    previous_sample_id INT,
-    next_sample_id INT
-) ENGINE=InnoDB;
+CREATE TABLE `sample_annotation` (
+  `annotation_id` int NOT NULL AUTO_INCREMENT,
+  `sample_id` int NOT NULL,
+  `bbox_center_3d_x` double DEFAULT NULL,
+  `bbox_center_3d_y` double DEFAULT NULL,
+  `bbox_center_3d_z` double DEFAULT NULL,
+  `bbox_3d_width_y` double DEFAULT NULL,
+  `bbox_3d_height_z` double DEFAULT NULL,
+  `bbox_3d_length_x` double DEFAULT NULL,
+  `bbox_2d_xmin` double DEFAULT NULL,
+  `bbox_2d_xmax` double DEFAULT NULL,
+  `bbox_2d_ymin` double DEFAULT NULL,
+  `bbox_2d_ymax` double DEFAULT NULL,
+  `bbox_2d_pixel_count` int DEFAULT NULL,
+  `previous_annotation_id` int DEFAULT NULL,
+  `next_annotation_id` int DEFAULT NULL,
+  `num_lidar_pts` int DEFAULT '0',
+  `num_radar_pts` int DEFAULT '0',
+  `rotation_roll` double DEFAULT NULL,
+  `rotation_pitch` double DEFAULT NULL,
+  `rotation_yaw` double DEFAULT NULL,
+  `instance_id` int DEFAULT NULL,
+  PRIMARY KEY (`annotation_id`),
+  KEY `fk_annotation_sample_id` (`sample_id`),
+  KEY `fk_annotation_previous_id` (`previous_annotation_id`),
+  KEY `fk_annotation_next_id` (`next_annotation_id`),
+  KEY `fk_annotation_instance_id` (`instance_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- 8. 创建 sample_annotation 表
-CREATE TABLE sample_annotation (
-    annotation_id INT AUTO_INCREMENT PRIMARY KEY,
-    sample_id INT NOT NULL,
-    category_description_id INT,
-    attribute_id INT,
-    bbox_center_position_x DOUBLE,
-    bbox_center_position_y DOUBLE,
-    bbox_center_position_z DOUBLE,
-    bbox_width DOUBLE,
-    bbox_height DOUBLE,
-    bbox_depth DOUBLE,
-    2d_box_xmin DOUBLE,
-    2d_box_xmax DOUBLE,
-    2d_box_ymin DOUBLE,
-    2d_box_ymax DOUBLE,
-    bbox_pixel_count INT,
-    bbox_point_count INT,
-    previous_annotation_id INT,
-    next_annotation_id INT
-) ENGINE=InnoDB;
+CREATE TABLE `sample_info` (
+  `sample_id` int NOT NULL AUTO_INCREMENT,
+  `timestamp` timestamp NOT NULL,
+  `scene_id` int DEFAULT NULL,
+  `previous_sample_id` int DEFAULT NULL,
+  `next_sample_id` int DEFAULT NULL,
+  PRIMARY KEY (`sample_id`),
+  KEY `fk_sample_scene_id` (`scene_id`),
+  KEY `fk_sample_previous_id` (`previous_sample_id`),
+  KEY `fk_sample_next_id` (`next_sample_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- 9. 创建 category_description 表
-CREATE TABLE category_description (
-    category_description_id INT AUTO_INCREMENT PRIMARY KEY,
-    category_subcategory_name VARCHAR(1024) NOT NULL,
-    category_description VARCHAR(1024)
-) ENGINE=InnoDB;
+CREATE TABLE `scene_info` (
+  `scene_id` int NOT NULL AUTO_INCREMENT,
+  `scene_description` varchar(1024) NOT NULL,
+  `log_info_id` int DEFAULT NULL,
+  `sample_count` int DEFAULT NULL,
+  `first_sample_id` int DEFAULT NULL,
+  `last_sample_id` int DEFAULT NULL,
+  PRIMARY KEY (`scene_id`),
+  KEY `fk_scene_log_info_id` (`log_info_id`),
+  KEY `fk_scene_first_sample_id` (`first_sample_id`),
+  KEY `fk_scene_last_sample_id` (`last_sample_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- 10. 创建 attribute 表
-CREATE TABLE attribute (
-    attribute_id INT AUTO_INCREMENT PRIMARY KEY,
-    attribute_name_value VARCHAR(1024) NOT NULL,
-    attribute_description VARCHAR(1024)
-) ENGINE=InnoDB;
+CREATE TABLE `semantic_segmentation` (
+  `semantic_segmentation_id` int NOT NULL AUTO_INCREMENT,
+  `sensor_data_id` int NOT NULL,
+  `segmentation_type` enum('2D','3D') NOT NULL,
+  `segment_boundary` geometry DEFAULT NULL,
+  `pixel_count` int DEFAULT NULL,
+  `point_count` int DEFAULT NULL,
+  `confidence` double DEFAULT NULL,
+  `category_description_id` int DEFAULT NULL,
+  PRIMARY KEY (`semantic_segmentation_id`),
+  KEY `fk_segmentation_sensor_data_id` (`sensor_data_id`),
+  KEY `fk_segmentation_category_id` (`category_description_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- 11. 创建 semantic_segmentation 表
-CREATE TABLE semantic_segmentation (
-    semantic_segmentation_id INT AUTO_INCREMENT PRIMARY KEY,
-    sensor_data_id INT NOT NULL,
-    semantic_unit VARCHAR(1024) NOT NULL,
-    category_description_id INT
-) ENGINE=InnoDB;
+CREATE TABLE `sensor` (
+  `sensor_id` int NOT NULL AUTO_INCREMENT,
+  `sensor_type` varchar(255) NOT NULL,
+  `sensor_name` varchar(255) NOT NULL,
+  PRIMARY KEY (`sensor_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `sensor_calibration` (
+  `sensor_calibration_id` int NOT NULL AUTO_INCREMENT,
+  `sensor_id` int NOT NULL,
+  `calibration_reference` varchar(255) NOT NULL,
+  `self_coordinates_x` double DEFAULT NULL,
+  `self_coordinates_y` double DEFAULT NULL,
+  `self_coordinates_z` double DEFAULT NULL,
+  `translation_x` double DEFAULT NULL,
+  `translation_y` double DEFAULT NULL,
+  `translation_z` double DEFAULT NULL,
+  `rotation_roll` double DEFAULT NULL,
+  `rotation_pitch` double DEFAULT NULL,
+  `rotation_yaw` double DEFAULT NULL,
+  `focal_length_x` double DEFAULT NULL,
+  `focal_length_y` double DEFAULT NULL,
+  `principal_point_x` double DEFAULT NULL,
+  `principal_point_y` double DEFAULT NULL,
+  `radial_distortion_k1` double DEFAULT NULL,
+  `radial_distortion_k2` double DEFAULT NULL,
+  `radial_distortion_k3` double DEFAULT NULL,
+  `tangential_distortion_p1` double DEFAULT NULL,
+  `tangential_distortion_p2` double DEFAULT NULL,
+  PRIMARY KEY (`sensor_calibration_id`),
+  KEY `fk_sensor_id` (`sensor_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `sensor_data` (
+  `sensor_data_id` int NOT NULL AUTO_INCREMENT,
+  `timestamp` timestamp NOT NULL,
+  `sensor_calibration_id` int DEFAULT NULL,
+  `data_file_format` varchar(255) NOT NULL,
+  `previous_sensor_data_id` int DEFAULT NULL,
+  `next_sensor_data_id` int DEFAULT NULL,
+  `image_width` int DEFAULT NULL,
+  `image_height` int DEFAULT NULL,
+  `file_path` varchar(1024) NOT NULL,
+  `is_key_frame` tinyint(1) DEFAULT '0',
+  `ego_translation_x` double DEFAULT NULL,
+  `ego_translation_y` double DEFAULT NULL,
+  `ego_translation_z` double DEFAULT NULL,
+  `ego_rotation_roll` double DEFAULT NULL,
+  `ego_rotation_pitch` double DEFAULT NULL,
+  `ego_rotation_yaw` double DEFAULT NULL,
+  `sample_id` int DEFAULT NULL,
+  PRIMARY KEY (`sensor_data_id`),
+  KEY `fk_sensor_data_sensor_calibration_id` (`sensor_calibration_id`),
+  KEY `fk_sensor_data_previous_id` (`previous_sensor_data_id`),
+  KEY `fk_sensor_data_next_id` (`next_sensor_data_id`),
+  KEY `fk_sensor_data_sample_id` (`sample_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
