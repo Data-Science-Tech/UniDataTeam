@@ -38,9 +38,6 @@ def connectdatabase():
             connection.close()
             print("数据库连接已关闭")
 
-
-
-
 # 插入sensor数据
 def insert_sensor(connection):
     if connection is None:
@@ -295,6 +292,8 @@ def insert_category(connection):
     connection.commit()
     print("category成功插入！")
     cursor.close()
+
+
 
 
 if __name__ == '__main__':
