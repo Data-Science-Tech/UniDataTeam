@@ -15,38 +15,42 @@ device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cp
 
 # Step 1: 从数据库中读取数据
 class DatabaseDataset(Dataset):
-    def __init__(self, db_config, log_info_id, is_training=True):
+    def __init__(self, db_config, scene_name, is_training=True):
         self.conn = mysql.connector.connect(**db_config)
         self.cursor = self.conn.cursor()
-        self.log_info_id = log_info_id
+        self.scene_name = scene_name
         self.is_training = is_training
 
-        # 获取 sensor_calibration_id 对应于给定的 log_info_id
-        self.cursor.execute("""
-            SELECT sensor_calibration_id FROM log_info WHERE log_info_id = %s
-        """, (self.log_info_id,))
-        result = self.cursor.fetchone()
-        if result:
-            self.sensor_calibration_id = result[0]
+        # 获取 scene_id
+        self.cursor.execute("""SELECT scene_id FROM scene_info WHERE scene_description = %s""", (self.scene_name,))
+        scene_id = self.cursor.fetchone()
+        if scene_id:
+            self.scene_id = scene_id[0]
         else:
-            raise ValueError("Invalid log_info_id provided")
+            raise ValueError(f"Scene '{self.scene_name}' not found in database.")
 
-        # 获取所有 sensor_data_id 和 BLOB 图像数据对应于 sensor_calibration_id
-        self.cursor.execute("""
-            SELECT sensor_data_id, image_resolution FROM sensor_data WHERE sensor_calibration_id = %s
-        """, (self.sensor_calibration_id,))
-        self.data = self.cursor.fetchall()
+        # 获取所有 sample_id
+        self.cursor.execute("""SELECT sample_id FROM sample_info WHERE scene_id = %s""", (self.scene_id,))
+        self.samples = [row[0] for row in self.cursor.fetchall()]
 
-        if self.is_training:
-            # 获取 "Car" 对应的 category_description_id（仅用于训练集，有标签数据）
+        # 获取 sensor_data 信息，过滤格式为 png 的数据
+        self.data = []
+        for sample_id in self.samples:
             self.cursor.execute("""
-                SELECT category_description_id FROM category_description WHERE category_subcategory_name = 'Car'
-            """)
+                SELECT sensor_data_id, file_path
+                FROM sensor_data
+                WHERE sample_id = %s AND data_file_format = 'png'
+            """, (sample_id,))
+            self.data.extend(self.cursor.fetchall())
+
+        # 获取类别为 Car 的 category_description_id
+        if self.is_training:
+            self.cursor.execute("""SELECT category_description_id FROM category_description WHERE category_subcategory_name = 'Car'""")
             result = self.cursor.fetchone()
             if result:
                 self.car_category_id = result[0]
             else:
-                self.car_category_id = None
+                raise ValueError("Category 'Car' not found in database.")
         else:
             self.car_category_id = None
 
@@ -54,29 +58,29 @@ class DatabaseDataset(Dataset):
         return len(self.data)
 
     def __getitem__(self, idx):
-        sensor_data_id, image_blob = self.data[idx]
+        sensor_data_id, file_path = self.data[idx]
 
-        # 将 BLOB 转换为图像
-        np_img = np.frombuffer(image_blob, np.uint8)
-        image = cv2.imdecode(np_img, cv2.IMREAD_COLOR)
+        # 读取图像
+        image = cv2.imread(file_path)
+        if image is None:
+            raise ValueError(f"Failed to load image from path: {file_path}")
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-        # 如果是训练集（有标签数据），查询与当前图像关联的标注
+        # 如果是训练集，获取标注
         if self.is_training and self.car_category_id is not None:
+            sample_id = self.samples[idx]
+
+            # 查询类别为 Car 的标注
             self.cursor.execute("""
-                SELECT 2d_box_xmin, 2d_box_xmax, 2d_box_ymin, 2d_box_ymax
-                FROM sample_annotation
-                JOIN sample_info ON sample_annotation.sample_id = sample_info.sample_id
-                WHERE sample_info.sensor_data_id = %s AND category_description_id = %s
-            """, (sensor_data_id, self.car_category_id))
+                SELECT sa.bbox_2d_xmin, sa.bbox_2d_ymin, sa.bbox_2d_xmax, sa.bbox_2d_ymax
+                FROM sample_annotation sa
+                JOIN instance i ON sa.instance_id = i.instance_id
+                WHERE sa.sample_id = %s AND i.category_description_id = %s
+            """, (sample_id, self.car_category_id))
             annotations = self.cursor.fetchall()
 
             # 转换为 (xmin, ymin, xmax, ymax) 格式
-            boxes = []
-            for annotation in annotations:
-                xmin, xmax, ymin, ymax = annotation
-                boxes.append([xmin, ymin, xmax, ymax])
-
+            boxes = [list(annotation) for annotation in annotations]
             if len(boxes) == 0:
                 boxes = torch.zeros((0, 4), dtype=torch.float32)
                 labels = torch.zeros((0,), dtype=torch.int64)
@@ -87,7 +91,7 @@ class DatabaseDataset(Dataset):
             target = {'boxes': boxes, 'labels': labels}
             return F.to_tensor(image), target
 
-        # 如果是测试集（没有标签数据），只返回图像
+        # 测试集没有标注
         else:
             return F.to_tensor(image), {}
 
@@ -105,7 +109,7 @@ db_config = {
     'database': 'car_perception_db'
 }
 
-dataset = DatabaseDataset(db_config, log_info_id=1, is_training=True)
+dataset = DatabaseDataset(db_config, scene_name='KITTI Training Data Scene', is_training=True)
 dataloader = DataLoader(dataset, batch_size=4, shuffle=False, collate_fn=lambda x: tuple(zip(*x)))
 
 # Step 2: 加载模型并训练
@@ -144,7 +148,7 @@ torch.save(model.state_dict(), model_save_path)
 print(f"Model saved to {model_save_path}")
 
 # Step 3: 测试模型
-test_dataset = DatabaseDataset(db_config, log_info_id=2, is_training=False)
+test_dataset = DatabaseDataset(db_config, scene_name='KITTI Testing Data Scene', is_training=False)
 test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False, collate_fn=lambda x: tuple(zip(*x)))
 
 model.eval()

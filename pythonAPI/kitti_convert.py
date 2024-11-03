@@ -210,7 +210,7 @@ def add_sample_info(conn, timestamp, scene_id=None, previous_sample_id=None, nex
 
 def add_sample_annotation(conn, sample_id, bbox_center_3d_x=None, bbox_center_3d_y=None, bbox_center_3d_z=None,
                              bbox_3d_width_y=None, bbox_3d_height_z=None, bbox_3d_length_x=None,
-                             bbox_2d_xmin=None, bbox_2d_xmax=None, bbox_2d_ymin=None, bbox_2d_ymax=None,
+                             bbox_2d_xmin=None, bbox_2d_ymin=None, bbox_2d_xmax=None, bbox_2d_ymax=None,
                              bbox_2d_pixel_count=None, previous_annotation_id=None, next_annotation_id=None,
                              num_lidar_pts=0, num_radar_pts=0, rotation_roll=None, rotation_pitch=None,
                              rotation_yaw=None, instance_id=None):
