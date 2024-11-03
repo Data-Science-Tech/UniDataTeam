@@ -27,6 +27,7 @@ def connectdatabase():
         # insert_sensor_calibration(connection)
         # insert_attribute(connection)
         # insert_map_log(connection)
+        insert_category(connection)
 
     
     except Error as e:
@@ -40,7 +41,7 @@ def connectdatabase():
 
 
 
-# 插入传感器数据
+# 插入sensor数据
 def insert_sensor(connection):
     if connection is None:
         print("无法插入数据，因为数据库连接未成功建立。")
@@ -69,7 +70,7 @@ def insert_sensor(connection):
     print("sensor成功插入！")
     cursor.close()
 
-# 插入传感器标定数据
+# 插入calibrated_sensor数据
 def quaternion_to_euler(rotation):
     """
     将四元数转换为欧拉角（Yaw, Pitch, Roll）。
@@ -267,7 +268,33 @@ def insert_map_log(connection):
     print("log_info成功插入！")
     cursor1.close()
 
+# 插入category数据
+def insert_category(connection):
+    if connection is None:
+        print("无法插入数据，因为数据库连接未成功建立。")
+        return    
+    cursor = connection.cursor()
 
+    # 插入数据到category表
+    for item in nusc.category:
+        name = item["name"]
+        description = item["description"]
+        
+
+        try:
+            # 执行插入SQL语句
+            insert_query = """
+            INSERT INTO category_description (category_subcategory_name, category_description)
+            VALUES (%s, %s)
+            """
+            cursor.execute(insert_query, (name, description))
+        except mysql.connector.Error as e:
+            print(f"Error inserting data: {e}")
+
+    # 提交事务
+    connection.commit()
+    print("category成功插入！")
+    cursor.close()
 
 
 if __name__ == '__main__':
