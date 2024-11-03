@@ -36,14 +36,14 @@ CREATE TABLE `log_info` (
   `log_name` varchar(1024) NOT NULL,
   `log_date` date NOT NULL,
   `map_id` int DEFAULT NULL,
-  `vehicle_id` int DEFAULT NULL,
+  `vehicle_id` VARCHAR(255) DEFAULT NULL,
   PRIMARY KEY (`log_info_id`),
   KEY `fk_log_map_id` (`map_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `map_info` (
   `map_id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
+  `name` varchar(255) DEFAULT NULL,
   `location` varchar(255) DEFAULT NULL,
   `filename` varchar(1024) DEFAULT NULL,
   `version` varchar(50) DEFAULT NULL,
@@ -129,7 +129,7 @@ CREATE TABLE `sensor` (
 CREATE TABLE `sensor_calibration` (
   `sensor_calibration_id` int NOT NULL AUTO_INCREMENT,
   `sensor_id` int NOT NULL,
-  `calibration_reference` varchar(255) NOT NULL,
+  `calibration_reference` varchar(255) DEFAULT NULL,
   `self_coordinates_x` double DEFAULT NULL,
   `self_coordinates_y` double DEFAULT NULL,
   `self_coordinates_z` double DEFAULT NULL,
