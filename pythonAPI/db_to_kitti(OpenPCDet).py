@@ -16,7 +16,7 @@ class MySQLToKITTIConverter:
         """
         self.db_config = db_config
         self.output_base_path = Path(output_base_path)
-        self.kitti_path = self.output_base_path / 'data' / 'kitti'
+        self.kitti_path = self.output_base_path / 'kitti'
         self.conn = None
         self.cursor = None
         self.setup_logging()
@@ -56,49 +56,83 @@ class MySQLToKITTIConverter:
             full_path.mkdir(parents=True, exist_ok=True)
             self.logger.info(f"Created directory: {full_path}")
 
-    def get_sample_splits(self) -> Tuple[List[int], List[int], List[int]]:
+    def get_sample_splits(self):
+        """获取训练集、验证集和测试集的样本ID"""
+        query = """  
+        SELECT si.sample_id, sci.scene_id  
+        FROM sample_info si  
+        JOIN scene_info sci ON si.scene_id = sci.scene_id  
+        ORDER BY si.sample_id  
         """
-        获取训练集、验证集和测试集的样本ID
-        返回: (train_ids, val_ids, test_ids)
-        """
-        self.cursor.execute("SELECT sample_id FROM sample_info ORDER BY sample_id")
-        all_samples = [row['sample_id'] for row in self.cursor.fetchall()]
+        self.cursor.execute(query)
+        samples = self.cursor.fetchall()
 
-        # 按照8:1:1的比例划分数据集
-        total_samples = len(all_samples)
-        train_size = int(total_samples * 0.8)
-        val_size = int(total_samples * 0.1)
+        if not samples:
+            self.logger.error("No samples found in database!")
+            raise ValueError("No samples found in database")
 
-        train_ids = all_samples[:train_size]
-        val_ids = all_samples[train_size:train_size + val_size]
-        test_ids = all_samples[train_size + val_size:]
+            # 首先分离训练数据和测试数据
+        train_val_ids = []
+        test_ids = []
+
+        for sample in samples:
+            if sample['scene_id'] == 1:
+                train_val_ids.append(sample['sample_id'])
+            elif sample['scene_id'] == 2:
+                test_ids.append(sample['sample_id'])
+
+                # 从训练数据中划分出验证集（10%）
+        num_val = int(len(train_val_ids))  # 暂时全部作为验证集
+        train_ids = train_val_ids[:num_val]
+        val_ids = train_val_ids[:num_val]
+
+        self.logger.info(f"Split samples: train({len(train_ids)}), "
+                         f"val({len(val_ids)}), test({len(test_ids)})")
 
         return train_ids, val_ids, test_ids
 
-    def write_split_files(self, train_ids: List[int], val_ids: List[int], test_ids: List[int]):
+    def write_split_files(self, train_ids, val_ids, test_ids):
         """写入数据集划分文件"""
-        splits = {
-            'train.txt': train_ids,
-            'val.txt': val_ids,
-            'test.txt': test_ids
-        }
+        # 创建ImageSets目录
+        imageset_dir = self.kitti_path / 'ImageSets'
+        imageset_dir.mkdir(exist_ok=True)
 
-        for filename, ids in splits.items():
-            filepath = self.kitti_path / 'ImageSets' / filename
-            with open(filepath, 'w') as f:
-                for sample_id in ids:
-                    # 使用KITTI格式的6位数字标识符
-                    f.write(f"{sample_id:06d}\n")
-            self.logger.info(f"Written split file: {filename}")
+        # 确保所有ID都被格式化为6位数的字符串
+        def format_ids(ids):
+            return [f'{idx:06d}' for idx in sorted(ids)]
+
+        # 写入训练集文件
+        train_ids_formatted = format_ids(train_ids)
+        with open(imageset_dir / 'train.txt', 'w') as f:
+            f.write('\n'.join(train_ids_formatted))
+            if train_ids_formatted:  # 确保最后有换行符
+                f.write('\n')
+
+        # 写入验证集文件 (即使为空也需要创建文件)
+        val_ids_formatted = format_ids(val_ids) if val_ids else []
+        with open(imageset_dir / 'val.txt', 'w') as f:
+            f.write('\n'.join(val_ids_formatted))
+            if val_ids_formatted:  # 确保最后有换行符
+                f.write('\n')
+
+        # 写入测试集文件
+        test_ids_formatted = format_ids(test_ids)
+        with open(imageset_dir / 'test.txt', 'w') as f:
+            f.write('\n'.join(test_ids_formatted))
+            if test_ids_formatted:  # 确保最后有换行符
+                f.write('\n')
+
+        self.logger.info(f"Written split files: train({len(train_ids_formatted)}), "
+                         f"val({len(val_ids_formatted)}), test({len(test_ids_formatted)})")
 
     def convert_calibration(self, sample_id: int, is_training: bool):
         """转换标定数据"""
-        query = """  
-        SELECT sc.*, s.sensor_type   
-        FROM sensor_calibration sc  
-        JOIN sensor_data sd ON sd.sensor_calibration_id = sc.sensor_calibration_id  
-        JOIN sensor s ON sc.sensor_id = s.sensor_id  
-        WHERE sd.sample_id = %s  
+        query = """
+        SELECT sc.*, s.sensor_type 
+        FROM sensor_calibration sc
+        JOIN sensor_data sd ON sd.sensor_calibration_id = sc.sensor_calibration_id
+        JOIN sensor s ON sc.sensor_id = s.sensor_id
+        WHERE sd.sample_id = %s
         """
         self.cursor.execute(query, (sample_id,))
         calibs = self.cursor.fetchall()
@@ -107,86 +141,83 @@ class MySQLToKITTIConverter:
             self.logger.warning(f"No calibration data found for sample {sample_id}")
             return
 
-            # 生成KITTI格式的标定文件
+        # 生成KITTI格式的标定文件
         calib_dir = 'training' if is_training else 'testing'
         calib_path = self.kitti_path / calib_dir / 'calib' / f'{sample_id:06d}.txt'
 
-        # 默认标定矩阵（如果数据库中没有数据）
+        # 默认标定矩阵（来自KITTI数据集的典型值）
         default_P2 = np.array([[721.5377, 0., 609.5593, 44.85728],
                                [0., 721.5377, 172.854, 0.2163791],
                                [0., 0., 1., 0.002745884]])
 
         default_Tr = np.array([[7.533745e-03, -9.999714e-01, -6.166020e-04, -4.069766e-03],
                                [1.480249e-02, 7.280733e-04, -9.998902e-01, -7.631618e-02],
-                               [9.998621e-01, 7.523790e-03, 1.480755e-02, -2.717806e-01],
-                               [0., 0., 0., 1.]])
+                               [9.998621e-01, 7.523790e-03, 1.480755e-02, -2.717806e-01]])
 
-        with open(calib_path, 'w') as f:
-            # 写入P0矩阵（与P2相同）
-            f.write(f"P0: {' '.join(map(str, default_P2.flatten()))}\n")
-            # 写入P1矩阵（与P2相同）
-            f.write(f"P1: {' '.join(map(str, default_P2.flatten()))}\n")
+        # R0_rect是3x3的单位矩阵
+        R0_rect = np.eye(3)
 
-            camera_found = False
-            lidar_found = False
+        # 准备数据
+        P2 = default_P2.copy()
+        Tr = default_Tr.copy()
+        camera_found = False
+        lidar_found = False
 
-            for calib in calibs:
-                if calib['sensor_type'].lower() == 'camera':
-                    camera_found = True
-                    # P2 (相机投影矩阵)
+        # 处理标定数据
+        for calib in calibs:
+            if calib['sensor_type'].lower() == 'camera':
+                camera_found = True
+                try:
                     P2 = np.zeros((3, 4))
-                    try:
-                        P2[0, 0] = calib['focal_length_x'] or default_P2[0, 0]
-                        P2[1, 1] = calib['focal_length_y'] or default_P2[1, 1]
-                        P2[0, 2] = calib['principal_point_x'] or default_P2[0, 2]
-                        P2[1, 2] = calib['principal_point_y'] or default_P2[1, 2]
-                        P2[0, 3] = calib['translation_x'] or default_P2[0, 3]
-                        P2[1, 3] = calib['translation_y'] or default_P2[1, 3]
-                        P2[2, 3] = calib['translation_z'] or default_P2[2, 3]
-                        P2[2, 2] = 1.0
-                    except (TypeError, ValueError):
-                        P2 = default_P2
-                    f.write(f"P2: {' '.join(map(str, P2.flatten()))}\n")
-                    # P3矩阵（与P2相同）
-                    f.write(f"P3: {' '.join(map(str, P2.flatten()))}\n")
+                    P2[0, 0] = calib['focal_length_x'] or default_P2[0, 0]
+                    P2[1, 1] = calib['focal_length_y'] or default_P2[1, 1]
+                    P2[0, 2] = calib['principal_point_x'] or default_P2[0, 2]
+                    P2[1, 2] = calib['principal_point_y'] or default_P2[1, 2]
+                    P2[0, 3] = calib['translation_x'] or default_P2[0, 3]
+                    P2[1, 3] = calib['translation_y'] or default_P2[1, 3]
+                    P2[2, 3] = calib['translation_z'] or default_P2[2, 3]
+                    P2[2, 2] = 1.0
+                except (TypeError, ValueError):
+                    P2 = default_P2
 
-                elif calib['sensor_type'].lower() == 'lidar':
-                    lidar_found = True
-                    try:
-                        # 检查是否所有需要的值都存在
-                        if all(calib[k] is not None for k in ['rotation_roll', 'rotation_pitch', 'rotation_yaw',
-                                                              'translation_x', 'translation_y', 'translation_z']):
-                            R = self._euler_to_rotation_matrix(
-                                float(calib['rotation_roll']),
-                                float(calib['rotation_pitch']),
-                                float(calib['rotation_yaw'])
-                            )
-                            T = np.array([
-                                float(calib['translation_x']),
-                                float(calib['translation_y']),
-                                float(calib['translation_z'])
-                            ])
-                            Tr = np.vstack((np.hstack((R, T.reshape(3, 1))), [0, 0, 0, 1]))
-                        else:
-                            Tr = default_Tr
-                    except (TypeError, ValueError):
-                        Tr = default_Tr
+            elif calib['sensor_type'].lower() == 'lidar':
+                lidar_found = True
+                try:
+                    if all(calib[k] is not None for k in ['rotation_roll', 'rotation_pitch', 'rotation_yaw',
+                                                          'translation_x', 'translation_y', 'translation_z']):
+                        R = self._euler_to_rotation_matrix(
+                            float(calib['rotation_roll']),
+                            float(calib['rotation_pitch']),
+                            float(calib['rotation_yaw'])
+                        )
+                        T = np.array([
+                            float(calib['translation_x']),
+                            float(calib['translation_y']),
+                            float(calib['translation_z'])
+                        ])
+                        Tr = np.hstack((R, T.reshape(3, 1)))
+                except (TypeError, ValueError):
+                    Tr = default_Tr
 
-                    f.write(f"Tr_velo_to_cam: {' '.join(map(str, Tr.flatten()))}\n")
-                    # 添加 R0_rect 矩阵（通常是单位矩阵）
-                    R0 = np.eye(3)
-                    f.write(f"R0_rect: {' '.join(map(str, R0.flatten()))}\n")
+        # 按KITTI格式的固定顺序写入文件
+        with open(calib_path, 'w') as f:
+            # 1. 写入P0（与P2相同）
+            f.write(f"P0: {' '.join(map(str, P2.flatten()))}\n")
 
-                    # 如果没有找到相机数据，使用默认值
-            if not camera_found:
-                f.write(f"P2: {' '.join(map(str, default_P2.flatten()))}\n")
-                f.write(f"P3: {' '.join(map(str, default_P2.flatten()))}\n")
+            # 2. 写入P1（与P2相同）
+            f.write(f"P1: {' '.join(map(str, P2.flatten()))}\n")
 
-                # 如果没有找到激光雷达数据，使用默认值
-            if not lidar_found:
-                f.write(f"Tr_velo_to_cam: {' '.join(map(str, default_Tr.flatten()))}\n")
-                R0 = np.eye(3)
-                f.write(f"R0_rect: {' '.join(map(str, R0.flatten()))}\n")
+            # 3. 写入P2
+            f.write(f"P2: {' '.join(map(str, P2.flatten()))}\n")
+
+            # 4. 写入P3（与P2相同）
+            f.write(f"P3: {' '.join(map(str, P2.flatten()))}\n")
+
+            # 5. 写入R0_rect（3x3矩阵）
+            f.write(f"R0_rect: {' '.join(map(str, R0_rect.flatten()[:9]))}\n")
+
+            # 6. 写入Tr_velo_to_cam
+            f.write(f"Tr_velo_to_cam: {' '.join(map(str, Tr.flatten()))}\n")
 
     def _euler_to_rotation_matrix(self, roll, pitch, yaw):
         """欧拉角转旋转矩阵"""
@@ -362,6 +393,7 @@ class MySQLToKITTIConverter:
                 self.conn.close()
             self.logger.info("Conversion completed")
 
+
 if __name__ == "__main__":
     # 数据库配置
     db_config = {
@@ -372,7 +404,7 @@ if __name__ == "__main__":
     }
 
     # 输出路径配置
-    output_path = './'
+    output_path = '../../'
 
     # 创建转换器实例并执行转换
     converter = MySQLToKITTIConverter(db_config, output_path)
