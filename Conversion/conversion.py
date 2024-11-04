@@ -276,7 +276,6 @@ def insert_map_log(connection):
     # 插入 log_info 表数据
     insert_log_info(connection, results)
 
-
 # 查询log_id
 def query_logid(connection,log_token):
     cursor = connection.cursor()
@@ -309,7 +308,6 @@ def query_logid(connection,log_token):
     # 关闭游标
     cursor.close()
 
-
 # 插入category数据
 def insert_category(connection):
     if connection is None:
@@ -338,7 +336,6 @@ def insert_category(connection):
     print("category成功插入！")
     cursor.close()
 
-    
 # 插入scene和sample
 # 更新scene的frist、last、count属性
 def update_scene_info_sample(conn, scene_id, first_sample_id=None, last_sample_id=None, increment_count=False):
