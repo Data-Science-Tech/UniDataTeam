@@ -4,10 +4,12 @@ current_folder = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 import mysql.connector
 from mysql.connector import Error
 import math
-
+import datetime
 connection = None
 nusc = NuScenes(version='v1.0-mini', dataroot=current_folder+'\\v1.0-mini', verbose=True)
 
+
+from change import query_logid
 
 def connectdatabase():
     try:
@@ -27,7 +29,8 @@ def connectdatabase():
         # insert_sensor_calibration(connection)
         # insert_attribute(connection)
         # insert_map_log(connection)
-        insert_category(connection)
+        # insert_category(connection)
+        insert_scene_sample(connection)
 
     
     except Error as e:
@@ -292,6 +295,89 @@ def insert_category(connection):
     connection.commit()
     print("category成功插入！")
     cursor.close()
+
+    
+# 插入scene和sample
+# 更新scene的frist、last、count属性
+def update_scene_info_sample(conn, scene_id, first_sample_id=None, last_sample_id=None, increment_count=False):
+    """更新场景信息中的样本数量和首尾样本 ID"""
+    cursor = conn.cursor()
+    if increment_count:
+        cursor.execute(
+            "UPDATE scene_info SET sample_count = sample_count + 1 WHERE scene_id = %s",
+            (scene_id,)
+        )
+    if first_sample_id is not None:
+        cursor.execute(
+            "UPDATE scene_info SET first_sample_id = %s WHERE scene_id = %s",
+            (first_sample_id, scene_id)
+        )
+    if last_sample_id is not None:
+        cursor.execute(
+            "UPDATE scene_info SET last_sample_id = %s WHERE scene_id = %s",
+            (last_sample_id, scene_id)
+        )
+    conn.commit()
+
+# 插入单个scene，frist、last、count为none，返回插入scene的自增主键
+def insert_scene(connection,scene_item): 
+    cursor = connection.cursor()
+    # 插入一个空的scene
+    description = scene_item["description"]
+    log_info_id = query_logid(connection,scene_item["log_token"])
+    try:
+        # 执行插入SQL语句
+        insert_query = """
+        INSERT INTO scene_info (scene_description, log_info_id)
+        VALUES (%s, %s)
+        """
+        cursor.execute(insert_query, (description, log_info_id))
+    except mysql.connector.Error as e:
+        print(f"Error inserting data: {e}")
+    # 提交事务
+    connection.commit()
+    return cursor.lastrowid
+
+# 插入样本信息
+def add_sample_info(conn, timestamp, scene_id=None, previous_sample_id=None, next_sample_id=None):
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        INSERT INTO sample_info (
+            timestamp, scene_id, previous_sample_id, next_sample_id
+        ) VALUES (%s, %s, %s, %s)
+        """,
+        (timestamp, scene_id, previous_sample_id, next_sample_id)
+    )
+    conn.commit()
+    return cursor.lastrowid
+
+# 更新前一个样本的 next_sample_id
+def update_next_sample_id(conn, current_id, prev_id):
+    if prev_id:
+        cursor = conn.cursor()
+        cursor.execute(
+            "UPDATE sample_info SET next_sample_id = %s WHERE sample_id = %s",
+            (current_id, prev_id)
+        )
+        conn.commit()
+
+def insert_scene_sample(connection):
+    for scene_item in nusc.scene:
+        previous_sample_id = None
+        first_sample_id = None
+        scene_last_id = insert_scene(connection, scene_item)
+        for sample_item in nusc.sample:
+            if sample_item["scene_token"] == scene_item["token"]:
+                second_timestamp = sample_item["timestamp"] / 1_000_000
+                dt_object = datetime.datetime.fromtimestamp(second_timestamp)
+                formatted_timestamp = dt_object.strftime('%Y-%m-%d %H:%M:%S.%f')
+                sample_last_id = add_sample_info(connection,formatted_timestamp,scene_last_id,previous_sample_id)
+                update_next_sample_id(connection, sample_last_id , previous_sample_id)
+                previous_sample_id = sample_last_id
+                if not first_sample_id:
+                    first_sample_id = sample_last_id
+                update_scene_info_sample(connection, scene_last_id,first_sample_id,previous_sample_id,increment_count=True)
 
 
 
