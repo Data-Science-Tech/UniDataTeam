@@ -6,7 +6,7 @@ from mysql.connector import Error
 import math
 import datetime
 connection = None
-nusc = NuScenes(version='v1.0-mini', dataroot=current_folder+'\\v1.0-mini', verbose=True)
+nusc = NuScenes(version='v1.0-mini', dataroot = current_folder + '\\v1.0-mini', verbose = True)
 
 def connectdatabase():
     try:
@@ -27,7 +27,7 @@ def connectdatabase():
         # insert_attribute(connection)
         # insert_map_log(connection)
         # insert_category(connection)
-        insert_scene_sample(connection)
+        # insert_scene_sample(connection)
 
     
     except Error as e:
@@ -162,8 +162,84 @@ def insert_sensor_calibration(connection):
 
 # 插入map_info和log_info
 # map表的name改为非空约束
-def insert_map_log(connection):
-    # map和log的笛卡尔积
+def insert_map_info(connection, unique_results):
+    """
+    将 unique_results 中的 map 信息插入到 map_info 表。
+    """
+    cursor = connection.cursor()
+    for item in unique_results:
+        category = item["category"]
+        filename = item["filename"]
+        location = item["location"]
+
+        try:
+            insert_query = """
+            INSERT INTO map_info (location, filename, category)
+            VALUES (%s, %s, %s)
+            """
+            cursor.execute(insert_query, (location, filename, category))
+        except mysql.connector.Error as e:
+            print(f"Error inserting data into map_info: {e}")
+
+    # 提交事务
+    connection.commit()
+    print("map_info 表数据成功插入！")
+    cursor.close()
+
+def get_map_id(connection, filename):
+    """
+    根据 map 的 filename 查询 map_id。
+    """
+    cursor = connection.cursor()
+    map_id = None
+    try:
+        select_query = """
+        SELECT map_id FROM map_info WHERE filename = %s
+        """
+        cursor.execute(select_query, (filename,))
+        result = cursor.fetchone()
+        if result is not None:
+            map_id = int(result[0])
+        else:
+            print("未找到匹配的 map_id")
+    except mysql.connector.Error as e:
+        print(f"Error querying data from map_info: {e}")
+    finally:
+        cursor.close()
+    return map_id
+
+def insert_log_info(connection, results):
+    """
+    将 log 信息插入到 log_info 表，并通过 filename 获取 map_id。
+    """
+    cursor = connection.cursor()
+    for item in results:
+        logfile = item["logfile"]
+        date_captured = item["date_captured"]
+        vehicle = item["vehicle"]
+        map_id = get_map_id(connection, item["filename"])
+
+        if map_id is None:
+            continue  # 如果未找到匹配的 map_id，跳过该记录
+
+        try:
+            insert_query = """
+            INSERT INTO log_info (log_name, log_date, map_id, vehicle_id)
+            VALUES (%s, %s, %s, %s)
+            """
+            cursor.execute(insert_query, (logfile, date_captured, map_id, vehicle))
+        except mysql.connector.Error as e:
+            print(f"Error inserting data into log_info: {e}")
+
+    # 提交事务
+    connection.commit()
+    print("log_info 表数据成功插入！")
+    cursor.close()
+
+def process_data():
+    """
+    处理 map 和 log 的数据，生成去重后的结果。
+    """
     results = []
     for map_item in nusc.map:
         for log_id in map_item["log_tokens"]:
@@ -171,92 +247,35 @@ def insert_map_log(connection):
                 if log_id == log_item["token"]:
                     results.append(
                         {
-                            "category":map_item["category"],
-                            "map_token":map_item["token"],
+                            "category": map_item["category"],
+                            "map_token": map_item["token"],
                             "filename": map_item["filename"],
-                            "log_tokens":log_id,
-                            "logfile":log_item["logfile"],
-                            "vehicle":log_item["vehicle"] ,
-                            "date_captured":log_item["date_captured"] ,
+                            "log_tokens": log_id,
+                            "logfile": log_item["logfile"],
+                            "vehicle": log_item["vehicle"],
+                            "date_captured": log_item["date_captured"],
                             "location": log_item["location"],
                         }
                     )
 
-    # 用来保存去重后的结果
+    # 去重
     unique_results = []
     seen = set()
     for item in results:
-        # 获取当前项的 map_token 和 location
         token_location_pair = (item["map_token"], item["location"])
-    
-        # 检查是否已经遇到过这个组合
         if token_location_pair not in seen:
-            # 如果没有见过，则添加到结果列表中并记录在 seen 集合中
             unique_results.append(item)
             seen.add(token_location_pair)
-  
-    cursor = connection.cursor()
-    cursor1 = connection.cursor()
 
-    # # 插入数据到map_info表
-    # for item in unique_results:
-    #     category = item["category"]
-    #     filename = item["filename"]
-    #     location = item["location"]
+    return unique_results, results
 
-    #     try:
-    #         # 执行插入SQL语句
-    #         insert_query = """
-    #         INSERT INTO map_info (location, filename, category)
-    #         VALUES (%s, %s, %s)
-    #         """
-    #         cursor.execute(insert_query, (location, filename, category))
-    #     except mysql.connector.Error as e:
-    #         print(f"Error inserting data: {e}")
-    # # 提交事务
-    # connection.commit()
-    # print("map_info成功插入！")
-    # cursor.close()
+def insert_map_log(connection):
+    unique_results, results = process_data()
+    # 插入 map_info 表数据
+    insert_map_info(connection, unique_results)
+    # 插入 log_info 表数据
+    insert_log_info(connection, results)
 
-    # 插入数据到log_info表
-    for item in results:
-        logfile = item["logfile"]
-        date_captured = item["date_captured"]
-        vehicle = item["vehicle"]
-
-        map_id = ""
-        try:
-            # 定义查询SQL语句
-            select_query = """
-            SELECT map_id FROM map_info
-            WHERE filename = %s
-            """
-            # 执行查询
-            cursor2 = connection.cursor()
-            cursor2.execute(select_query, (item['filename'],))
-            # 获取查询结果并检查是否存在
-            temp = cursor2.fetchone()
-            if temp is None:
-                print("未找到匹配的 map_id")
-                continue  # 跳过本次循环
-            map_id = int(temp[0])
-        except mysql.connector.Error as e:
-            print(f"Error query data: {e}")
-
-        
-        try:
-            # 执行插入SQL语句
-            insert_query = """
-            INSERT INTO log_info (log_name, log_date, map_id,vehicle_id)
-            VALUES (%s, %s, %s, %s)
-            """
-            cursor1.execute(insert_query, (logfile, date_captured, map_id,vehicle))
-        except mysql.connector.Error as e:
-            print(f"Error inserting data: {e}")
-    # 提交事务
-    connection.commit()
-    print("log_info成功插入！")
-    cursor1.close()
 
 # 查询log_id
 def query_logid(connection,log_token):
