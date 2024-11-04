@@ -8,9 +8,6 @@ import datetime
 connection = None
 nusc = NuScenes(version='v1.0-mini', dataroot=current_folder+'\\v1.0-mini', verbose=True)
 
-
-from change import query_logid
-
 def connectdatabase():
     try:
         # 连接到数据库
@@ -184,11 +181,9 @@ def insert_map_log(connection):
                             "location": log_item["location"],
                         }
                     )
-    # for result in results:
-    #     print (result)
+
     # 用来保存去重后的结果
     unique_results = []
-    # 用集合保存已见过的 (map_token, location) 组合
     seen = set()
     for item in results:
         # 获取当前项的 map_token 和 location
@@ -199,13 +194,8 @@ def insert_map_log(connection):
             # 如果没有见过，则添加到结果列表中并记录在 seen 集合中
             unique_results.append(item)
             seen.add(token_location_pair)
-
-    # print("去重后的结果：", unique_results)
-    # print(len(unique_results))
-
-    if connection is None:
-        print("无法插入数据，因为数据库连接未成功建立。")
-        return    
+  
+    cursor = connection.cursor()
     cursor1 = connection.cursor()
 
     # # 插入数据到map_info表
@@ -267,6 +257,39 @@ def insert_map_log(connection):
     connection.commit()
     print("log_info成功插入！")
     cursor1.close()
+
+# 查询log_id
+def query_logid(connection,log_token):
+    cursor = connection.cursor()
+
+    try:
+        # 定义查询SQL语句
+        select_query = """
+        SELECT log_info_id FROM log_info
+        WHERE log_name = %s 
+        """
+        # 执行查询
+        temp = nusc.get('log', log_token)
+
+        cursor.execute(select_query, (temp["logfile"],))
+
+        # 获取查询结果并检查是否存在
+        result = cursor.fetchone()
+        if result is None:
+            print("未找到匹配的 log_id")
+
+        log_id = result[0]
+
+        print(log_id)
+        return log_id
+    except mysql.connector.Error as e:
+        print(f"Error fetching or inserting data: {e}")
+
+    # 提交事务
+    connection.commit()
+    # 关闭游标
+    cursor.close()
+
 
 # 插入category数据
 def insert_category(connection):
