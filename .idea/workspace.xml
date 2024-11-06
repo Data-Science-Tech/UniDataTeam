@@ -1,7 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
-    <list default="true" id="e9ca02b2-486d-46a1-be4b-838cfb6861af" name="更改" comment="" />
+    <list default="true" id="e9ca02b2-486d-46a1-be4b-838cfb6861af" name="更改" comment="">
+      <change afterPath="$PROJECT_DIR$/backend/springbootquickstart/src/main/java/com/easydeploy/springbootquickstart/controller/ModelConfigController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/springbootquickstart/src/main/java/com/easydeploy/springbootquickstart/model/ModelConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/springbootquickstart/src/main/java/com/easydeploy/springbootquickstart/respository/ModelConfigRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/springbootquickstart/src/main/java/com/easydeploy/springbootquickstart/service/ModelConfigService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/springbootquickstart/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/springbootquickstart/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/springbootquickstart/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/springbootquickstart/src/main/resources/application.properties" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -10,9 +21,9 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 0
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 0
+}</component>
   <component name="ProjectId" id="2nFfWSP1rOgqdFaVM5GySb8aXCO" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -22,17 +33,23 @@
   "keyToString": {
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "git-widget-placeholder": "SourceCode-main",
+    "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "E:/UniDataTeam/backend",
+    "last_opened_file_path": "E:/Tongji/Junior1/UniDataTeam/backend/springbootquickstart",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.lookFeel",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-9823dce3aa75-28b599e66164-intellij.indexing.shared.core-IU-242.23339.11" />
-        <option value="bundled-js-predefined-d6986cc7102b-5c90d61e3bab-JavaScript-IU-242.23339.11" />
+        <option value="bundled-jdk-9823dce3aa75-28b599e66164-intellij.indexing.shared.core-IU-242.23726.103" />
+        <option value="bundled-js-predefined-d6986cc7102b-5c90d61e3bab-JavaScript-IU-242.23726.103" />
       </set>
     </attachedChunks>
   </component>
@@ -45,6 +62,8 @@
       <option name="presentableId" value="Default" />
       <updated>1728573775722</updated>
       <workItem from="1728573776729" duration="9000" />
+      <workItem from="1730881674076" duration="94000" />
+      <workItem from="1730881855697" duration="1645000" />
     </task>
     <servers />
   </component>
