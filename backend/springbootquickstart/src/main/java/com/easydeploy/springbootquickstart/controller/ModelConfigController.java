@@ -1,34 +1,38 @@
 package com.easydeploy.springbootquickstart.controller;
 
 import com.easydeploy.springbootquickstart.model.ModelConfig;
+import com.easydeploy.springbootquickstart.model.TrainingResult;
 import com.easydeploy.springbootquickstart.service.ModelConfigService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.io.IOException;
 
 @RestController
-@RequestMapping("/api/model-config")
+@RequestMapping("/api/model-configs")
 public class ModelConfigController {
 
     @Autowired
     private ModelConfigService modelConfigService;
 
-    // Endpoint to create a new configuration
     @PostMapping
     public ModelConfig createConfig(@RequestBody ModelConfig config) {
         return modelConfigService.createModelConfig(config);
     }
 
-    // Endpoint to get a specific configuration by id
-    @GetMapping("/{id}")
-    public ModelConfig getConfig(@PathVariable Long id) {
-        return modelConfigService.getModelConfig(id);
+    @PostMapping("/{id}/train")
+    public void startTraining(@PathVariable Long id) throws IOException {
+        modelConfigService.startTraining(id);
     }
 
-    // Endpoint to get all configurations
-    @GetMapping
-    public List<ModelConfig> getAllConfigs() {
-        return modelConfigService.getAllConfigs();
+    @GetMapping("/{id}/status")
+    public ModelConfig.TrainingStatus getTrainingStatus(@PathVariable Long id) {
+        return modelConfigService.getModelConfig(id).getStatus();
     }
+
+    @GetMapping("/{id}/result")
+    public TrainingResult getTrainingResult(@PathVariable Long id) {
+        return modelConfigService.getTrainingResult(id);
+    }
+
 }

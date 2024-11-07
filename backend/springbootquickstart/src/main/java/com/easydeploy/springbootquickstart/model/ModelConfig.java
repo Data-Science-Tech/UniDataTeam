@@ -4,6 +4,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Column;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
 
 @Entity
 public class ModelConfig {
@@ -12,10 +15,34 @@ public class ModelConfig {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String algorithm;
+    @Enumerated(EnumType.STRING)
+    private Algorithm algorithm;
+
     private double learningRate;
     private int numEpochs;
+    private int batchSize;
+    private double momentumValue;
+    private double weightDecay;
     private int sceneId;
+    private String modelSavePath;
+
+    @Enumerated(EnumType.STRING)
+    private TrainingStatus status;
+
+    @Column(length = 1000)
+    private String trainingResults;
+
+    public enum Algorithm {
+        FAST_R_CNN,
+        SSD
+    }
+
+    public enum TrainingStatus {
+        PENDING,
+        RUNNING,
+        COMPLETED,
+        FAILED
+    }
 
     // Getters and Setters
     public Long getId() {
@@ -26,11 +53,11 @@ public class ModelConfig {
         this.id = id;
     }
 
-    public String getAlgorithm() {
+    public Algorithm getAlgorithm() {
         return algorithm;
     }
 
-    public void setAlgorithm(String algorithm) {
+    public void setAlgorithm(Algorithm algorithm) {
         this.algorithm = algorithm;
     }
 
@@ -50,11 +77,59 @@ public class ModelConfig {
         this.numEpochs = numEpochs;
     }
 
+    public int getBatchSize() {
+        return batchSize;
+    }
+
+    public void setBatchSize(int batchSize) {
+        this.batchSize = batchSize;
+    }
+
+    public double getMomentumValue() {
+        return momentumValue;
+    }
+
+    public void setMomentumValue(double momentumValue) {
+        this.momentumValue = momentumValue;
+    }
+
+    public double getWeightDecay() {
+        return weightDecay;
+    }
+
+    public void setWeightDecay(double weightDecay) {
+        this.weightDecay = weightDecay;
+    }
+
     public int getSceneId() {
         return sceneId;
     }
 
     public void setSceneId(int sceneId) {
         this.sceneId = sceneId;
+    }
+
+    public String getModelSavePath() {
+        return modelSavePath;
+    }
+
+    public void setModelSavePath(String modelSavePath) {
+        this.modelSavePath = modelSavePath;
+    }
+
+    public TrainingStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(TrainingStatus status) {
+        this.status = status;
+    }
+
+    public String getTrainingResults() {
+        return trainingResults;
+    }
+
+    public void setTrainingResults(String trainingResults) {
+        this.trainingResults = trainingResults;
     }
 }
