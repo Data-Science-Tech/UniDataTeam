@@ -176,3 +176,34 @@ CREATE TABLE `sensor_data` (
   KEY `fk_sensor_data_next_id` (`next_sensor_data_id`),
   KEY `fk_sensor_data_sample_id` (`sample_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `model_config` (  
+  `id` bigint NOT NULL AUTO_INCREMENT,  
+  `algorithm` varchar(50) NOT NULL,  
+  `learning_rate` double NOT NULL,  
+  `num_epochs` int NOT NULL,  
+  `batch_size` int NOT NULL,  
+  `momentum_value` double NOT NULL,  
+  `weight_decay` double NOT NULL,  
+  `scene_id` int NOT NULL,  
+  `model_save_path` varchar(1024) DEFAULT NULL,  
+  `status` varchar(20) NOT NULL,  
+  `training_results` text,  
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,  
+  PRIMARY KEY (`id`) ,
+  CONSTRAINT `fk_scene_id` FOREIGN KEY (`scene_id`) REFERENCES `scene_info` (`scene_id`)  
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;  
+
+CREATE TABLE `training_result` (  
+  `id` bigint NOT NULL AUTO_INCREMENT,  
+  `model_config_id` bigint NOT NULL,  
+  `start_time` timestamp NULL DEFAULT NULL,  
+  `end_time` timestamp NULL DEFAULT NULL,  
+  `training_logs` text,  
+  `model_file_path` varchar(1024) DEFAULT NULL,  
+  `final_loss` double DEFAULT NULL,  
+  `accuracy` double DEFAULT NULL,  
+  PRIMARY KEY (`id`),  
+  KEY `fk_training_result_model_config` (`model_config_id`),  
+  CONSTRAINT `fk_training_result_model_config` FOREIGN KEY (`model_config_id`) REFERENCES `model_config` (`id`)  
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
