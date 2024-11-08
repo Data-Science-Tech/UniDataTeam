@@ -1,9 +1,11 @@
-package com.easydeploy.springbootquickstart.service;
+package com.easydeploy.springbootquickstart.service.Impl;
 
 import com.easydeploy.springbootquickstart.model.ModelConfig;
 import com.easydeploy.springbootquickstart.model.TrainingResult;
 import com.easydeploy.springbootquickstart.repository.ModelConfigRepository;
 import com.easydeploy.springbootquickstart.repository.TrainingResultRepository;
+import com.easydeploy.springbootquickstart.service.ModelConfigService;
+import com.easydeploy.springbootquickstart.service.PythonScriptService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,7 +13,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 
 @Service
-public class ModelConfigImpl implements ModelConfigService{
+public class ModelConfigImpl implements ModelConfigService {
 
     @Autowired
     private ModelConfigRepository modelConfigRepository;

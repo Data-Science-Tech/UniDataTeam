@@ -1,6 +1,7 @@
-package com.easydeploy.springbootquickstart.service;
+package com.easydeploy.springbootquickstart.service.Impl;
 
 import com.easydeploy.springbootquickstart.config.PythonScriptConfig;
+import com.easydeploy.springbootquickstart.service.PythonScriptService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +23,8 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @Service
-public class PythonScriptImpl implements  PythonScriptService{
-    private static final Logger logger = LoggerFactory.getLogger(PythonScriptService.class);
+public class PythonScriptImpl implements PythonScriptService {
+    private static final Logger logger = LoggerFactory.getLogger(PythonScriptImpl.class);
 
     @Autowired
     private PythonScriptConfig config;
