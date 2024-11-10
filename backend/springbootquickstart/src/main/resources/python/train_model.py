@@ -8,7 +8,8 @@ import mysql.connector
 import torchvision
 from torchvision.transforms import functional as F
 from torchvision.models.detection import FasterRCNN_ResNet50_FPN_Weights, ssdlite320_mobilenet_v3_large, SSDLite320_MobileNet_V3_Large_Weights
-
+import os
+script_path_parent = os.path.dirname(os.path.abspath(__file__))
 
 class DatabaseDataset(Dataset):
     def __init__(self, db_config, scene_id, is_training=True):
@@ -100,13 +101,13 @@ class DatabaseDataset(Dataset):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--algorithm', type=str, required=True)
-    parser.add_argument('--learning_rate', type=float, required=True)
-    parser.add_argument('--num_epochs', type=int, required=True)
-    parser.add_argument('--batch_size', type=int, required=True)
-    parser.add_argument('--momentum', type=float, required=True)
-    parser.add_argument('--weight_decay', type=float, required=True)
-    parser.add_argument('--scene_id', type=str, required=True)
+    parser.add_argument('--algorithm', type=str, default='FAST_R_CNN') 
+    parser.add_argument('--learning_rate', type=float,  default=0.005)
+    parser.add_argument('--num_epochs', type=int, default=10)  
+    parser.add_argument('--batch_size', type=int, default=4)  
+    parser.add_argument('--momentum', type=float, default=0.9)  
+    parser.add_argument('--weight_decay', type=float, default=5e-4) 
+    parser.add_argument('--scene_id', type=str, default=1)
     return parser.parse_args()
 
 
@@ -177,7 +178,7 @@ def train_model(args):
     results = {
         'epoch_losses': [],
         'final_loss': 0,
-        'model_path': f'models/{args.algorithm}_{args.scene_id}.pth'
+        'model_path': script_path_parent + f'/models/{args.algorithm}_{args.scene_id}.pth'
     }
 
     try:

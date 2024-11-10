@@ -41,12 +41,15 @@ public class ModelConfigImpl implements ModelConfigService {
         ModelConfig config = getModelConfig(configId);
 
         config.setStatus(ModelConfig.TrainingStatus.RUNNING);
+        System.out.println("before save config！");
         modelConfigRepository.save(config);
+        System.out.println("save config successfully！");
 
         TrainingResult result = new TrainingResult();
         result.setModelConfig(config);
         result.setStartTime(LocalDateTime.now());
         trainingResultRepository.save(result);
+        System.out.println("save result successfully！");
 
         // Create arguments for Python script
         String[] args = createPythonScriptArgs(config);
@@ -64,6 +67,8 @@ public class ModelConfigImpl implements ModelConfigService {
                         result.setEndTime(LocalDateTime.now());
                         result.setTrainingLogs("Training failed: " + throwable.getMessage());
                         modelConfigRepository.save(config);
+                        // 输出到控制台
+                        System.err.println("Training failed: " + throwable.getMessage());
                         return null;
                     });
         } catch (Exception e) {

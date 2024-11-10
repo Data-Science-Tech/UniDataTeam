@@ -34,3 +34,5 @@ build/
 
 python_config.properties
 
+/models/*
+
