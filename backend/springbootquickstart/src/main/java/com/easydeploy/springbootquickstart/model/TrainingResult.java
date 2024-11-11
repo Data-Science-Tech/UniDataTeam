@@ -26,6 +26,5 @@ public class TrainingResult {
 
     private String modelFilePath;
     private double finalLoss;
-    private double accuracy;
 
 }

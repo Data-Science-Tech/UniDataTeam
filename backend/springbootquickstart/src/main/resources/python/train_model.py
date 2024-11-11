@@ -242,9 +242,9 @@ def train_model(args):
             # Update training_result with final details
         cursor.execute("""  
             UPDATE training_result  
-            SET end_time = %s, training_logs = %s, final_loss = %s, accuracy = %s   
+            SET end_time = %s, training_logs = %s, final_loss = %s  
             WHERE id = %s  
-        """, (end_time, log_path, results['final_loss'], 0, training_result_id))
+        """, (end_time, log_path, results['final_loss'], training_result_id))
         conn.commit()
 
         print(json.dumps(results))

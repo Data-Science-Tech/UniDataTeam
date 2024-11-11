@@ -200,7 +200,6 @@ CREATE TABLE `training_result` (
   `training_logs` text,  
   `model_file_path` varchar(1024) DEFAULT NULL,  
   `final_loss` double DEFAULT NULL,  
-  `accuracy` double DEFAULT NULL,  
   PRIMARY KEY (`id`),  
   KEY `fk_training_result_model_config` (`model_config_id`),  
   CONSTRAINT `fk_training_result_model_config` FOREIGN KEY (`model_config_id`) REFERENCES `model_config` (`id`)  

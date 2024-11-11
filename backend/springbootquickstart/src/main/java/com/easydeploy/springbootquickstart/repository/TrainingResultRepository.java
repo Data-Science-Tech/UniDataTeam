@@ -19,13 +19,6 @@ public interface TrainingResultRepository extends JpaRepository<TrainingResult, 
     // 查找特定时间段内的训练结果
     List<TrainingResult> findByStartTimeBetween(LocalDateTime startTime, LocalDateTime endTime);
 
-    // 查找特定精度以上的训练结果
-    List<TrainingResult> findByAccuracyGreaterThan(double minAccuracy);
-
-    // 查找最佳性能的训练结果
-    @Query("SELECT t FROM TrainingResult t WHERE t.accuracy = (SELECT MAX(tr.accuracy) FROM TrainingResult tr)")
-    Optional<TrainingResult> findBestPerformingModel();
-
     // 查找特定配置的最新训练结果
     @Query("SELECT t FROM TrainingResult t WHERE t.modelConfig = ?1 ORDER BY t.endTime DESC")
     List<TrainingResult> findLatestResultForConfig(ModelConfig config);
