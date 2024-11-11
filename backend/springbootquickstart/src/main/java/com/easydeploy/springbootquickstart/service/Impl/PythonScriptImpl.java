@@ -39,9 +39,10 @@ public class PythonScriptImpl implements PythonScriptService {
 
         if (resource.exists()) {
             // 如果脚本在jar包内，需要先复制到临时目录
-            File tempFile = File.createTempFile(scriptName, ".py");
-            Files.copy(resource.getInputStream(), tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            return tempFile.toPath();
+            // File tempFile = File.createTempFile(scriptName, ".py");
+            // Files.copy(resource.getInputStream(), tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            // return tempFile.toPath();
+            return Paths.get(resource.getURI());
         }
 
         // 如果不在resources中，尝试从外部目录加载
