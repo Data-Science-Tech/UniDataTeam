@@ -186,7 +186,6 @@ CREATE TABLE `model_config` (
   `momentum_value` double NOT NULL,  
   `weight_decay` double NOT NULL,  
   `scene_id` int NOT NULL,  
-  `model_save_path` varchar(1024) DEFAULT NULL,  
   `status` varchar(20) NOT NULL,  
   `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,  
   PRIMARY KEY (`id`) ,
