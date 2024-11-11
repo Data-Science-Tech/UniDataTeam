@@ -1,12 +1,18 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Home from '../views/Home.vue';
 import DeployMain from '../components/Deploy/DeployMain.vue';
+import SaveConfig from '@/components/TrainConfig/SaveConfig.vue';
 
 const routes = [
+  // {
+  //   path: '/',
+  //   name: 'Home',
+  //   component: Home
+  // },
   {
     path: '/',
-    name: 'Home',
-    component: Home
+    name: 'SaveConfig',
+    component: SaveConfig
   },
   {
     path: '/DeployMain',
