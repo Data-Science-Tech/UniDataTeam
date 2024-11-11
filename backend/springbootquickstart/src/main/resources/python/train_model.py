@@ -183,14 +183,6 @@ def train_model(args):
 
     model_config_id = model_config[0]
 
-    # 更新特定的 model_config 记录
-    cursor.execute("""  
-            UPDATE model_config  
-            SET model_save_path = %s  
-            WHERE id = %s  
-        """, (model_path, args.model_config_id))
-    conn.commit()
-
     # 插入训练结果
     cursor.execute("""  
             INSERT INTO training_result (model_config_id, start_time, model_file_path)  
