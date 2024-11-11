@@ -5,13 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e9ca02b2-486d-46a1-be4b-838cfb6861af" name="更改" comment="">
-      <change afterPath="$PROJECT_DIR$/backend/springbootquickstart/src/main/java/com/easydeploy/springbootquickstart/controller/ModelConfigController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/springbootquickstart/src/main/java/com/easydeploy/springbootquickstart/model/ModelConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/springbootquickstart/src/main/java/com/easydeploy/springbootquickstart/respository/ModelConfigRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/springbootquickstart/src/main/java/com/easydeploy/springbootquickstart/service/ModelConfigService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/springbootquickstart/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/springbootquickstart/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/springbootquickstart/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/springbootquickstart/src/main/resources/application.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -29,22 +23,22 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "SourceCode-main",
-    "ignore.virus.scanning.warn.message": "true",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "E:/Tongji/Junior1/UniDataTeam/backend/springbootquickstart",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "preferences.lookFeel",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;SourceCode-main&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;E:/Tongji/Junior1/UniDataTeam/backend/springbootquickstart&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -64,6 +58,7 @@
       <workItem from="1728573776729" duration="9000" />
       <workItem from="1730881674076" duration="94000" />
       <workItem from="1730881855697" duration="1645000" />
+      <workItem from="1731323235987" duration="424000" />
     </task>
     <servers />
   </component>

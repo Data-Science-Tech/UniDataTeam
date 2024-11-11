@@ -40,12 +40,7 @@
           <label for="sceneId">Scene ID:</label>
           <input type="number" v-model="modelConfig.sceneId" id="sceneId" class="input-field" />
         </div>
-  
-        <div class="form-group">
-          <label for="modelSavePath">Model Save Path:</label>
-          <input type="text" v-model="modelConfig.modelSavePath" id="modelSavePath" class="input-field" />
-        </div>
-  
+
         <div class="button-group">
           <button type="button" @click="createModelConfig" class="button create-btn">Create Config</button>
           <button type="button" @click="startTraining" class="button train-btn">Start Train</button>
