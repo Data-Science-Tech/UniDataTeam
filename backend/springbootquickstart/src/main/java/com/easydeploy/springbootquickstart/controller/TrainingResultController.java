@@ -22,6 +22,31 @@ public class TrainingResultController {
     @Autowired
     private TrainingResultService trainingResultService;
 
+    @GetMapping("/logs/{trainingResultId}")
+    public ResponseEntity<?> getTrainingLogs(@PathVariable Long trainingResultId) {
+        try {
+            // 获取训练结果对象
+            TrainingResult result = trainingResultService.getTrainingResult(trainingResultId);
+            String logFilePath = result.getTrainingLogs();
+            File logFile = new File(logFilePath);
+
+            // 检查日志文件是否存在
+            if (!logFile.exists()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Log file not found at path: " + logFilePath);
+            }
+
+            // 读取日志文件内容
+            String logContent = new String(FileCopyUtils.copyToByteArray(logFile));
+
+            return ResponseEntity.ok(logContent);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error occurred while reading log file: " + e.getMessage());
+        }
+    }
+
+
     @GetMapping("/download/model/{trainingResultId}")
     public ResponseEntity<byte[]> downloadModelFile(@PathVariable Long trainingResultId) {
         try {
