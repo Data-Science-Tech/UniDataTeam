@@ -9,6 +9,8 @@ import torchvision
 from torchvision.transforms import functional as F
 from torchvision.models.detection import FasterRCNN_ResNet50_FPN_Weights, ssdlite320_mobilenet_v3_large, SSDLite320_MobileNet_V3_Large_Weights
 import os
+from datetime import datetime
+
 script_path_parent = os.path.dirname(os.path.abspath(__file__))
 
 class DatabaseDataset(Dataset):
@@ -18,7 +20,7 @@ class DatabaseDataset(Dataset):
         self.scene_id = scene_id
         self.is_training = is_training
 
-        # 获取 scene_id
+        # 获取scene_id
         self.cursor.execute("""SELECT scene_id FROM scene_info WHERE scene_id = %s""", (self.scene_id,))
         scene_id = self.cursor.fetchone()
         if scene_id:
@@ -26,21 +28,21 @@ class DatabaseDataset(Dataset):
         else:
             raise ValueError(f"Scene '{self.scene_id}' not found in database.")
 
-        # 获取所有 sample_id
+            # 获取所有sample_id
         self.cursor.execute("""SELECT sample_id FROM sample_info WHERE scene_id = %s""", (self.scene_id,))
         self.samples = [row[0] for row in self.cursor.fetchall()]
 
-        # 获取 sensor_data 信息，过滤格式为 png 的数据
+        # 获取sensor_data 信息，过滤格式为png 的数据
         self.data = []
         for sample_id in self.samples:
-            self.cursor.execute("""
-                SELECT sensor_data_id, file_path
-                FROM sensor_data
-                WHERE sample_id = %s AND data_file_format = 'png'
+            self.cursor.execute("""  
+                SELECT sensor_data_id, file_path  
+                FROM sensor_data  
+                WHERE sample_id = %s AND data_file_format = 'png'  
             """, (sample_id,))
             self.data.extend(self.cursor.fetchall())
 
-        # 获取类别为 Car 的 category_description_id
+            # 获取类别为Car的category_description_id
         if self.is_training:
             self.cursor.execute("""SELECT category_description_id FROM category_description WHERE category_subcategory_name = 'Car'""")
             result = self.cursor.fetchone()
@@ -67,16 +69,16 @@ class DatabaseDataset(Dataset):
         if self.is_training and self.car_category_id is not None:
             sample_id = self.samples[idx]
 
-            # 查询类别为 Car 的标注
-            self.cursor.execute("""
-                SELECT sa.bbox_2d_xmin, sa.bbox_2d_ymin, sa.bbox_2d_xmax, sa.bbox_2d_ymax
-                FROM sample_annotation sa
-                JOIN instance i ON sa.instance_id = i.instance_id
-                WHERE sa.sample_id = %s AND i.category_description_id = %s
+            # 查询类别为Car的标注
+            self.cursor.execute("""  
+                SELECT sa.bbox_2d_xmin, sa.bbox_2d_ymin, sa.bbox_2d_xmax, sa.bbox_2d_ymax  
+                FROM sample_annotation sa  
+                JOIN instance i ON sa.instance_id = i.instance_id  
+                WHERE sa.sample_id = %s AND i.category_description_id = %s  
             """, (sample_id, self.car_category_id))
             annotations = self.cursor.fetchall()
 
-            # 转换为 (xmin, ymin, xmax, ymax) 格式
+            # 转换为(xmin, ymin, xmax, ymax)格式
             boxes = [list(annotation) for annotation in annotations]
             if len(boxes) == 0:
                 boxes = torch.zeros((0, 4), dtype=torch.float32)
@@ -88,7 +90,7 @@ class DatabaseDataset(Dataset):
             target = {'boxes': boxes, 'labels': labels}
             return F.to_tensor(image), target
 
-        # 测试集没有标注
+            # 测试集没有标注
         else:
             return F.to_tensor(image), {}
 
@@ -101,12 +103,13 @@ class DatabaseDataset(Dataset):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--algorithm', type=str, default='FAST_R_CNN') 
+    parser.add_argument('--model_config_id', type=int, required=True)
+    parser.add_argument('--algorithm', type=str, default='FAST_R_CNN')
     parser.add_argument('--learning_rate', type=float,  default=0.005)
-    parser.add_argument('--num_epochs', type=int, default=10)  
-    parser.add_argument('--batch_size', type=int, default=4)  
-    parser.add_argument('--momentum', type=float, default=0.9)  
-    parser.add_argument('--weight_decay', type=float, default=5e-4) 
+    parser.add_argument('--num_epochs', type=int, default=10)
+    parser.add_argument('--batch_size', type=int, default=4)
+    parser.add_argument('--momentum', type=float, default=0.9)
+    parser.add_argument('--weight_decay', type=float, default=5e-4)
     parser.add_argument('--scene_id', type=str, default=1)
     return parser.parse_args()
 
@@ -152,6 +155,51 @@ def train_model(args):
         'password': 'dev123',
         'database': 'car_perception_db'
     }
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor()
+
+    start_time = datetime.now()
+
+    # Define file paths
+    results_dir = 'D:/UniDataTemp/models/'
+    logs_dir = 'D:/UniDataTemp/logs/'
+    if not os.path.exists(results_dir):
+        os.makedirs(results_dir)
+    if not os.path.exists(logs_dir):
+        os.makedirs(logs_dir)
+
+    model_path = f'{results_dir}{args.algorithm}_{args.scene_id}.pth'
+    log_path = f'{logs_dir}training_log_{args.algorithm}_{args.scene_id}.json'
+
+    # 首先验证 model_config 是否存在
+    cursor.execute("""  
+            SELECT id FROM model_config   
+            WHERE id = %s  
+        """, (args.model_config_id,))  # 假设从参数中获取 model_config_id
+
+    model_config = cursor.fetchone()
+    if not model_config:
+        raise ValueError(f"Model config with ID {args.model_config_id} not found")
+
+    model_config_id = model_config[0]
+
+    # 更新特定的 model_config 记录
+    cursor.execute("""  
+            UPDATE model_config  
+            SET model_save_path = %s  
+            WHERE id = %s  
+        """, (model_path, args.model_config_id))
+    conn.commit()
+
+    # 插入训练结果
+    cursor.execute("""  
+            INSERT INTO training_result (model_config_id, start_time, model_file_path)  
+            VALUES (%s, %s, %s)  
+        """, (model_config_id, start_time, model_path))
+
+    training_result_id = cursor.lastrowid
+    conn.commit()
+
 
     # Create dataset
     dataset = DatabaseDataset(db_config, scene_id=args.scene_id, is_training=True)
@@ -166,7 +214,7 @@ def train_model(args):
     else:
         raise ValueError(f"Unsupported algorithm: {args.algorithm}")
 
-    # Training loop
+        # Training loop
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     model.to(device)
 
@@ -178,7 +226,7 @@ def train_model(args):
     results = {
         'epoch_losses': [],
         'final_loss': 0,
-        'model_path': script_path_parent + f'/models/{args.algorithm}_{args.scene_id}.pth'
+        'model_path': model_path
     }
 
     try:
@@ -192,13 +240,31 @@ def train_model(args):
             }))
 
         results['final_loss'] = results['epoch_losses'][-1]
-        torch.save(model.state_dict(), results['model_path'])
+        torch.save(model.state_dict(), model_path)
+
+        end_time = datetime.now()
+        # Write results as a log file
+        with open(log_path, 'w') as log_file:
+            json.dump(results, log_file, indent=4)
+
+            # Update training_result with final details
+        cursor.execute("""  
+            UPDATE training_result  
+            SET end_time = %s, training_logs = %s, final_loss = %s  
+            WHERE id = %s  
+        """, (end_time, log_path, results['final_loss'], training_result_id))
+        conn.commit()
 
         print(json.dumps(results))
         return 0
+
     except Exception as e:
         print(json.dumps({'error': str(e)}))
         return 1
+
+    finally:
+        cursor.close()
+        conn.close()
 
 
 if __name__ == '__main__':

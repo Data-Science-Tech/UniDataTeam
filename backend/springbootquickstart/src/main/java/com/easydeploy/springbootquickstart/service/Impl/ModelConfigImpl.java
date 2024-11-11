@@ -51,8 +51,8 @@ public class ModelConfigImpl implements ModelConfigService {
         trainingResultRepository.save(result);
         System.out.println("save result successfully！");
 
-        // Create arguments for Python script
-        String[] args = createPythonScriptArgs(config);
+        // 修改 createPythonScriptArgs 方法，确保包含 model_config_id
+        String[] args = createPythonScriptArgs(config, configId); // 添加 configId 参数
 
         try {
             pythonScriptService.executeTrainingScript(args)
@@ -80,8 +80,9 @@ public class ModelConfigImpl implements ModelConfigService {
         }
     }
 
-    private String[] createPythonScriptArgs(ModelConfig config) {
+    private String[] createPythonScriptArgs(ModelConfig config, Long configId) {
         return new String[]{
+                "--model_config_id", String.valueOf(configId),
                 "--algorithm", config.getAlgorithm().toString(),
                 "--learning_rate", String.valueOf(config.getLearningRate()),
                 "--num_epochs", String.valueOf(config.getNumEpochs()),
