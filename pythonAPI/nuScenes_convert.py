@@ -1,6 +1,12 @@
+from doctest import debug
 import time
 import datetime
+from flask.debughelpers import DebugFilesKeyError
 import mysql.connector
+from nuscenes.nuscenes import NuScenes
+from nuscenes.utils.data_classes import Box
+from nuscenes.utils.geometry_utils import view_points
+import numpy as np
 
 # 数据库连接配置
 db_config = {
@@ -31,6 +37,10 @@ def get_or_create_mapping(cursor, token, source_table, target_table, id_column):
     :param id_column: 目标表的主键列名称（如 scene_id）
     :return: 返回映射的 ID
     """
+    if not token or token == '':
+        debug_print(f"NULL token: {token}\n")
+        return None
+
     # 1. 检查映射表中是否存在 token 映射
     query = f"""
     SELECT id FROM {source_table}
@@ -41,7 +51,7 @@ def get_or_create_mapping(cursor, token, source_table, target_table, id_column):
 
     if result:
         # 如果映射已存在，返回对应的 ID
-        debug_print(f"Found existing mapping: token={token}, source_table={target_table}, id={result[0]}")
+        debug_print(f"Found existing mapping: token={token}, source_table={target_table}, id={result[0]}\n")
         return result[0]
 
     debug_print(f"No mapping found for token={token}, source_table={target_table}")
@@ -211,6 +221,151 @@ def insert_sensor_calibration(cursor, sensor_calibration_id, sensor_id, calibrat
     )
     cursor.execute(sql, data)
 
+def insert_sensor_data(cursor, sensor_data_id, timestamp, sensor_calibration_id, data_file_format, 
+                        previous_sensor_data_id, next_sensor_data_id, image_width, image_height, 
+                        file_path, is_key_frame, ego_translation_x, ego_translation_y, ego_translation_z, 
+                        ego_rotation_qw, ego_rotation_qx, ego_rotation_qy, ego_rotation_qz, sample_id):
+    """
+    插入一条 sensor_data 信息到 sensor_data 表中
+    """
+    sql = """
+    INSERT INTO sensor_data (
+        sensor_data_id, timestamp, sensor_calibration_id, data_file_format, 
+        previous_sensor_data_id, next_sensor_data_id, image_width, image_height, 
+        file_path, is_key_frame, ego_translation_x, ego_translation_y, ego_translation_z, 
+        ego_rotation_qw, ego_rotation_qx, ego_rotation_qy, ego_rotation_qz, sample_id
+    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+    """
+    data = (
+        sensor_data_id, timestamp, sensor_calibration_id, data_file_format, 
+        previous_sensor_data_id, next_sensor_data_id, image_width, image_height, 
+        file_path, is_key_frame, ego_translation_x, ego_translation_y, ego_translation_z, 
+        ego_rotation_qw, ego_rotation_qx, ego_rotation_qy, ego_rotation_qz, sample_id
+    )
+    cursor.execute(sql, data)
+
+def insert_sample_annotation(cursor, annotation_id, sample_id, bbox_center_3d_x, bbox_center_3d_y, bbox_center_3d_z,
+                             bbox_3d_width_y, bbox_3d_height_z, bbox_3d_length_x, previous_annotation_id, next_annotation_id,
+                             num_lidar_pts, num_radar_pts, rotation_qw, rotation_qx, rotation_qy, rotation_qz, instance_id):
+    """
+    插入一条 sample_annotation 信息到 sample_annotation 表中
+    """
+    sql = """
+    INSERT INTO sample_annotation (
+        annotation_id, sample_id, bbox_center_3d_x, bbox_center_3d_y, bbox_center_3d_z,
+        bbox_3d_width_y, bbox_3d_height_z, bbox_3d_length_x, previous_annotation_id, next_annotation_id,
+        num_lidar_pts, num_radar_pts, rotation_qw, rotation_qx, rotation_qy, rotation_qz, instance_id
+    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+    """
+    data = (
+        annotation_id, sample_id, bbox_center_3d_x, bbox_center_3d_y, bbox_center_3d_z,
+        bbox_3d_width_y, bbox_3d_height_z, bbox_3d_length_x, previous_annotation_id, next_annotation_id,
+        num_lidar_pts, num_radar_pts, rotation_qw, rotation_qx, rotation_qy, rotation_qz, instance_id
+    )
+    cursor.execute(sql, data)
+
+def insert_annotation_2d(cursor, bbox_2d_xmin, bbox_2d_xmax, bbox_2d_ymin, bbox_2d_ymax, sample_annotation_id, sensor_data_id):
+    """
+    插入一条 annotation_2d 信息到 annotaion_2d 表中
+    """
+    sql = """
+    INSERT INTO annotaion_2d (bbox_2d_xmin, bbox_2d_xmax, bbox_2d_ymin, bbox_2d_ymax, sample_annotation_id, sensor_data_id)
+    VALUES (%s, %s, %s, %s, %s, %s)
+    """
+    data = (bbox_2d_xmin, bbox_2d_xmax, bbox_2d_ymin, bbox_2d_ymax, sample_annotation_id, sensor_data_id)
+    cursor.execute(sql, data)
+
+def insert_attribute(cursor, attribute_id, attribute_name, attribute_value, attribute_description=None):
+    """
+    插入一条 attribute 信息到 attribute 表中
+    """
+    sql = """
+    INSERT INTO attribute (attribute_id, attribute_name, attribute_value, attribute_description)
+    VALUES (%s, %s, %s, %s)
+    """
+    data = (attribute_id, attribute_name, attribute_value, attribute_description)
+    cursor.execute(sql, data)
+
+def insert_annotation_attribute(cursor, annotation_id, attribute_id):
+    """
+    插入一条 annotation_attribute 信息到 annotation_attribute 表中
+    """
+    sql = """
+    INSERT INTO annotation_attribute (annotation_id, attribute_id)
+    VALUES (%s, %s)
+    """
+    data = (annotation_id, attribute_id)
+    cursor.execute(sql, data)
+
+def insert_instance(cursor, instance_id, category_description_id, instance_count, first_annotation_id, last_annotation_id):
+    """
+    插入一条 instance 信息到 instance 表中
+    """
+    sql = """
+    INSERT INTO instance (instance_id, category_description_id, instance_count, first_annotation_id, last_annotation_id)
+    VALUES (%s, %s, %s, %s, %s)
+    """
+    data = (instance_id, category_description_id, instance_count, first_annotation_id, last_annotation_id)
+    cursor.execute(sql, data)
+
+def insert_category_description(cursor, category_description_id, category_name, category_description):
+    """
+    插入一条 category_description 信息到 category_description 表中
+    """
+    sql = """
+    INSERT INTO category_description (category_description_id, category_subcategory_name, category_description)
+    VALUES (%s, %s, %s)
+    """
+    data = (category_description_id, category_name, category_description)
+    cursor.execute(sql, data)
+
+def get_2d_bbox_from_annotation_auto_obj(cursor, nusc, sample_annotation):
+    """
+    根据给定的 sample_annotation 对象生成对应的2D边界框.
+    
+    :param nusc: NuScenes对象.
+    :param sample_annotation: sample_annotation 的对象 (字典).
+    :return: 2D边界框的字典，包含 xmin, xmax, ymin, ymax.
+    """
+    # 获取对应的 sample 对象
+    sample = nusc.get('sample', sample_annotation['sample_token'])
+
+    # 遍历 sample 的所有 sensor data
+    for sensor, sensor_token in sample['data'].items():
+        if 'CAM' in sensor:  # 仅处理相机传感器数据
+            camera_data = nusc.get('sample_data', sensor_token)
+
+            # 获取相机内参和图像分辨率
+            calibrated_sensor = nusc.get('calibrated_sensor', camera_data['calibrated_sensor_token'])
+            intrinsic = np.array(calibrated_sensor['camera_intrinsic'])
+            imsize = (camera_data['width'], camera_data['height'])  # 图像分辨率
+
+            # 获取3D边界框数据
+            from nuscenes.utils.data_classes import Box
+            from nuscenes.utils.geometry_utils import view_points
+            box = Box(sample_annotation['translation'], sample_annotation['size'], sample_annotation['rotation'])
+
+            # 将 box 投影到 2D
+            projected_corners = view_points(box.corners(), intrinsic, normalize=True)
+            projected_corners = projected_corners[:2, :]  # 获取2D坐标
+
+            # 计算2D边界框坐标
+            xmin = int(max(0, np.min(projected_corners[0])))
+            xmax = int(min(imsize[0], np.max(projected_corners[0])))
+            ymin = int(max(0, np.min(projected_corners[1])))
+            ymax = int(min(imsize[1], np.max(projected_corners[1])))
+
+            # 返回2D边界框
+            bbox_2d = {
+                'bbox_2d_xmin': xmin,
+                'bbox_2d_xmax': xmax,
+                'bbox_2d_ymin': ymin,
+                'bbox_2d_ymax': ymax,
+                'bbox_2d_pixel_count': None  # 可进一步计算像素计数
+            }
+
+            # 插入2D标注信息到数据库
+            insert_annotation_2d(cursor, bbox_2d['bbox_2d_xmin'], bbox_2d['bbox_2d_xmax'], bbox_2d['bbox_2d_ymin'], bbox_2d['bbox_2d_ymax'], sample_annotation['token'], sensor_token)
 
 def main():
     # 连接到数据库
@@ -218,7 +373,6 @@ def main():
     cursor = connection.cursor()
 
     # 加载 nuScenes 数据集
-    from nuscenes.nuscenes import NuScenes
     nusc = NuScenes(version='v1.0-mini', dataroot=r'D:\datasets\nuScenes\v1.0-mini', verbose=True)
 
     try:
@@ -231,6 +385,7 @@ def main():
 
         # --------------------------------------------------
         # 遍历所有 scene 并插入到数据库
+        debug_print("Inserting scene data...")
         for scene in nusc.scene:
             # 获取或生成映射
             scene_id = get_or_create_mapping(cursor, scene['token'], 'nuscene_token_to_id', 'scene_info', 'scene_id')
@@ -247,6 +402,7 @@ def main():
 
         # --------------------------------------------------
         # 遍历所有 log 并插入到数据库
+        debug_print("Inserting log data...")
         for log in nusc.log:
             # 获取或生成映射
             log_id = get_or_create_mapping(cursor, log['token'], 'nuscene_token_to_id', 'log_info', 'log_info_id')
@@ -260,6 +416,7 @@ def main():
 
         # --------------------------------------------------
         # 遍历所有 sample 并插入到数据库
+        debug_print("Inserting sample data...")
         for sample in nusc.sample:
             sample_id = get_or_create_mapping(cursor, sample['token'], 'nuscene_token_to_id', 'sample_info', 'sample_id')
             scene_id = get_or_create_mapping(cursor, sample['scene_token'], 'nuscene_token_to_id', 'scene_info', 'scene_id')
@@ -273,12 +430,14 @@ def main():
 
         # --------------------------------------------------
         # 遍历所有 sensor 并插入到数据库
+        debug_print("Inserting sensor data...")
         for sensor in nusc.sensor:
             sensor_id = get_or_create_mapping(cursor, sensor['token'], 'nuscene_token_to_id', 'sensor', 'sensor_id')
             insert_sensor(cursor, sensor_id, sensor['modality'], sensor['channel'])
 
         # --------------------------------------------------
         # 遍历所有 calibrated_sensor 并插入到数据库
+        debug_print("Inserting sensor calibration data...")
         for calibrated_sensor in nusc.calibrated_sensor:
             sensor_id = get_or_create_mapping(cursor, calibrated_sensor['sensor_token'], 'nuscene_token_to_id', 'sensor', 'sensor_id')
             calibrated_sensor_id = get_or_create_mapping(cursor, calibrated_sensor['token'], 'nuscene_token_to_id', 'sensor_calibration', 'sensor_calibration_id')
@@ -322,7 +481,99 @@ def main():
                 radial_distortion_k1, radial_distortion_k2, radial_distortion_k3,
                 tangential_distortion_p1, tangential_distortion_p2)
             
+        # --------------------------------------------------
+        # 遍历所有 sensor_data 并插入到数据库
+        debug_print("Inserting sensor_data data...")
+        for sample_data in nusc.sample_data:
+            sensor_data_id = get_or_create_mapping(cursor, sample_data['token'], 'nuscene_token_to_id', 'sensor_data', 'sensor_data_id')
+            sensor_calibration_id = get_or_create_mapping(cursor, sample_data['calibrated_sensor_token'], 'nuscene_token_to_id', 'sensor_calibration', 'sensor_calibration_id')
+            sample_id = get_or_create_mapping(cursor, sample_data['sample_token'], 'nuscene_token_to_id', 'sample_info', 'sample_id')
+            prev_sensor_data_id = get_or_create_mapping(cursor, sample_data['prev'], 'nuscene_token_to_id', 'sensor_data', 'sensor_data_id')
+            next_sensor_data_id = get_or_create_mapping(cursor, sample_data['next'], 'nuscene_token_to_id', 'sensor_data', 'sensor_data_id')
+
+            timestamp = datetime.datetime.utcfromtimestamp(sample_data['timestamp'] / 1000000.0)
+            data_file_format = sample_data['fileformat']
+            image_width = sample_data['width']
+            image_height = sample_data['height']
+            file_path = sample_data['filename']
+            is_key_frame = sample_data['is_key_frame']
+
+            # 获取 ego pose 数据
+            ego_pose = nusc.get('ego_pose', sample_data['ego_pose_token'])
+            ego_translation_x, ego_translation_y, ego_translation_z = ego_pose['translation']
+            ego_rotation_qw, ego_rotation_qx, ego_rotation_qy, ego_rotation_qz = ego_pose['rotation']
+
+            insert_sensor_data(
+                cursor, sensor_data_id, timestamp, sensor_calibration_id, data_file_format,
+                prev_sensor_data_id, next_sensor_data_id, image_width, image_height,
+                file_path, is_key_frame, ego_translation_x, ego_translation_y, ego_translation_z,
+                ego_rotation_qw, ego_rotation_qx, ego_rotation_qy, ego_rotation_qz, sample_id)
+            
+        # --------------------------------------------------
+        # 遍历所有 attribute 和 visibility 并插入到 attribute 表中
+        debug_print("Inserting attribute data...")
+        for attribute in nusc.attribute:
+            attribute_id = get_or_create_mapping(cursor, attribute['token'], 'nuscene_token_to_id', 'attribute', 'attribute_id')
+            insert_attribute(cursor, attribute_id, attribute['name'], '', attribute['description'])
         
+        for visibility in nusc.visibility:
+            visibility_id = get_or_create_mapping(cursor, visibility['token'], 'nuscene_token_to_id', 'attribute', 'attribute_id')
+            insert_attribute(cursor, visibility_id, 'visibility', visibility['level'], visibility['description'])
+
+        # --------------------------------------------------
+        # 遍历所有 category_description 并插入到 category_description 表中
+        debug_print("Inserting category_description data...")
+        for category in nusc.category:
+            category_description_id = get_or_create_mapping(cursor, category['token'], 'nuscene_token_to_id', 'category_description', 'category_description_id')
+            insert_category_description(cursor, category_description_id, category['name'], category['description'])
+
+        # --------------------------------------------------
+        # 遍历所有 instance 并插入到 instance 表中
+        debug_print("Inserting instance data...")
+        for instance in nusc.instance:
+            instance_id = get_or_create_mapping(cursor, instance['token'], 'nuscene_token_to_id', 'instance', 'instance_id')
+            category_description_id = get_or_create_mapping(cursor, instance['category_token'], 'nuscene_token_to_id', 'category_description', 'category_description_id')
+            first_annotation_id = get_or_create_mapping(cursor, instance['first_annotation_token'], 'nuscene_token_to_id', 'sample_annotation', 'annotation_id')
+            last_annotation_id = get_or_create_mapping(cursor, instance['last_annotation_token'], 'nuscene_token_to_id', 'sample_annotation', 'annotation_id')
+            insert_instance(cursor, instance_id, category_description_id, instance['nbr_annotations'], first_annotation_id, last_annotation_id)
+
+        # --------------------------------------------------
+        # 遍历所有 sample_annotation 并插入到 sample_annotation 表中
+        debug_print("Inserting sample_annotation data...")
+        for sample_annotation in nusc.sample_annotation:
+            annotation_id = get_or_create_mapping(cursor, sample_annotation['token'], 'nuscene_token_to_id', 'sample_annotation', 'annotation_id')
+            sample_id = get_or_create_mapping(cursor, sample_annotation['sample_token'], 'nuscene_token_to_id', 'sample_info', 'sample_id')
+            previous_annotation_id = get_or_create_mapping(cursor, sample_annotation['prev'], 'nuscene_token_to_id', 'sample_annotation', 'annotation_id')
+            next_annotation_id = get_or_create_mapping(cursor, sample_annotation['next'], 'nuscene_token_to_id', 'sample_annotation', 'annotation_id')
+            instance_id = get_or_create_mapping(cursor, sample_annotation['instance_token'], 'nuscene_token_to_id', 'instance', 'instance_id')
+
+            bbox_center_3d = sample_annotation['translation']
+            bbox_3d_width = sample_annotation['size'][1]
+            bbox_3d_height = sample_annotation['size'][2]
+            bbox_3d_length = sample_annotation['size'][0]
+
+            debug_print(f"transforming 2d bbox from annotation")
+            # get_2d_bbox_from_annotation_auto_obj(cursor, nusc, sample_annotation)
+            
+            num_lidar_pts = sample_annotation['num_lidar_pts']
+            num_radar_pts = sample_annotation['num_radar_pts']
+            rotation = sample_annotation['rotation']
+
+            debug_print(f"Inserting sample_annotation into database")
+            insert_sample_annotation(
+                cursor, annotation_id, sample_id, bbox_center_3d[0], bbox_center_3d[1], bbox_center_3d[2],
+                bbox_3d_width, bbox_3d_height, bbox_3d_length, previous_annotation_id, next_annotation_id,
+                num_lidar_pts, num_radar_pts, rotation[0], rotation[1], rotation[2], rotation[3], instance_id
+            )
+
+            # 插入属性信息
+            for attribute_token in sample_annotation['attribute_tokens']:
+                attribute_id = get_or_create_mapping(cursor, attribute_token, 'nuscene_token_to_id', 'attribute', 'attribute_id')
+                insert_annotation_attribute(cursor, annotation_id, attribute_id)
+
+            for visibility_token in sample_annotation['visibility_token']:
+                visibility_id = get_or_create_mapping(cursor, visibility_token, 'nuscene_token_to_id', 'attribute', 'attribute_id')
+                insert_annotation_attribute(cursor, annotation_id, visibility_id)
 
         # 提交事务
         connection.commit()
