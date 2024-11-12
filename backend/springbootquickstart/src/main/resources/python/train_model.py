@@ -164,16 +164,22 @@ def train_model(args):
 
     start_time = datetime.now()
 
-    # Define file paths
-    results_dir = 'D:/UniDataTemp/models/'
-    logs_dir = 'D:/UniDataTemp/logs/'
-    if not os.path.exists(results_dir):
-        os.makedirs(results_dir)
-    if not os.path.exists(logs_dir):
-        os.makedirs(logs_dir)
+    # Define base directory and relative paths
+    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(script_path_parent)))  # go up to springbootquickstart
+    results_dir = os.path.join(base_dir, 'files', 'models')
+    logs_dir = os.path.join(base_dir, 'files', 'train_logs')
 
-    model_path = f'{results_dir}{args.algorithm}_{args.scene_id}.pth'
-    log_path = f'{logs_dir}training_log_{args.algorithm}_{args.scene_id}.json'
+    # Create directories if they don't exist
+    os.makedirs(results_dir, exist_ok=True)
+    os.makedirs(logs_dir, exist_ok=True)
+
+    # Store relative paths for database
+    relative_model_path = os.path.join('files', 'models', f'{args.algorithm}_{args.scene_id}.pth')
+    relative_log_path = os.path.join('files', 'train_logs', f'training_log_{args.algorithm}_{args.scene_id}.json')
+
+    # Full paths for actual file operations
+    model_path = os.path.join(base_dir, relative_model_path)
+    log_path = os.path.join(base_dir, relative_log_path)
 
     # 首先验证 model_config 是否存在
     cursor.execute("""  
@@ -191,7 +197,7 @@ def train_model(args):
     cursor.execute("""  
             INSERT INTO training_result (model_config_id, start_time, model_file_path)  
             VALUES (%s, %s, %s)  
-        """, (model_config_id, start_time, model_path))
+        """, (model_config_id, start_time, relative_model_path))
 
     training_result_id = cursor.lastrowid
     conn.commit()
@@ -222,7 +228,7 @@ def train_model(args):
     results = {
         'epoch_losses': [],
         'final_loss': 0,
-        'model_path': model_path
+        'model_path': relative_model_path
     }
 
     try:
@@ -248,7 +254,7 @@ def train_model(args):
             UPDATE training_result  
             SET end_time = %s, training_logs = %s, final_loss = %s  
             WHERE id = %s  
-        """, (end_time, log_path, results['final_loss'], training_result_id))
+        """, (end_time, relative_log_path, results['final_loss'], training_result_id))
         conn.commit()
 
         print(json.dumps(results))
