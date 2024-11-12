@@ -10,7 +10,7 @@
     <div class="right-section">
       <h3>Easy Deploy</h3>
 
-        <div class="startbutton" @click="gotoDeployMain">
+        <div class="startbutton" @click="gotoworkbench">
             Let's deploy!  😀---->
         </div>
     </div>
@@ -21,9 +21,9 @@
 export default
 {
     methods:{
-        gotoDeployMain() {
-        console.log("push DeployMain")
-        this.$router.push('/DeployMain');
+        gotoworkbench() {
+        console.log("push workbench")
+        this.$router.push('/workbench');
         },
     },
 }

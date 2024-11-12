@@ -23,7 +23,7 @@
       </ul>
       <div class="navbar-right">
         <button class="login-btn">登录</button>
-        <button class="publish-btn" @click="gotoDeployMain">工作台</button>
+        <button class="publish-btn" @click="gotoworkbench">工作台</button>
       </div>
     </nav>
 
@@ -42,17 +42,16 @@
 import SearchBarComponent from '@/components/Home/SearchBarComponent.vue';
 import DeployMain from '@/views/Deploy/DeployMain.vue';
 
-
 export default {
   name: "MainPage",
   components: {
   SearchBarComponent,
-  DeployMain,
+
   },
   methods: {
-    gotoDeployMain() {
-      console.log("push DeployMain")
-      this.$router.push('/DeployMain');
+    gotoworkbench() {
+      console.log("push workbench")
+      this.$router.push('/workbench');
     },
     gotoHome(){
       console.log("push Home")

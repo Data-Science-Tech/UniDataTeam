@@ -6,12 +6,16 @@ const router = createRouter({
     routes: [
         {
             path: '/',
+            redirect: '/workbench'
+        },
+        {
+            path: '/workbench',
             component: AppLayout,
             children: [
                 {
-                    path: '/',
-                    name: 'home',
-                    component: () => import('@/views/Dashboard.vue')
+                    path: '',
+                    name: 'train',
+                    component: () => import('@/components/TrainConfig/SaveConfig.vue')
                 },
                 {
                     path: '/uikit/formlayout',
@@ -107,11 +111,6 @@ const router = createRouter({
             ]
         },
         {
-            path: '/landing',
-            name: 'landing',
-            component: () => import('@/views/pages/Home.vue')
-        },
-        {
             path: '/pages/notfound',
             name: 'notfound',
             component: () => import('@/views/pages/NotFound.vue')
@@ -132,11 +131,6 @@ const router = createRouter({
             name: 'error',
             component: () => import('@/views/pages/auth/Error.vue')
         },
-        {
-            path: '/DeployMain',
-            name: 'Deploy',
-            component: () => import('@/views/Deploy/DeployMain.vue')
-        }
     ]
 });
 
