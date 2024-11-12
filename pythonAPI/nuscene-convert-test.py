@@ -49,7 +49,7 @@ def display_images(image_data_list):
     读取并显示图像
     """
     for image_data in image_data_list:
-        file_path = image_data['file_path']
+        file_path = r'D:\datasets\nuScenes\v1.0-mini\\' + image_data['file_path']
 
         # 读取图像
         image = cv2.imread(file_path)
