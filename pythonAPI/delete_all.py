@@ -1,7 +1,14 @@
 import mysql.connector
 
 # 数据库配置
-db_config = {
+remote_db_config = {
+    'host': '122.51.133.37',
+    'user': 'dev',
+    'password': 'dev123',
+    'database': 'car_perception_db'
+}
+
+local_db_config = {
     'host': 'localhost',
     'user': 'root',
     'password': 'root',
@@ -10,6 +17,7 @@ db_config = {
 
 # 要清空的表列表
 tables_to_truncate = [
+    "annotation_2d",
     "annotation_attribute",
     "attribute",
     "category_description",
@@ -50,7 +58,7 @@ def clear_tables(cursor):
 
 def main():
     # 连接数据库
-    connection = mysql.connector.connect(**db_config)
+    connection = mysql.connector.connect(**remote_db_config)
     cursor = connection.cursor()
 
     try:

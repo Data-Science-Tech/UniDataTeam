@@ -117,7 +117,7 @@ db_config = {
     'database': 'car_perception_db'
 }
 
-dataset = DatabaseDataset(db_config, scene_name='KITTI Training Data Scene', is_training=True)
+dataset = DatabaseDataset(remote_db_config, scene_name='KITTI Training Data Scene', is_training=True)
 dataloader = DataLoader(dataset, batch_size=4, shuffle=False, collate_fn=lambda x: tuple(zip(*x)))
 
 # Step 2: 加载模型并训练
@@ -157,7 +157,7 @@ torch.save(model.state_dict(), model_save_path)
 print(f"Model saved to {model_save_path}")
 
 # Step 3: 测试模型
-test_dataset = DatabaseDataset(db_config, scene_name='KITTI Testing Data Scene', is_training=False)
+test_dataset = DatabaseDataset(remote_db_config, scene_name='KITTI Testing Data Scene', is_training=False)
 test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False, collate_fn=lambda x: tuple(zip(*x)))
 
 model.eval()

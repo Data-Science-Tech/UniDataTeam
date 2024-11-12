@@ -9,7 +9,14 @@ from nuscenes.utils.geometry_utils import view_points
 import numpy as np
 
 # 数据库连接配置
-db_config = {
+remote_db_config = {
+    'host': '122.51.133.37',
+    'user': 'dev',
+    'password': 'dev123',
+    'database': 'car_perception_db'
+}
+
+local_db_config = {
     'host': 'localhost',
     'user': 'root',
     'password': 'root',
@@ -536,7 +543,7 @@ def get_2d_bbox_from_annotation_auto_obj(cursor, nusc, sample_annotation, debug=
 
 def main():
     # 连接到数据库
-    connection = mysql.connector.connect(**db_config)
+    connection = mysql.connector.connect(**remote_db_config)
     cursor = connection.cursor()
 
     # 加载 nuScenes 数据集
@@ -720,7 +727,7 @@ def main():
             bbox_3d_length = sample_annotation['size'][0]
 
             debug_print(f"transforming 2d bbox from annotation")
-            get_2d_bbox_from_annotation_auto_obj(cursor, nusc, sample_annotation)
+            # get_2d_bbox_from_annotation_auto_obj(cursor, nusc, sample_annotation)
             
             num_lidar_pts = sample_annotation['num_lidar_pts']
             num_radar_pts = sample_annotation['num_radar_pts']
