@@ -36,3 +36,4 @@ python_config.properties
 
 /models/*
 .idea/workspace.xml
+*.pth
