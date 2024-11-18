@@ -74,9 +74,8 @@ class DatabaseDataset(Dataset):
             self.cursor.execute("""
             SELECT a2d.bbox_2d_xmin, a2d.bbox_2d_ymin, a2d.bbox_2d_xmax, a2d.bbox_2d_ymax
             FROM sensor_data sd
-            JOIN sample_info si ON sd.sample_id = si.sample_id
-            JOIN sample_annotation sa ON si.sample_id = sa.sample_id
-            JOIN annotation_2d a2d ON sa.annotation_id = a2d.sample_annotation_id
+            JOIN annotation_2d a2d ON sd.sensor_data_id = a2d.sensor_data_id
+            JOIN sample_annotation sa ON a2d.sample_annotation_id = sa.annotation_id
             JOIN instance i ON sa.instance_id = i.instance_id
             WHERE sd.sensor_data_id = %s 
             AND i.category_description_id = %s
@@ -119,7 +118,7 @@ db_config = {
     'database': 'car_perception_db'
 }
 
-dataset = DatabaseDataset(remote_db_config, scene_name='KITTI Training Data Scene', is_training=True)
+dataset = DatabaseDataset(db_config, scene_name='KITTI Training Data Scene', is_training=True)
 dataloader = DataLoader(dataset, batch_size=4, shuffle=False, collate_fn=lambda x: tuple(zip(*x)))
 
 # Step 2: 加载模型并训练
@@ -158,7 +157,7 @@ torch.save(model.state_dict(), model_save_path)
 print(f"Model saved to {model_save_path}")
 
 # Step 3: 测试模型
-test_dataset = DatabaseDataset(remote_db_config, scene_name='KITTI Testing Data Scene', is_training=False)
+test_dataset = DatabaseDataset(db_config, scene_name='KITTI Testing Data Scene', is_training=False)
 test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False, collate_fn=lambda x: tuple(zip(*x)))
 
 model.eval()

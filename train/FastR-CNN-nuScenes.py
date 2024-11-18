@@ -76,9 +76,8 @@ class DatabaseDataset(Dataset):
             self.cursor.execute("""
             SELECT a2d.bbox_2d_xmin, a2d.bbox_2d_ymin, a2d.bbox_2d_xmax, a2d.bbox_2d_ymax
             FROM sensor_data sd
-            JOIN sample_info si ON sd.sample_id = si.sample_id
-            JOIN sample_annotation sa ON si.sample_id = sa.sample_id
-            JOIN annotation_2d a2d ON sa.annotation_id = a2d.sample_annotation_id
+            JOIN annotation_2d a2d ON sd.sensor_data_id = a2d.sensor_data_id
+            JOIN sample_annotation sa ON a2d.sample_annotation_id = sa.annotation_id
             JOIN instance i ON sa.instance_id = i.instance_id
             WHERE sd.sensor_data_id = %s 
             AND i.category_description_id IN (%s)
@@ -156,7 +155,7 @@ for epoch in range(num_epochs):
     print(f"Epoch {epoch + 1}/{num_epochs}")
     print(f"Loss: {epoch_loss / len(dataloader)}")
 
-model_save_path = 'fasterrcnn_kitti_car_detector.pth'
+model_save_path = 'fasterrcnn_nuScenes_car_detector.pth'
 torch.save(model.state_dict(), model_save_path)
 print(f"Model saved to {model_save_path}")
 
