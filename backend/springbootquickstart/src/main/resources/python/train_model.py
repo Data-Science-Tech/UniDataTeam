@@ -268,5 +268,9 @@ def train_model(args):
 
 
 if __name__ == '__main__':
+    if torch.cuda.is_available():
+        print("Using GPU")
+    else:
+        print("Using CPU")
     args = parse_args()
     sys.exit(train_model(args))
