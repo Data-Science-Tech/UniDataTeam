@@ -40,10 +40,9 @@ class DatabaseDataset(Dataset):
             self.cursor.execute("""
                 SELECT sensor_data_id, file_path
                 FROM sensor_data
-                WHERE sample_id = %s AND data_file_format = 'jpg'
+                WHERE sample_id = %s AND (data_file_format = 'jpg' OR data_file_format = 'png' OR data_file_format = 'jpeg')
             """, (sample_id,))
             for sensor_data_id, file_path in self.cursor.fetchall():
-                file_path = 'D:/datasets/nuScenes/v1.0-mini/' + file_path  # 添加统一前缀
                 self.data.append((sensor_data_id, file_path))
 
         # 获取类别为 Car 的 category_description_id

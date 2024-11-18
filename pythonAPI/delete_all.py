@@ -58,7 +58,7 @@ def clear_tables(cursor):
 
 def main():
     # 连接数据库
-    connection = mysql.connector.connect(**remote_db_config)
+    connection = mysql.connector.connect(**local_db_config)
     cursor = connection.cursor()
 
     try:

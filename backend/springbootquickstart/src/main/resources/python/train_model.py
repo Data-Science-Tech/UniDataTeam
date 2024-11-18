@@ -38,7 +38,7 @@ class DatabaseDataset(Dataset):
             self.cursor.execute("""  
                 SELECT sensor_data_id, file_path  
                 FROM sensor_data  
-                WHERE sample_id = %s AND data_file_format = 'png'  
+                WHERE sample_id = %s AND (data_file_format = 'jpg' OR data_file_format = 'png' OR data_file_format = 'jpeg')
             """, (sample_id,))
             self.data.extend(self.cursor.fetchall())
 

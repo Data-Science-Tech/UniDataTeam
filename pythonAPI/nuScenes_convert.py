@@ -23,6 +23,8 @@ local_db_config = {
     'database': 'car_perception_db'
 }
 
+root_pth = 'D:/datasets/nuScenes/v1.0-mini/'
+
 # Debug 模式开关
 DEBUG_MODE = False  # 设置为 True 开启调试信息，设置为 False 禁用调试信息
 
@@ -129,11 +131,12 @@ def get_or_insert_map_info(cursor, name, location, filename, version, category):
 
     # 2. 如果记录不存在，插入新记录
     debug_print("No matching map_info record found. Inserting new record.")
+    abs_path = root_pth + filename
     insert_query = """
     INSERT INTO map_info (name, location, filename, version, category)
     VALUES (%s, %s, %s, %s, %s)
     """
-    cursor.execute(insert_query, (name, location, filename, version, category))
+    cursor.execute(insert_query, (name, location, abs_path, version, category))
 
     # 3. 获取新插入记录的 map_id
     cursor.execute("SELECT LAST_INSERT_ID()")
@@ -235,6 +238,7 @@ def insert_sensor_data(cursor, sensor_data_id, timestamp, sensor_calibration_id,
     """
     插入一条 sensor_data 信息到 sensor_data 表中
     """
+    abs_file_path = root_pth + file_path
     sql = """
     INSERT INTO sensor_data (
         sensor_data_id, timestamp, sensor_calibration_id, data_file_format, 
@@ -246,7 +250,7 @@ def insert_sensor_data(cursor, sensor_data_id, timestamp, sensor_calibration_id,
     data = (
         sensor_data_id, timestamp, sensor_calibration_id, data_file_format, 
         previous_sensor_data_id, next_sensor_data_id, image_width, image_height, 
-        file_path, is_key_frame, ego_translation_x, ego_translation_y, ego_translation_z, 
+        abs_file_path, is_key_frame, ego_translation_x, ego_translation_y, ego_translation_z, 
         ego_rotation_qw, ego_rotation_qx, ego_rotation_qy, ego_rotation_qz, sample_id
     )
     cursor.execute(sql, data)
