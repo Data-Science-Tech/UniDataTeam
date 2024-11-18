@@ -392,7 +392,7 @@ def get_2d_bbox_from_sampleData_auto_obj(cursor, nusc, sample_data, debug=False)
 
 def main():
     # 连接到数据库
-    connection = mysql.connector.connect(**local_db_config)
+    connection = mysql.connector.connect(**remote_db_config)
     cursor = connection.cursor()
 
     # 加载 nuScenes 数据集
