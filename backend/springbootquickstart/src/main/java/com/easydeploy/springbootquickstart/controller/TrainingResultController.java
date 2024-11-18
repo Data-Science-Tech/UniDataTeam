@@ -27,13 +27,14 @@ public class TrainingResultController {
         try {
             // 获取训练结果对象
             TrainingResult result = trainingResultService.getTrainingResult(trainingResultId);
-            String logFilePath = result.getTrainingLogs();
-            File logFile = new File(logFilePath);
+            String relativeLogPath = result.getTrainingLogs();
+            String baseDir = System.getProperty("user.dir");
+            File logFile = new File(baseDir, relativeLogPath);
 
             // 检查日志文件是否存在
             if (!logFile.exists()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("Log file not found at path: " + logFilePath);
+                        .body("Log file not found at path: " + logFile.getAbsolutePath());
             }
 
             // 读取日志文件内容
@@ -51,12 +52,15 @@ public class TrainingResultController {
     public ResponseEntity<byte[]> downloadModelFile(@PathVariable Long trainingResultId) {
         try {
             TrainingResult result = trainingResultService.getTrainingResult(trainingResultId);
-            String modelFilePath = result.getModelFilePath();
-            File modelFile = new File(modelFilePath);
+            String relativeModelPath = result.getModelFilePath();
+            // Get the application's root directory
+            String baseDir = System.getProperty("user.dir");
+            // Construct absolute path by combining base directory with relative path
+            File modelFile = new File(baseDir, relativeModelPath);
 
             if (!modelFile.exists()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(("Model file not found at path: " + modelFilePath).getBytes());
+                        .body(("Model file not found at path: " + modelFile.getAbsolutePath()).getBytes());
             }
 
             byte[] fileContent = FileCopyUtils.copyToByteArray(modelFile);
@@ -74,12 +78,13 @@ public class TrainingResultController {
     public ResponseEntity<byte[]> downloadLogFile(@PathVariable Long trainingResultId) {
         try {
             TrainingResult result = trainingResultService.getTrainingResult(trainingResultId);
-            String logFilePath = result.getTrainingLogs();
-            File logFile = new File(logFilePath);
+            String relativeLogPath = result.getTrainingLogs();
+            String baseDir = System.getProperty("user.dir");
+            File logFile = new File(baseDir, relativeLogPath);
 
             if (!logFile.exists()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(("Log file not found at path: " + logFilePath).getBytes());
+                        .body(("Log file not found at path: " + logFile.getAbsolutePath()).getBytes());
             }
 
             byte[] fileContent = FileCopyUtils.copyToByteArray(logFile);

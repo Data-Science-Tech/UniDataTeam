@@ -66,15 +66,19 @@ class DatabaseDataset(Dataset):
 
         # 如果是训练集，获取标注
         if self.is_training and self.car_category_id is not None:
-            sample_id = self.samples[idx]
+            sensor_data_id = self.data[idx][0]
 
             # 查询类别为 Car 的标注
             self.cursor.execute("""
-                SELECT sa.bbox_2d_xmin, sa.bbox_2d_ymin, sa.bbox_2d_xmax, sa.bbox_2d_ymax
-                FROM sample_annotation sa
-                JOIN instance i ON sa.instance_id = i.instance_id
-                WHERE sa.sample_id = %s AND i.category_description_id = %s
-            """, (sample_id, self.car_category_id))
+            SELECT a2d.bbox_2d_xmin, a2d.bbox_2d_ymin, a2d.bbox_2d_xmax, a2d.bbox_2d_ymax
+            FROM sensor_data sd
+            JOIN sample_info si ON sd.sample_id = si.sample_id
+            JOIN sample_annotation sa ON si.sample_id = sa.sample_id
+            JOIN annotation_2d a2d ON sa.annotation_id = a2d.sample_annotation_id
+            JOIN instance i ON sa.instance_id = i.instance_id
+            WHERE sd.sensor_data_id = %s 
+            AND i.category_description_id = %s
+            """, (sensor_data_id, self.car_category_id))
             annotations = self.cursor.fetchall()
 
             # 转换为 (xmin, ymin, xmax, ymax) 格式
@@ -98,16 +102,22 @@ class DatabaseDataset(Dataset):
 
     def __del__(self):
         self.close()
-
+        
 # 数据库连接配置
-db_config = {
+remote_db_config = {
     'host': '122.51.133.37',
     'user': 'dev',
     'password': 'dev123',
     'database': 'car_perception_db'
 }
+db_config = {
+    'host': 'localhost',
+    'user': 'root',
+    'password': 'root',
+    'database': 'car_perception_db'
+}
 
-dataset = DatabaseDataset(db_config, scene_name='KITTI Training Data Scene', is_training=True)
+dataset = DatabaseDataset(remote_db_config, scene_name='KITTI Training Data Scene', is_training=True)
 dataloader = DataLoader(dataset, batch_size=4, shuffle=False, collate_fn=lambda x: tuple(zip(*x)))
 
 # Step 2: 加载模型并训练
@@ -147,7 +157,7 @@ torch.save(model.state_dict(), model_save_path)
 print(f"Model saved to {model_save_path}")
 
 # Step 3: 测试模型
-test_dataset = DatabaseDataset(db_config, scene_name='KITTI Testing Data Scene', is_training=False)
+test_dataset = DatabaseDataset(remote_db_config, scene_name='KITTI Testing Data Scene', is_training=False)
 test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False, collate_fn=lambda x: tuple(zip(*x)))
 
 model.eval()

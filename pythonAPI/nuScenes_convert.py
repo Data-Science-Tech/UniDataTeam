@@ -5,84 +5,28 @@ from flask.debughelpers import DebugFilesKeyError
 import mysql.connector
 from nuscenes.nuscenes import NuScenes
 from nuscenes.utils.data_classes import Box
-from nuscenes.utils.geometry_utils import view_points
+from nuscenes.utils.geometry_utils import box_in_image, view_points
 import numpy as np
 
 # 数据库连接配置
-db_config = {
+remote_db_config = {
+    'host': '122.51.133.37',
+    'user': 'dev',
+    'password': 'dev123',
+    'database': 'car_perception_db'
+}
+
+local_db_config = {
     'host': 'localhost',
     'user': 'root',
     'password': 'root',
     'database': 'car_perception_db'
 }
 
+root_pth = 'D:/datasets/nuScenes/v1.0-mini/'
+
 # Debug 模式开关
 DEBUG_MODE = False  # 设置为 True 开启调试信息，设置为 False 禁用调试信息
-
-class Custom3DBox:
-    def __init__(self, translation, size, rotation):
-        """
-        初始化 3D 边界框
-        :param translation: 3D 中心坐标 [x, y, z]
-        :param size: 3D 尺寸 [width, length, height]
-        :param rotation: 3D 四元数 [w, x, y, z]
-        """
-        self.translation = np.array(translation)  # 中心位置
-        self.size = np.array(size)                # 尺寸
-        self.rotation = np.array(rotation)        # 四元数旋转
-
-        # 检查四元数是否归一化
-        norm = np.linalg.norm(self.rotation)
-        if not np.isclose(norm, 1.0, atol=1e-6):
-            self.rotation = self.rotation / norm
-            print("Rotation quaternion was not normalized. Normalized it.")
-
-    def corners(self):
-        """
-        计算 3D 边界框的 8 个角点坐标（局部坐标系）
-        :return: 8 个角点的 3D 坐标
-        """
-        width, length, height = self.size / 2.0  # 半尺寸
-        # 定义局部坐标系中的角点位置
-        corners = np.array([
-            [width, length, height],
-            [width, length, -height],
-            [width, -length, height],
-            [width, -length, -height],
-            [-width, length, height],
-            [-width, length, -height],
-            [-width, -length, height],
-            [-width, -length, -height]
-        ])
-        return corners
-
-    def transform(self):
-        """
-        将局部坐标系中的角点变换到全局坐标系
-        :return: 变换后的 8 个角点的 3D 坐标
-        """
-        # 获取角点
-        corners = self.corners()
-        # 计算旋转矩阵
-        rotation_matrix = self.quaternion_to_rotation_matrix(self.rotation)
-        # 应用旋转和平移
-        transformed_corners = np.dot(rotation_matrix, corners.T).T + self.translation
-        return transformed_corners
-
-    @staticmethod
-    def quaternion_to_rotation_matrix(quaternion):
-        """
-        将四元数转换为旋转矩阵
-        :param quaternion: 四元数 [w, x, y, z]
-        :return: 旋转矩阵 (3x3)
-        """
-        w, x, y, z = quaternion
-        return np.array([
-            [1 - 2 * (y**2 + z**2), 2 * (x * y - z * w), 2 * (x * z + y * w)],
-            [2 * (x * y + z * w), 1 - 2 * (x**2 + z**2), 2 * (y * z - x * w)],
-            [2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (x**2 + y**2)]
-        ])
-
 
 def debug_print(message):
     """
@@ -187,11 +131,12 @@ def get_or_insert_map_info(cursor, name, location, filename, version, category):
 
     # 2. 如果记录不存在，插入新记录
     debug_print("No matching map_info record found. Inserting new record.")
+    abs_path = root_pth + filename
     insert_query = """
     INSERT INTO map_info (name, location, filename, version, category)
     VALUES (%s, %s, %s, %s, %s)
     """
-    cursor.execute(insert_query, (name, location, filename, version, category))
+    cursor.execute(insert_query, (name, location, abs_path, version, category))
 
     # 3. 获取新插入记录的 map_id
     cursor.execute("SELECT LAST_INSERT_ID()")
@@ -293,6 +238,7 @@ def insert_sensor_data(cursor, sensor_data_id, timestamp, sensor_calibration_id,
     """
     插入一条 sensor_data 信息到 sensor_data 表中
     """
+    abs_file_path = root_pth + file_path
     sql = """
     INSERT INTO sensor_data (
         sensor_data_id, timestamp, sensor_calibration_id, data_file_format, 
@@ -304,7 +250,7 @@ def insert_sensor_data(cursor, sensor_data_id, timestamp, sensor_calibration_id,
     data = (
         sensor_data_id, timestamp, sensor_calibration_id, data_file_format, 
         previous_sensor_data_id, next_sensor_data_id, image_width, image_height, 
-        file_path, is_key_frame, ego_translation_x, ego_translation_y, ego_translation_z, 
+        abs_file_path, is_key_frame, ego_translation_x, ego_translation_y, ego_translation_z, 
         ego_rotation_qw, ego_rotation_qx, ego_rotation_qy, ego_rotation_qz, sample_id
     )
     cursor.execute(sql, data)
@@ -334,7 +280,7 @@ def insert_annotation_2d(cursor, bbox_2d_xmin, bbox_2d_xmax, bbox_2d_ymin, bbox_
     插入一条 annotation_2d 信息到 annotaion_2d 表中
     """
     sql = """
-    INSERT INTO annotaion_2d (bbox_2d_xmin, bbox_2d_xmax, bbox_2d_ymin, bbox_2d_ymax, sample_annotation_id, sensor_data_id)
+    INSERT INTO annotation_2d (bbox_2d_xmin, bbox_2d_xmax, bbox_2d_ymin, bbox_2d_ymax, sample_annotation_id, sensor_data_id)
     VALUES (%s, %s, %s, %s, %s, %s)
     """
     data = (bbox_2d_xmin, bbox_2d_xmax, bbox_2d_ymin, bbox_2d_ymax, sample_annotation_id, sensor_data_id)
@@ -386,14 +332,13 @@ def insert_category_description(cursor, category_description_id, category_name, 
 
 import numpy as np
 
-def get_2d_bbox_from_annotation_auto_obj(cursor, nusc, sample_annotation, debug=False):
+def get_2d_bbox_from_sampleData_auto_obj(cursor, nusc, sample_data, debug=False):
     """
-    根据 sample_annotation 对象，通过 sample -> sample_data -> calibrated_sensor -> sensor 的逐级查找，
-    生成所有相机视角的 2D 边界框，并插入到数据库，同时移除外部依赖包，手动计算所有变换。
+    根据 sample_data 对象，生成对应相机视角的 2D 边界框，并插入到数据库。
 
     :param cursor: 数据库游标对象，用于插入数据。
     :param nusc: NuScenes 数据集对象。
-    :param sample_annotation: sample_annotation 的字典对象。
+    :param sample_data: sample_data 的字典对象。
     :param debug: 是否打印调试信息 (默认 False)。
     """
     def debug_print(message):
@@ -401,142 +346,53 @@ def get_2d_bbox_from_annotation_auto_obj(cursor, nusc, sample_annotation, debug=
         if debug:
             print(message)
 
-    def quaternion_to_rotation_matrix(quaternion):
-        """
-        将四元数转换为旋转矩阵
-        :param quaternion: 四元数 [w, x, y, z]
-        :return: 旋转矩阵 (3x3)
-        """
-        w, x, y, z = quaternion
-        norm = np.sqrt(w**2 + x**2 + y**2 + z**2)
-        w, x, y, z = w / norm, x / norm, y / norm, z / norm  # 归一化
-        return np.array([
-            [1 - 2 * (y**2 + z**2), 2 * (x * y - z * w), 2 * (x * z + y * w)],
-            [2 * (x * y + z * w), 1 - 2 * (x**2 + z**2), 2 * (y * z - x * w)],
-            [2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (x**2 + y**2)]
-        ])
+    sample_data_token = sample_data['token']
 
+    calibrated_sensor = nusc.get('calibrated_sensor', sample_data['calibrated_sensor_token'])
+    sensor = nusc.get('sensor', calibrated_sensor['sensor_token'])
+    
+    if "CAM" not in sensor['channel']:
+        debug_print(f"Sensor '{sensor['channel']}' is not a camera. Skipping.")
+        return
 
-    def compute_box_corners(translation, size, rotation):
-        """
-        计算 3D 边界框的 8 个角点坐标
-        :param translation: 中心点坐标 [x, y, z]
-        :param size: 尺寸 [width, length, height]
-        :param rotation: 四元数 [w, x, y, z]
-        :return: 全局坐标系下的 8 个角点 (8x3 数组)
-        """
-        width, length, height = size[0] / 2.0, size[1] / 2.0, size[2] / 2.0  # 半尺寸
-        # 局部坐标系中的 8 个角点
-        corners = np.array([
-            [width, length, height],
-            [width, length, -height],
-            [width, -length, height],
-            [width, -length, -height],
-            [-width, length, height],
-            [-width, length, -height],
-            [-width, -length, height],
-            [-width, -length, -height]
-        ])
-        # 应用旋转和平移
-        rotation_matrix = quaternion_to_rotation_matrix(rotation)
-        corners = np.dot(rotation_matrix, corners.T).T + np.array(translation)
-        return corners
+    # 7. 获取相机内参和图像分辨率
+    intrinsic = np.array(calibrated_sensor['camera_intrinsic'])
+    imsize = (sample_data['width'], sample_data['height'])  # 图像分辨率
+    debug_print(f"[Step 6] Camera intrinsic matrix: {intrinsic}, Image size: {imsize}")
 
-    def project_to_2d(corners, intrinsic):
-        """
-        将 3D 角点投影到 2D 图像平面
-        :param corners: 3D 角点 (8x3)
-        :param intrinsic: 相机内参矩阵 (3x3)
-        :return: 投影到图像上的 2D 坐标 (2x8)
-        """
-        # 转换为齐次坐标
-        corners_homogeneous = np.hstack((corners, np.ones((corners.shape[0], 1))))  # (8, 4)
-        corners_homogeneous = corners_homogeneous.T  # 转置为 (4, 8)
+    _, boxes, _ = nusc.get_sample_data(sample_data_token)
 
-        # 投影到 2D
-        projected = np.dot(intrinsic, corners_homogeneous[:3, :])  # (3, 8)
-        projected[2, :] = np.maximum(projected[2, :], 1e-6)  # 防止 z 值为零
-        projected /= projected[2, :]  # 归一化
-
-        return projected[:2, :]  # 返回 2D 坐标
-
-    # 1. 从 sample_annotation 获取 sample
-    sample_token = sample_annotation['sample_token']
-    sample = nusc.get('sample', sample_token)
-    debug_print(f"[Step 1] Sample loaded. Sample token: {sample_token}")
-
-    # 2. 遍历 sample 的所有 sample_data
-    for sample_data_token in sample['data'].values():
-        # 3. 获取 sample_data 对象
-        sample_data = nusc.get('sample_data', sample_data_token)
-        debug_print(f"[Step 2] Sample data loaded. Token: {sample_data_token}, File format: {sample_data['fileformat']}, Height: {sample_data.get('height', 'N/A')}")
-
-        # 4. 获取 calibrated_sensor 信息
-        calibrated_sensor = nusc.get('calibrated_sensor', sample_data['calibrated_sensor_token'])
-        debug_print(f"[Step 3] Calibrated sensor loaded. Token: {sample_data['calibrated_sensor_token']}")
-
-        # 5. 获取 sensor 信息
-        sensor = nusc.get('sensor', calibrated_sensor['sensor_token'])
-        debug_print(f"[Step 4] Sensor loaded. Sensor name: {sensor['channel']}")
-
-        # 6. 检查是否为相机传感器
-        if 'CAM' not in sensor['channel']:
-            debug_print(f"[Step 5] Skipped. Not a camera sensor. Channel: {sensor['channel']}")
+    for box in boxes:
+        if not box.name.startswith("vehicle"):
             continue
 
-        # 7. 获取相机内参和图像分辨率
-        intrinsic = np.array(calibrated_sensor['camera_intrinsic'])
-        imsize = (sample_data['width'], sample_data['height'])  # 图像分辨率
-        debug_print(f"[Step 6] Camera intrinsic matrix: {intrinsic}, Image size: {imsize}")
+        box_center = box.center
+        if box_center[2] <= 0:
+            continue
 
-        # 8. 计算 3D 边界框角点
-        corners = compute_box_corners(
-            translation=sample_annotation['translation'],
-            size=sample_annotation['size'],
-            rotation=sample_annotation['rotation']
-        )
-        debug_print(f"[Step 7] Corners in global coordinates: {corners}")
+        if box_in_image(box, intrinsic, imsize):
+            corners_3d = box.corners()
+            corners_2d = view_points(corners_3d, intrinsic, normalize=True)
 
-        # 9. 投影到图像平面
-        projected_corners = project_to_2d(corners, intrinsic)
-        debug_print(f"[Step 8] Projected corners: {projected_corners}")
-
-        # 检查是否在图像范围内
-        if np.all((projected_corners[0] >= 0) & (projected_corners[0] <= imsize[0]) &
-                  (projected_corners[1] >= 0) & (projected_corners[1] <= imsize[1])):
-
-            # 计算 2D 边界框
-            xmin = int(max(0, np.min(projected_corners[0])))
-            xmax = int(min(imsize[0], np.max(projected_corners[0])))
-            ymin = int(max(0, np.min(projected_corners[1])))
-            ymax = int(min(imsize[1], np.max(projected_corners[1])))
-            bbox_2d_pixel_count = (xmax - xmin) * (ymax - ymin)
-            debug_print(f"[Step 9] 2D Bounding box: xmin={xmin}, xmax={xmax}, ymin={ymin}, ymax={ymax}, pixel count={bbox_2d_pixel_count}")
-
-            # 构造 2D 边界框字典
-            bbox_2d = {
-                'bbox_2d_xmin': xmin,
-                'bbox_2d_xmax': xmax,
-                'bbox_2d_ymin': ymin,
-                'bbox_2d_ymax': ymax,
-                'bbox_2d_pixel_count': bbox_2d_pixel_count
-            }
+            min_x, min_y = corners_2d[:2].min(axis=1)
+            max_x, max_y = corners_2d[:2].max(axis=1)
 
             # 10. 获取或创建数据库中的 sample_annotation_id 和 sensor_data_id
-            sample_annotation_id = get_or_create_mapping(cursor, sample_annotation['token'], 'nuscene_token_to_id', 'sample_annotation', 'annotation_id')
+            annotation_token = box.token
+            sample_annotation_id = get_or_create_mapping(cursor, annotation_token, 'nuscene_token_to_id', 'sample_annotation', 'annotation_id')
             sensor_data_id = get_or_create_mapping(cursor, sample_data['token'], 'nuscene_token_to_id', 'sensor_data', 'sensor_data_id')
-            debug_print(f"[Step 10] Database IDs: sample_annotation_id={sample_annotation_id}, sensor_data_id={sensor_data_id}")
+            debug_print(f"Database IDs: sample_annotation_id={sample_annotation_id}, sensor_data_id={sensor_data_id}")
 
             # 11. 插入 2D 边界框到数据库
-            insert_annotation_2d(cursor, bbox_2d['bbox_2d_xmin'], bbox_2d['bbox_2d_xmax'],
-                                    bbox_2d['bbox_2d_ymin'], bbox_2d['bbox_2d_ymax'],
+            insert_annotation_2d(cursor, min_x, max_x,
+                                    min_y, max_y,
                                     sample_annotation_id, sensor_data_id)
             debug_print(f"[Step 11] Bounding box inserted into database.")
 
 
 def main():
     # 连接到数据库
-    connection = mysql.connector.connect(**db_config)
+    connection = mysql.connector.connect(**local_db_config)
     cursor = connection.cursor()
 
     # 加载 nuScenes 数据集
@@ -676,6 +532,9 @@ def main():
                 file_path, is_key_frame, ego_translation_x, ego_translation_y, ego_translation_z,
                 ego_rotation_qw, ego_rotation_qx, ego_rotation_qy, ego_rotation_qz, sample_id)
             
+            # 生成 2D 边界框信息
+            get_2d_bbox_from_sampleData_auto_obj(cursor, nusc, sample_data)
+            
         # --------------------------------------------------
         # 遍历所有 attribute 和 visibility 并插入到 attribute 表中
         print("Inserting attribute data...")
@@ -718,9 +577,6 @@ def main():
             bbox_3d_width = sample_annotation['size'][1]
             bbox_3d_height = sample_annotation['size'][2]
             bbox_3d_length = sample_annotation['size'][0]
-
-            debug_print(f"transforming 2d bbox from annotation")
-            get_2d_bbox_from_annotation_auto_obj(cursor, nusc, sample_annotation)
             
             num_lidar_pts = sample_annotation['num_lidar_pts']
             num_radar_pts = sample_annotation['num_radar_pts']

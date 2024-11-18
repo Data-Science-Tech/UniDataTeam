@@ -1,16 +1,26 @@
+from sqlite3 import connect
 from turtle import update
 import mysql.connector
 import os
 from datetime import datetime
 
+local_connection = mysql.connector.connect(
+    host="localhost",
+    user="root",  # 替换为你的 MySQL 用户名
+    password="root",  # 替换为你的 MySQL 密码
+    database="car_perception_db"  # 替换为你的 MySQL 数据库名
+)
+
+remote_connection = mysql.connector.connect(
+    host="122.51.133.37",
+    user="dev",  # 替换为你的 MySQL 用户名
+    password="dev123",  # 替换为你的 MySQL 密码
+    database="car_perception_db"  # 替换为你的 MySQL 数据库名
+)  
+
 def connect_database():
     """连接本地 MySQL 数据库"""
-    return mysql.connector.connect(
-        host="122.51.133.37",
-        user="dev",  # 替换为你的 MySQL 用户名
-        password="dev123",  # 替换为你的 MySQL 密码
-        database="car_perception_db"  # 替换为你的 MySQL 数据库名
-    )
+    return local_connection
 
 def insert_sensor(conn, sensor_type, sensor_name):
     """插入传感器信息"""
@@ -76,55 +86,19 @@ def update_scene_info_sample(conn, scene_id, first_sample_id=None, last_sample_i
 def insert_sensor_calibration(conn, calibration_data, sensor_id):
     """将标定数据插入数据库，如果已经存在相同的数据则返回已有的ID"""
     cursor = conn.cursor()
-    # 插入 P0 到 P3 的标定数据
-    for key in ['P0', 'P1', 'P2', 'P3']:
-        if key in calibration_data:
-            calib = calibration_data[key]
-            cursor.execute(
-                """
-                SELECT sensor_calibration_id FROM sensor_calibration WHERE
-                sensor_id = %s AND
-                focal_length_x = %s AND focal_length_y = %s AND
-                principal_point_x = %s AND principal_point_y = %s
-                """,
-                (
-                    sensor_id,
-                    calib['focal_length_x'],
-                    calib['focal_length_y'],
-                    calib['principal_point_x'],
-                    calib['principal_point_y']
-                )
-            )
-            result = cursor.fetchone()
-            if result:
-                return result[0]
-            
-            # 如果没有找到相同的数据，则插入新数据
-            cursor.execute(
-                """
-                INSERT INTO sensor_calibration (
-                    sensor_id, focal_length_x, focal_length_y,
-                    principal_point_x, principal_point_y
-                ) VALUES (%s, %s, %s, %s, %s)
-                """,
-                (
-                    sensor_id,
-                    calib['focal_length_x'],
-                    calib['focal_length_y'],
-                    calib['principal_point_x'],
-                    calib['principal_point_y']
-                )
-            )
-            conn.commit()
-
-    # 插入其他标定数据
+    
+    # 检查是否存在相同的标定数据
     cursor.execute(
         """
         SELECT sensor_calibration_id FROM sensor_calibration WHERE
         sensor_id = %s AND
         self_coordinates_x = %s AND self_coordinates_y = %s AND self_coordinates_z = %s AND
         translation_x = %s AND translation_y = %s AND translation_z = %s AND
-        rotation_roll = %s AND rotation_pitch = %s AND rotation_yaw = %s
+        rotation_qw = %s AND rotation_qx = %s AND rotation_qy = %s AND rotation_qz = %s AND
+        focal_length_x = %s AND focal_length_y = %s AND
+        principal_point_x = %s AND principal_point_y = %s AND
+        radial_distortion_k1 = %s AND radial_distortion_k2 = %s AND radial_distortion_k3 = %s AND
+        tangential_distortion_p1 = %s AND tangential_distortion_p2 = %s
         """,
         (
             sensor_id,
@@ -134,9 +108,19 @@ def insert_sensor_calibration(conn, calibration_data, sensor_id):
             calibration_data.get('translation_x', None),
             calibration_data.get('translation_y', None),
             calibration_data.get('translation_z', None),
-            calibration_data.get('rotation_roll', None),
-            calibration_data.get('rotation_pitch', None),
-            calibration_data.get('rotation_yaw', None)
+            calibration_data.get('rotation_qw', None),
+            calibration_data.get('rotation_qx', None),
+            calibration_data.get('rotation_qy', None),
+            calibration_data.get('rotation_qz', None),
+            calibration_data.get('focal_length_x', None),
+            calibration_data.get('focal_length_y', None),
+            calibration_data.get('principal_point_x', None),
+            calibration_data.get('principal_point_y', None),
+            calibration_data.get('radial_distortion_k1', None),
+            calibration_data.get('radial_distortion_k2', None),
+            calibration_data.get('radial_distortion_k3', None),
+            calibration_data.get('tangential_distortion_p1', None),
+            calibration_data.get('tangential_distortion_p2', None)
         )
     )
     result = cursor.fetchone()
@@ -148,9 +132,11 @@ def insert_sensor_calibration(conn, calibration_data, sensor_id):
         """
         INSERT INTO sensor_calibration (
             sensor_id, self_coordinates_x, self_coordinates_y, self_coordinates_z,
-            translation_x, translation_y, translation_z, rotation_roll, rotation_pitch,
-            rotation_yaw
-        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            translation_x, translation_y, translation_z, rotation_qw, rotation_qx,
+            rotation_qy, rotation_qz, focal_length_x, focal_length_y, principal_point_x,
+            principal_point_y, radial_distortion_k1, radial_distortion_k2, radial_distortion_k3,
+            tangential_distortion_p1, tangential_distortion_p2
+        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """,
         (
             sensor_id,
@@ -160,9 +146,19 @@ def insert_sensor_calibration(conn, calibration_data, sensor_id):
             calibration_data.get('translation_x', None),
             calibration_data.get('translation_y', None),
             calibration_data.get('translation_z', None),
-            calibration_data.get('rotation_roll', None),
-            calibration_data.get('rotation_pitch', None),
-            calibration_data.get('rotation_yaw', None)
+            calibration_data.get('rotation_qw', None),
+            calibration_data.get('rotation_qx', None),
+            calibration_data.get('rotation_qy', None),
+            calibration_data.get('rotation_qz', None),
+            calibration_data.get('focal_length_x', None),
+            calibration_data.get('focal_length_y', None),
+            calibration_data.get('principal_point_x', None),
+            calibration_data.get('principal_point_y', None),
+            calibration_data.get('radial_distortion_k1', None),
+            calibration_data.get('radial_distortion_k2', None),
+            calibration_data.get('radial_distortion_k3', None),
+            calibration_data.get('tangential_distortion_p1', None),
+            calibration_data.get('tangential_distortion_p2', None)
         )
     )
     conn.commit()
@@ -171,8 +167,9 @@ def insert_sensor_calibration(conn, calibration_data, sensor_id):
 def add_sensor_data(conn, timestamp, sensor_calibration_id, data_file_format, file_path,
                       previous_sensor_data_id=None, next_sensor_data_id=None, image_width=None,
                       image_height=None, is_key_frame=0, ego_translation_x=None,
-                      ego_translation_y=None, ego_translation_z=None, ego_rotation_roll=None,
-                      ego_rotation_pitch=None, ego_rotation_yaw=None, sample_id=None):
+                      ego_translation_y=None, ego_translation_z=None, ego_rotation_qw=None,
+                      ego_rotation_qx=None, ego_rotation_qy=None, sample_id=None,
+                      ego_rotation_qz=None):
     """插入传感器数据"""
     cursor = conn.cursor()
     cursor.execute(
@@ -181,15 +178,15 @@ def add_sensor_data(conn, timestamp, sensor_calibration_id, data_file_format, fi
             timestamp, sensor_calibration_id, data_file_format, file_path,
             previous_sensor_data_id, next_sensor_data_id, image_width,
             image_height, is_key_frame, ego_translation_x, ego_translation_y,
-            ego_translation_z, ego_rotation_roll, ego_rotation_pitch,
-            ego_rotation_yaw, sample_id
-        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ego_translation_z, ego_rotation_qw, ego_rotation_qx,
+            ego_rotation_qy, sample_id, ego_rotation_qz
+        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """,
         (timestamp, sensor_calibration_id, data_file_format, file_path,
          previous_sensor_data_id, next_sensor_data_id, image_width,
          image_height, is_key_frame, ego_translation_x, ego_translation_y,
-         ego_translation_z, ego_rotation_roll, ego_rotation_pitch,
-         ego_rotation_yaw, sample_id)
+         ego_translation_z, ego_rotation_qw, ego_rotation_qx,
+         ego_rotation_qy, sample_id, ego_rotation_qz)
     )
     conn.commit()
     return cursor.lastrowid
@@ -210,27 +207,41 @@ def add_sample_info(conn, timestamp, scene_id=None, previous_sample_id=None, nex
 
 def add_sample_annotation(conn, sample_id, bbox_center_3d_x=None, bbox_center_3d_y=None, bbox_center_3d_z=None,
                              bbox_3d_width_y=None, bbox_3d_height_z=None, bbox_3d_length_x=None,
-                             bbox_2d_xmin=None, bbox_2d_ymin=None, bbox_2d_xmax=None, bbox_2d_ymax=None,
-                             bbox_2d_pixel_count=None, previous_annotation_id=None, next_annotation_id=None,
-                             num_lidar_pts=0, num_radar_pts=0, rotation_roll=None, rotation_pitch=None,
-                             rotation_yaw=None, instance_id=None):
+                             previous_annotation_id=None, next_annotation_id=None,
+                             num_lidar_pts=0, num_radar_pts=0, rotation_qw=None, rotation_qx=None,
+                             rotation_qy=None, rotation_qz=None, instance_id=None):
     """插入样本注释"""
     cursor = conn.cursor()
     cursor.execute(
         """
         INSERT INTO sample_annotation (
             sample_id, bbox_center_3d_x, bbox_center_3d_y, bbox_center_3d_z,
-            bbox_3d_width_y, bbox_3d_height_z, bbox_3d_length_x, bbox_2d_xmin,
-            bbox_2d_xmax, bbox_2d_ymin, bbox_2d_ymax, bbox_2d_pixel_count,
-            previous_annotation_id, next_annotation_id, num_lidar_pts,
-            num_radar_pts, rotation_roll, rotation_pitch, rotation_yaw, instance_id
-        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            bbox_3d_width_y, bbox_3d_height_z, bbox_3d_length_x, previous_annotation_id,
+            next_annotation_id, num_lidar_pts, num_radar_pts, rotation_qw, rotation_qx,
+            rotation_qy, rotation_qz, instance_id
+        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """,
         (sample_id, bbox_center_3d_x, bbox_center_3d_y, bbox_center_3d_z,
-         bbox_3d_width_y, bbox_3d_height_z, bbox_3d_length_x, bbox_2d_xmin,
-         bbox_2d_xmax, bbox_2d_ymin, bbox_2d_ymax, bbox_2d_pixel_count,
-         previous_annotation_id, next_annotation_id, num_lidar_pts,
-         num_radar_pts, rotation_roll, rotation_pitch, rotation_yaw, instance_id)
+         bbox_3d_width_y, bbox_3d_height_z, bbox_3d_length_x, previous_annotation_id,
+         next_annotation_id, num_lidar_pts, num_radar_pts, rotation_qw, rotation_qx,
+         rotation_qy, rotation_qz, instance_id)
+    )
+    conn.commit()
+    return cursor.lastrowid
+
+def add_annotation_2d(conn, bbox_2d_xmin=None, bbox_2d_xmax=None, bbox_2d_ymin=None, 
+                        bbox_2d_ymax=None, sample_annotation_id=None, sensor_data_id=None):
+    """插入2D标注信息"""
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        INSERT INTO annotation_2d (
+            bbox_2d_xmin, bbox_2d_xmax, bbox_2d_ymin, bbox_2d_ymax,
+            sample_annotation_id, sensor_data_id
+        ) VALUES (%s, %s, %s, %s, %s, %s)
+        """,
+        (bbox_2d_xmin, bbox_2d_xmax, bbox_2d_ymin, bbox_2d_ymax,
+            sample_annotation_id, sensor_data_id)
     )
     conn.commit()
     return cursor.lastrowid
@@ -519,7 +530,11 @@ def process_kitti_training_data(kitti_root, conn):
         # 插入相机传感器数据（图像）
         sensor_data_id = add_sensor_data(
             conn, timestamp, sensor_calibration_id_camera, "png", image_path,
-            previous_sensor_data_ids.get("image"), None, None, None, 1, None, None, None, None, None, None, sample_id,
+            previous_sensor_data_ids.get("image"), None, image_width=None,
+            image_height=None, is_key_frame=1, ego_translation_x=None,
+            ego_translation_y=None, ego_translation_z=None, ego_rotation_qw=None,
+            ego_rotation_qx=None, ego_rotation_qy=None, sample_id=sample_id,
+            ego_rotation_qz=None
         )
         if previous_sensor_data_ids.get("image"):
             update_next_sensor_data_id(conn, sensor_data_id, previous_sensor_data_ids.get("image"))
@@ -527,9 +542,10 @@ def process_kitti_training_data(kitti_root, conn):
         
         # 插入LiDAR传感器数据
         lidar_path = kitti_data["lidar"][idx]
+        # 插入LiDAR传感器数据
         lidar_data_id = add_sensor_data(
             conn, timestamp, sensor_calibration_id_lidar, "bin", lidar_path,
-            previous_sensor_data_ids.get("lidar"), None, None, None, 0, None, None, None, None, None, None, sample_id
+            previous_sensor_data_ids.get("lidar"), None, None, None, 0, None, None, None, None, None, None, sample_id, None
         )
         if previous_sensor_data_ids.get("lidar"):
             update_next_sensor_data_id(conn, lidar_data_id, previous_sensor_data_ids.get("lidar"))
@@ -544,10 +560,30 @@ def process_kitti_training_data(kitti_root, conn):
             category_id = get_or_add_category_description(conn, category_name)
             instance_id = get_or_add_instance(conn, category_id)
             
+            # Add 3D annotation
             annotation_id = add_sample_annotation(
-                conn, sample_id, bbox_center[0], bbox_center[1], bbox_center[2],
-                bbox_size[1], bbox_size[2], bbox_size[0], bbox_2d[0], bbox_2d[1], bbox_2d[2], bbox_2d[3],
-                None, previous_annotation_id, None, 0, 0, None, None, None, instance_id
+                conn, sample_id, 
+                bbox_center_3d_x=bbox_center[0], 
+                bbox_center_3d_y=bbox_center[1], 
+                bbox_center_3d_z=bbox_center[2],
+                bbox_3d_width_y=bbox_size[1], 
+                bbox_3d_height_z=bbox_size[2], 
+                bbox_3d_length_x=bbox_size[0],
+                previous_annotation_id=previous_annotation_id,
+                num_lidar_pts=0,
+                num_radar_pts=0,
+                instance_id=instance_id
+            )
+
+            # Add 2D annotation for this sensor data 
+            add_annotation_2d(
+                conn,
+                bbox_2d_xmin=bbox_2d[0],
+                bbox_2d_xmax=bbox_2d[2], 
+                bbox_2d_ymin=bbox_2d[1],
+                bbox_2d_ymax=bbox_2d[3],
+                sample_annotation_id=annotation_id,
+                sensor_data_id=sensor_data_id
             )
             if previous_annotation_id:
                 update_next_annotation_id(conn, annotation_id, previous_annotation_id)
@@ -597,7 +633,7 @@ def process_kitti_testing_data(kitti_root, conn):
         # 插入相机传感器数据（图像）
         sensor_data_id = add_sensor_data(
             conn, timestamp, sensor_calibration_id_camera, "png", image_path,
-            previous_sensor_data_ids.get("image"), None, None, None, 1, None, None, None, None, None, None, sample_id,
+            previous_sensor_data_ids.get("image"), None, None, None, 1, None, None, None, None, None, None, sample_id, None
         )
         if previous_sensor_data_ids.get("image"):
             update_next_sensor_data_id(conn, sensor_data_id, previous_sensor_data_ids.get("image"))
@@ -607,7 +643,7 @@ def process_kitti_testing_data(kitti_root, conn):
         lidar_path = kitti_data["lidar"][idx]
         lidar_data_id = add_sensor_data(
             conn, timestamp, sensor_calibration_id_lidar, "bin", lidar_path,
-            previous_sensor_data_ids.get("lidar"), None, None, None, 0, None, None, None, None, None, None, sample_id
+            previous_sensor_data_ids.get("lidar"), None, None, None, 0, None, None, None, None, None, None, sample_id, None
         )
         if previous_sensor_data_ids.get("lidar"):
             update_next_sensor_data_id(conn, lidar_data_id, previous_sensor_data_ids.get("lidar"))

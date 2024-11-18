@@ -34,7 +34,7 @@ class DatabaseDataset(Dataset):
         self.cursor.execute("""SELECT sample_id FROM sample_info WHERE scene_id = %s""", (self.scene_id,))
         self.samples = [row[0] for row in self.cursor.fetchall()]
 
-        # 获取 sensor_data 信息，过滤格式为 png 的数据
+        # 获取 sensor_data 信息，过滤格式为 jpg 的数据
         self.data = []
         for sample_id in self.samples:
             self.cursor.execute("""
@@ -42,11 +42,12 @@ class DatabaseDataset(Dataset):
                 FROM sensor_data
                 WHERE sample_id = %s AND (data_file_format = 'jpg' OR data_file_format = 'png' OR data_file_format = 'jpeg')
             """, (sample_id,))
-            self.data.extend(self.cursor.fetchall())
+            for sensor_data_id, file_path in self.cursor.fetchall():
+                self.data.append((sensor_data_id, file_path))
 
         # 获取类别为 Car 的 category_description_id
         if self.is_training:
-            self.cursor.execute("""SELECT category_description_id FROM category_description WHERE category_subcategory_name = 'Car'""")
+            self.cursor.execute("""SELECT category_description_id FROM category_description WHERE category_subcategory_name LIKE 'vehicle%'""")
             results = self.cursor.fetchall()
             self.car_category_ids = [result[0] for result in results]
             if not self.car_category_ids:
@@ -118,7 +119,7 @@ db_config = {
     'database': 'car_perception_db'
 }
 
-dataset = DatabaseDataset(db_config, scene_name='KITTI Training Data Scene', is_training=True)
+dataset = DatabaseDataset(db_config, scene_name='Parked truck, construction, intersection, turn left, following a van', is_training=True)
 dataloader = DataLoader(dataset, batch_size=4, shuffle=False, collate_fn=lambda x: tuple(zip(*x)))
 
 # Step 2: 加载模型并训练
@@ -150,14 +151,15 @@ for epoch in range(num_epochs):
 
         epoch_loss += losses.item()
 
-    print(f"Epoch {epoch + 1}/{num_epochs}, Loss: {epoch_loss / len(dataloader)}")
+    print(f"Epoch {epoch + 1}/{num_epochs}")
+    print(f"Loss: {epoch_loss / len(dataloader)}")
 
-model_save_path = 'fasterrcnn_kitti_car_detector.pth'
+model_save_path = 'fasterrcnn_nuScenes_car_detector.pth'
 torch.save(model.state_dict(), model_save_path)
 print(f"Model saved to {model_save_path}")
 
 # Step 3: 测试模型
-test_dataset = DatabaseDataset(db_config, scene_name='KITTI Testing Data Scene', is_training=False)
+test_dataset = DatabaseDataset(db_config, scene_name='Parked truck, construction, intersection, turn left, following a van', is_training=False)
 test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False, collate_fn=lambda x: tuple(zip(*x)))
 
 model.eval()

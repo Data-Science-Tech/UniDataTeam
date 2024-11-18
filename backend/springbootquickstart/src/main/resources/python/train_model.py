@@ -38,17 +38,16 @@ class DatabaseDataset(Dataset):
             self.cursor.execute("""  
                 SELECT sensor_data_id, file_path  
                 FROM sensor_data  
-                WHERE sample_id = %s AND data_file_format = 'png'  
+                WHERE sample_id = %s AND (data_file_format = 'jpg' OR data_file_format = 'png' OR data_file_format = 'jpeg')
             """, (sample_id,))
             self.data.extend(self.cursor.fetchall())
 
             # 获取类别为Car的category_description_id
         if self.is_training:
             self.cursor.execute("""SELECT category_description_id FROM category_description WHERE category_subcategory_name = 'Car'""")
-            result = self.cursor.fetchone()
-            if result:
-                self.car_category_id = result[0]
-            else:
+            results = self.cursor.fetchall()
+            self.car_category_ids = [result[0] for result in results]
+            if not self.car_category_ids:
                 raise ValueError("Category 'Car' not found in database.")
         else:
             self.car_category_id = None
@@ -66,16 +65,19 @@ class DatabaseDataset(Dataset):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
         # 如果是训练集，获取标注
-        if self.is_training and self.car_category_id is not None:
-            sample_id = self.samples[idx]
+        if self.is_training and self.car_category_ids is not None:
+            sensor_data_id = self.data[idx][0]
 
-            # 查询类别为Car的标注
-            self.cursor.execute("""  
-                SELECT sa.bbox_2d_xmin, sa.bbox_2d_ymin, sa.bbox_2d_xmax, sa.bbox_2d_ymax  
-                FROM sample_annotation sa  
-                JOIN instance i ON sa.instance_id = i.instance_id  
-                WHERE sa.sample_id = %s AND i.category_description_id = %s  
-            """, (sample_id, self.car_category_id))
+            # 查询所有 car category ids 对应的标注
+            self.cursor.execute("""
+            SELECT a2d.bbox_2d_xmin, a2d.bbox_2d_ymin, a2d.bbox_2d_xmax, a2d.bbox_2d_ymax
+            FROM sensor_data sd
+            JOIN annotation_2d a2d ON sd.sensor_data_id = a2d.sensor_data_id
+            JOIN sample_annotation sa ON a2d.sample_annotation_id = sa.annotation_id
+            JOIN instance i ON sa.instance_id = i.instance_id
+            WHERE sd.sensor_data_id = %s 
+            AND i.category_description_id IN (%s)
+            """ % (sensor_data_id, ','.join(map(str, self.car_category_ids))))
             annotations = self.cursor.fetchall()
 
             # 转换为(xmin, ymin, xmax, ymax)格式
@@ -160,16 +162,22 @@ def train_model(args):
 
     start_time = datetime.now()
 
-    # Define file paths
-    results_dir = 'D:/UniDataTemp/models/'
-    logs_dir = 'D:/UniDataTemp/logs/'
-    if not os.path.exists(results_dir):
-        os.makedirs(results_dir)
-    if not os.path.exists(logs_dir):
-        os.makedirs(logs_dir)
+    # Define base directory and relative paths
+    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(script_path_parent)))  # go up to springbootquickstart
+    results_dir = os.path.join(base_dir, 'files', 'models')
+    logs_dir = os.path.join(base_dir, 'files', 'train_logs')
 
-    model_path = f'{results_dir}{args.algorithm}_{args.scene_id}.pth'
-    log_path = f'{logs_dir}training_log_{args.algorithm}_{args.scene_id}.json'
+    # Create directories if they don't exist
+    os.makedirs(results_dir, exist_ok=True)
+    os.makedirs(logs_dir, exist_ok=True)
+
+    # Store relative paths for database
+    relative_model_path = os.path.join('files', 'models', f'{args.algorithm}_{args.scene_id}.pth')
+    relative_log_path = os.path.join('files', 'train_logs', f'training_log_{args.algorithm}_{args.scene_id}.json')
+
+    # Full paths for actual file operations
+    model_path = os.path.join(base_dir, relative_model_path)
+    log_path = os.path.join(base_dir, relative_log_path)
 
     # 首先验证 model_config 是否存在
     cursor.execute("""  
@@ -187,7 +195,7 @@ def train_model(args):
     cursor.execute("""  
             INSERT INTO training_result (model_config_id, start_time, model_file_path)  
             VALUES (%s, %s, %s)  
-        """, (model_config_id, start_time, model_path))
+        """, (model_config_id, start_time, relative_model_path))
 
     training_result_id = cursor.lastrowid
     conn.commit()
@@ -218,7 +226,7 @@ def train_model(args):
     results = {
         'epoch_losses': [],
         'final_loss': 0,
-        'model_path': model_path
+        'model_path': relative_model_path
     }
 
     try:
@@ -244,7 +252,7 @@ def train_model(args):
             UPDATE training_result  
             SET end_time = %s, training_logs = %s, final_loss = %s  
             WHERE id = %s  
-        """, (end_time, log_path, results['final_loss'], training_result_id))
+        """, (end_time, relative_log_path, results['final_loss'], training_result_id))
         conn.commit()
 
         print(json.dumps(results))
