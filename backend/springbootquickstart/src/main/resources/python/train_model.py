@@ -45,10 +45,9 @@ class DatabaseDataset(Dataset):
             # 获取类别为Car的category_description_id
         if self.is_training:
             self.cursor.execute("""SELECT category_description_id FROM category_description WHERE category_subcategory_name = 'Car'""")
-            result = self.cursor.fetchone()
-            if result:
-                self.car_category_id = result[0]
-            else:
+            results = self.cursor.fetchall()
+            self.car_category_ids = [result[0] for result in results]
+            if not self.car_category_ids:
                 raise ValueError("Category 'Car' not found in database.")
         else:
             self.car_category_id = None
@@ -66,20 +65,19 @@ class DatabaseDataset(Dataset):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
         # 如果是训练集，获取标注
-        if self.is_training and self.car_category_id is not None:
+        if self.is_training and self.car_category_ids is not None:
             sensor_data_id = self.data[idx][0]
 
-            # 查询类别为 Car 的标注
+            # 查询所有 car category ids 对应的标注
             self.cursor.execute("""
             SELECT a2d.bbox_2d_xmin, a2d.bbox_2d_ymin, a2d.bbox_2d_xmax, a2d.bbox_2d_ymax
             FROM sensor_data sd
-            JOIN sample_info si ON sd.sample_id = si.sample_id
-            JOIN sample_annotation sa ON si.sample_id = sa.sample_id
-            JOIN annotation_2d a2d ON sa.annotation_id = a2d.sample_annotation_id
+            JOIN annotation_2d a2d ON sd.sensor_data_id = a2d.sensor_data_id
+            JOIN sample_annotation sa ON a2d.sample_annotation_id = sa.annotation_id
             JOIN instance i ON sa.instance_id = i.instance_id
             WHERE sd.sensor_data_id = %s 
-            AND i.category_description_id = %s
-            """, (sensor_data_id, self.car_category_id))
+            AND i.category_description_id IN (%s)
+            """ % (sensor_data_id, ','.join(map(str, self.car_category_ids))))
             annotations = self.cursor.fetchall()
 
             # 转换为(xmin, ymin, xmax, ymax)格式
