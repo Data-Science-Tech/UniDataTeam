@@ -224,6 +224,7 @@ def train_model(args):
                                 weight_decay=args.weight_decay)
 
     results = {
+        'training_result_id': training_result_id,
         'epoch_losses': [],
         'final_loss': 0,
         'model_path': relative_model_path
