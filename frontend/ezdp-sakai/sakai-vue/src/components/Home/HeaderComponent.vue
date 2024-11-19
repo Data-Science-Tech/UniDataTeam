@@ -40,7 +40,6 @@
 
 <script>
 import SearchBarComponent from '@/components/Home/SearchBarComponent.vue';
-import DeployMain from '@/views/Deploy/DeployMain.vue';
 
 export default {
   name: "MainPage",

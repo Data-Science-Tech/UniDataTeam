@@ -1,4 +1,5 @@
 import { computed, reactive, readonly } from 'vue';
+import { useRouter } from 'vue-router';  // 添加这行
 
 const layoutConfig = reactive({
     preset: 'Aura',
@@ -19,6 +20,12 @@ const layoutState = reactive({
 });
 
 export function useLayout() {
+    const router = useRouter();  // 添加这行
+
+    const gotoHome = () => {
+        router.push('/');
+    };
+
     const setPrimary = (value) => {
         layoutConfig.primary = value;
     };
@@ -80,5 +87,5 @@ export function useLayout() {
 
     const getSurface = computed(() => layoutConfig.surface);
 
-    return { layoutConfig: readonly(layoutConfig), layoutState: readonly(layoutState), onMenuToggle, isSidebarActive, isDarkTheme, getPrimary, getSurface, setActiveMenuItem, toggleDarkMode, setPrimary, setSurface, setPreset, resetMenu, setMenuMode };
+    return { layoutConfig: readonly(layoutConfig), layoutState: readonly(layoutState), onMenuToggle, isSidebarActive, isDarkTheme, getPrimary, getSurface, setActiveMenuItem, toggleDarkMode, setPrimary, setSurface, setPreset, resetMenu, setMenuMode, gotoHome };
 }
