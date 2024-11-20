@@ -14,7 +14,7 @@ import java.util.Optional;
 public interface TrainingResultRepository extends JpaRepository<TrainingResult, Long> {
 
     // 根据配置ID查找训练结果
-    Optional<TrainingResult> findByModelConfigId(Long modelConfigId);
+    List<TrainingResult> findByModelConfigId(Long modelConfigId);
 
     // 查找特定时间段内的训练结果
     List<TrainingResult> findByStartTimeBetween(LocalDateTime startTime, LocalDateTime endTime);

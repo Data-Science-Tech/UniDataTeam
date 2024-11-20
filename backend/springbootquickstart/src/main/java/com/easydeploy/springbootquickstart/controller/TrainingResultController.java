@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/training-results")
@@ -21,6 +22,20 @@ public class TrainingResultController {
 
     @Autowired
     private TrainingResultService trainingResultService;
+
+    @GetMapping("/by-config/{modelConfigId}")
+    public ResponseEntity<List<TrainingResult>> getTrainingResultsByModelConfig(@PathVariable Long modelConfigId) {
+        try {
+            List<TrainingResult> results = trainingResultService.getTrainingResultsByModelConfigId(modelConfigId);
+            if (results.isEmpty()) {
+                return ResponseEntity.noContent().build();
+            }
+            return ResponseEntity.ok(results);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(null);
+        }
+    }
 
     @GetMapping("/logs/{trainingResultId}")
     public ResponseEntity<?> getTrainingLogs(@PathVariable Long trainingResultId) {

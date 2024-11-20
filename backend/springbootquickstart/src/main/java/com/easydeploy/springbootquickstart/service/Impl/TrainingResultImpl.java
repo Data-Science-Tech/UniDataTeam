@@ -6,6 +6,8 @@ import com.easydeploy.springbootquickstart.service.TrainingResultService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class TrainingResultImpl implements TrainingResultService {
 
@@ -15,5 +17,10 @@ public class TrainingResultImpl implements TrainingResultService {
     public TrainingResult getTrainingResult(Long trainingResultId) {
         return trainingResultRepository.findById(trainingResultId)
                 .orElseThrow(() -> new RuntimeException("Training result not found"));
+    }
+
+    public List<TrainingResult> getTrainingResultsByModelConfigId(Long modelConfigId)
+    {
+        return trainingResultRepository.findByModelConfigId(modelConfigId);
     }
 }
