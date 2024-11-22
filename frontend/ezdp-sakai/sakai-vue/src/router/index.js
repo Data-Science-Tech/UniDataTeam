@@ -44,9 +44,9 @@ const router = createRouter({
                     component: () => import('@/views/uikit/ConfigDoc.vue')
                 },
                 {
-                    path: '/uikit/tree',
-                    name: 'tree',
-                    component: () => import('@/views/uikit/TreeDoc.vue')
+                    path: '/uikit/start',
+                    name: 'start',
+                    component: () => import('@/views/uikit/StartTrainDoc.vue')
                 },
                 {
                     path: '/uikit/panel',
