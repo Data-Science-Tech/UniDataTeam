@@ -39,9 +39,9 @@ const router = createRouter({
                     component: () => import('@/views/uikit/TableDoc.vue')
                 },
                 {
-                    path: '/uikit/list',
-                    name: 'list',
-                    component: () => import('@/views/uikit/ListDoc.vue')
+                    path: '/uikit/config',
+                    name: 'config',
+                    component: () => import('@/views/uikit/ConfigDoc.vue')
                 },
                 {
                     path: '/uikit/tree',

@@ -26,7 +26,7 @@ const { onMenuToggle, toggleDarkMode, isDarkTheme, gotoHome } = useLayout();
   margin: 0 15px;
   cursor: pointer;
   position: relative;
-  font-size: 0.2rem; /* 增大导航栏字体大小 */
+  font-size: 1vw; /* 增大导航栏字体大小 */
 }
 
 

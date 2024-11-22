@@ -19,6 +19,7 @@ public class ModelConfigController {
     public ModelConfig createConfig(@RequestBody ModelConfig config) {
         return modelConfigService.createModelConfig(config);
     }
+    
 
     @PostMapping("/{id}/train")
     public void startTraining(@PathVariable Long id) throws IOException {
