@@ -28,7 +28,7 @@ public class ModelConfig {
     private int batchSize;
     private double momentumValue;
     private double weightDecay;
-    private int sceneId;
+    private Long sceneId;
 
     @Enumerated(EnumType.STRING)
     private TrainingStatus status;
