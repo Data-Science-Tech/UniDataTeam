@@ -2,7 +2,7 @@
 
 ## 部分接口使用说明
 
-**创建配置**
+**创建配置(/api/model-configs)**
 
 后端在保存配置的同时会返回该配置相关的信息，前端可以取出model-config-id
 
@@ -14,7 +14,7 @@ const configId = response.data.id; // 获取返回的配置id
 
 
 
-**获取训练结果**
+**获取训练结果(/api/training-results/logs/{trainingResultId})**
 
 返回的结果是一个列表，因此需要注意指定数组中的元素
 
@@ -38,4 +38,3 @@ response.data.forEach(result => {
     // ... 其他属性  
 });
 ```
-
