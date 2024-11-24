@@ -39,13 +39,16 @@
             </div>
 
             <div class="form-group">
-                <label for="sceneId">场景ID:</label>
-                <input type="number" v-model="globalStore.modelConfig.sceneId" id="sceneId" class="input-field" />
+                <label for="sceneId">场景ID及描述:</label>
+                <select v-model="globalStore.modelConfig.sceneId" id="sceneId" class="input-field">
+                    <option v-for="scene in scenes" :key="scene.sceneId" :value="scene.sceneId">
+                        {{ scene.sceneId }} - {{ scene.sceneDescription }}
+                    </option>
+                </select>
             </div>
 
             <div class="button-group">
-                <button type="button" @click="createModelConfig" class="button create-btn">Create Config</button>
-                <button type="button" @click="startTraining" class="button train-btn">Start Train</button>
+                <button type="button" @click="createModelConfig" class="button create-btn">创建参数配置</button>
             </div>
         </form>
 
@@ -57,15 +60,17 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref ,onMounted } from 'vue';
 import TrainModelApi from '@/Api/TrainModelApi';
 import { useGlobalStore } from '@/stores/ConfigStore.js';
+import { useRouter } from 'vue-router';
 
 // 初始化 Pinia Store
 const globalStore = useGlobalStore();
+const router = useRouter();
 
 // 本地状态
-const configId = ref(1);
+const scenes = ref([]); // 场景数据
 const algorithms = ref(['FAST_R_CNN', 'SSD']);// 后续可以向后端发送代码查询所有存在的算法，完成赋值。
 const responseMessage = ref('');
 
@@ -76,26 +81,27 @@ const createModelConfig = async () => {
         const response = await TrainModelApi.createModelConfig(globalStore.modelConfig);
         responseMessage.value = '模型参数配置成功!';
         console.log("模型参数配置创建成功:", response.data);
-        configId.value = response.data.id;
+        globalStore.setConfigId(response.data.id);
+        router.push('/uikit/implement');
     } catch (error) {
         responseMessage.value = '创建模型配置失败.';
         console.error("创建模型配置失败:", error);
     }
 };
 
-// 开始训练模型
-const startTraining = async () => {
+// 获取场景数据
+const getallscene = async () => {
     try {
-        console.log(configId.value);
-        const response = await TrainModelApi.startTraining(configId.value);
-        responseMessage.value = '模型开始训练成功!';
-        console.log("模型开始训练成功:", response.data);
-        configId.value = response.data.id;
+        const response = await TrainModelApi.getallscene();
+        scenes.value = response.data;
+        console.log('场景数据获取成功:', scenes.value);
     } catch (error) {
-        responseMessage.value = '模型训练失败.';
-        console.error("模型训练失败:", error);
+        console.error('获取场景数据失败:', error);
     }
 };
+
+// 组件挂载时获取场景数据
+onMounted(getallscene);
 </script>
 
 
@@ -159,7 +165,8 @@ h2 {
 
 .button-group {
     display: flex;
-    justify-content: space-between;
+    justify-content: center; 
+    align-items: center; 
 }
 
 .button {

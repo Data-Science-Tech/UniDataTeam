@@ -25,7 +25,7 @@ const model = ref([
         items: [
             { label: '一键训练启动', icon: 'pi pi-fw pi-play', to: '/uikit/start' },
             { label: '训练参数配置', icon: 'pi pi-fw pi-sliders-h', to: '/uikit/config' },
-            { label: '服务器端训练执行', icon: 'pi pi-fw pi-server', to: '/uikit/panel' }
+            { label: '服务器端训练执行', icon: 'pi pi-fw pi-server', to: '/uikit/implement' }
         ]
     },
     {
