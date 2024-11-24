@@ -16,7 +16,7 @@ const router = createRouter({
                 {
                     path: '',
                     name: 'train',
-                    component: () => import('@/components/TrainConfig/SaveConfig.vue')
+                    component: () => import('@/views/pages/TrainConfig/SaveConfig.vue')
                 },
                 {
                     path: '/uikit/formlayout',
@@ -116,7 +116,16 @@ const router = createRouter({
             name: 'notfound',
             component: () => import('@/views/pages/NotFound.vue')
         },
-
+        {
+            path: '/model',
+            name: 'model',
+            component: () => import('@/views/pages/ModelPage.vue')
+        },
+        {
+            path: '/dataset',
+            name: 'dataset',
+            component: () => import('@/views/pages/DatasetPage.vue')
+        },
         {
             path: '/auth/login',
             name: 'login',

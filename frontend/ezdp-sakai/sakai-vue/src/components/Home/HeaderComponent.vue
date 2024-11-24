@@ -14,15 +14,15 @@
 
       <ul class="navbar-center">
         <li @click="gotoHome">首页</li>
-        <li>模型</li>
-        <li>数据集</li>
+        <li @click="gotoModel">模型</li>
+        <li @click="gotoDataset">数据集</li>
         <li>云服务</li>
         <li>使用文档</li>
         <li>社区</li>
         <li>关于我们</li>
       </ul>
       <div class="navbar-right">
-        <button class="login-btn">登录</button>
+        <button class="login-btn" @click="gotoLogin">登录</button>
         <button class="publish-btn" @click="gotoworkbench">工作台</button>
       </div>
     </nav>
@@ -55,6 +55,16 @@ export default {
     gotoHome(){
       console.log("push Home")
       this.$router.push('/');
+    },
+    gotoLogin() {
+      console.log("push Home")
+      this.$router.push('/auth/login');
+    },
+    gotoModel() {
+      this.$router.push('/model');
+    },
+    gotoDataset() {
+      this.$router.push('/dataset');
     }
   }
 };

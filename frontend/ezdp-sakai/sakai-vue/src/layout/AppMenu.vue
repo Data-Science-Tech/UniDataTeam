@@ -7,10 +7,10 @@ const model = ref([
         label: '主页',
         items: [{ label: '首页', icon: 'pi pi-fw pi-home', to: '/' }]
     },
-    {
-        label: '工作台',
-        items: [{ label: '工作台', icon: 'pi pi-fw pi-desktop', to: '/workbench' }]
-    },
+    // {
+    //     label: '工作台',
+    //     items: [{ label: '工作台', icon: 'pi pi-fw pi-desktop', to: '/workbench' }]
+    // },
     {
         label: '数据与算法管理',
         items: [

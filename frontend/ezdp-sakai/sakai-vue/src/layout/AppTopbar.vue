@@ -1,8 +1,18 @@
 <script setup>
 import { useLayout } from '@/layout/composables/layout';
 import AppConfigurator from './AppConfigurator.vue';
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
 const { onMenuToggle, toggleDarkMode, isDarkTheme, gotoHome } = useLayout();
+
+const gotoModel = () => {
+    router.push('/model');
+};
+
+const gotoDataset = () => {
+    router.push('/dataset');
+};
 </script>
 
 <style scoped>
@@ -58,8 +68,8 @@ const { onMenuToggle, toggleDarkMode, isDarkTheme, gotoHome } = useLayout();
 
       <ul class="navbar-center">
         <li @click="gotoHome">首页</li>
-        <li>模型</li>
-        <li>数据集</li>
+        <li @click="gotoModel">模型</li>
+        <li @click="gotoDataset">数据集</li>
         <li>云服务</li>
         <li>使用文档</li>
         <li>社区</li>
