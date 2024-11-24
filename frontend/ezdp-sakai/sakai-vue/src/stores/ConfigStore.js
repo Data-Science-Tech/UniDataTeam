@@ -14,6 +14,8 @@ export const useGlobalStore = defineStore('global', {
             status: 'PENDING',
             trainingResults: ''
         },
+        configId: 1,
+        resultId: 1,
     }),
     actions: {
         setSharedData(key, value) {
@@ -21,7 +23,19 @@ export const useGlobalStore = defineStore('global', {
         },
         getSharedData(key) {
             return this.sharedData[key];
-        }
+        },
+        setConfigId(id) {
+            this.configId = id;
+        },
+        getConfigId() {
+            return this.configId;
+        },
+        setResultId(id) {
+            this.resultId = id;
+        },
+        getResultId() {
+            return this.resultId;
+        },
     }
 });
 

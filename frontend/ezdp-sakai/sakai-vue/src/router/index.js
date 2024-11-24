@@ -49,6 +49,11 @@ const router = createRouter({
                     component: () => import('@/views/uikit/StartTrainDoc.vue')
                 },
                 {
+                    path: '/uikit/implement',
+                    name: 'implement',
+                    component: () => import('@/views/uikit/ImplementDoc.vue')
+                },
+                {
                     path: '/uikit/panel',
                     name: 'panel',
                     component: () => import('@/views/uikit/PanelsDoc.vue')
