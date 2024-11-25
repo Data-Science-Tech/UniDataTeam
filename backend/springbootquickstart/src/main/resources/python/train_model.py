@@ -49,7 +49,8 @@ class DatabaseDataset(Dataset):
 
             # 获取类别为Car的category_description_id
         if self.is_training:
-            self.cursor.execute("""SELECT category_description_id FROM category_description WHERE category_subcategory_name = 'Car'""")
+            self.cursor.execute("""SELECT category_description_id FROM category_description WHERE 
+            category_subcategory_name = 'Car' OR category_subcategory_name LIKE 'vehicle%'""")
             results = self.cursor.fetchall()
             self.car_category_ids = [result[0] for result in results]
             if not self.car_category_ids:

@@ -1,0 +1,17 @@
+{
+    "training_result_id": 27,
+    "epoch_losses": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+    ],
+    "final_loss": 0.0,
+    "model_path": "files\\models\\FAST_R_CNN_scenes_3.pth"
+}
