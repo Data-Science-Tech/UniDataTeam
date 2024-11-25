@@ -1,14 +1,11 @@
 package com.easydeploy.springbootquickstart.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Column;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.EnumType;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Setter
 @Getter
@@ -28,7 +25,14 @@ public class ModelConfig {
     private int batchSize;
     private double momentumValue;
     private double weightDecay;
-    private Long sceneId;
+    @ManyToMany
+    @JoinTable(
+            name = "model_config_scenes",
+            joinColumns = @JoinColumn(name = "model_config_id"),
+            inverseJoinColumns = @JoinColumn(name = "scene_id")
+    )
+    private Set<SceneInfo> scenes = new HashSet<>();
+    // private Long sceneId;
 
     @Enumerated(EnumType.STRING)
     private TrainingStatus status;

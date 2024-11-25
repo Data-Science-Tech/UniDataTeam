@@ -11,7 +11,7 @@ public class SceneInfo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long sceneId;
+    private Integer sceneId;
 
     @Column(length = 1000)
     private String sceneDescription;

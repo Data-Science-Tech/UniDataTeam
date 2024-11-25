@@ -5,6 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface SceneInfoRepository extends JpaRepository<SceneInfo, Long> {
+public interface SceneInfoRepository extends JpaRepository<SceneInfo, Integer> {
 
 }

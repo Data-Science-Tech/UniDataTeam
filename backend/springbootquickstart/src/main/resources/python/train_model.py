@@ -14,22 +14,27 @@ from datetime import datetime
 script_path_parent = os.path.dirname(os.path.abspath(__file__))
 
 class DatabaseDataset(Dataset):
-    def __init__(self, db_config, scene_id, is_training=True):
+    def __init__(self, db_config, scene_ids, is_training=True):
         self.conn = mysql.connector.connect(**db_config)
         self.cursor = self.conn.cursor()
-        self.scene_id = scene_id
+        self.scene_ids = [int(id) for id in scene_ids.split(',')]
         self.is_training = is_training
 
-        # 获取scene_id
-        self.cursor.execute("""SELECT scene_id FROM scene_info WHERE scene_id = %s""", (self.scene_id,))
-        scene_id = self.cursor.fetchone()
-        if scene_id:
-            self.scene_id = scene_id[0]
-        else:
-            raise ValueError(f"Scene '{self.scene_id}' not found in database.")
+        # 验证所有场景ID
+        scene_id_str = ','.join(map(str, self.scene_ids))
+        self.cursor.execute(f"""  
+            SELECT scene_id FROM scene_info   
+            WHERE scene_id IN ({scene_id_str})  
+        """)
+        found_scenes = self.cursor.fetchall()
+        if len(found_scenes) != len(self.scene_ids):
+            raise ValueError(f"Some scenes not found in database")
 
-            # 获取所有sample_id
-        self.cursor.execute("""SELECT sample_id FROM sample_info WHERE scene_id = %s""", (self.scene_id,))
+            # 获取所有指定场景的sample_id
+        self.cursor.execute(f"""  
+            SELECT sample_id FROM sample_info   
+            WHERE scene_id IN ({scene_id_str})  
+        """)
         self.samples = [row[0] for row in self.cursor.fetchall()]
 
         # 获取sensor_data 信息，过滤格式为png 的数据
@@ -112,7 +117,9 @@ def parse_args():
     parser.add_argument('--batch_size', type=int, default=4)
     parser.add_argument('--momentum', type=float, default=0.9)
     parser.add_argument('--weight_decay', type=float, default=5e-4)
-    parser.add_argument('--scene_id', type=str, default=1)
+    # parser.add_argument('--scene_id', type=str, default=1)
+    parser.add_argument('--scene_ids', type=str, required=True,
+                        help='Comma-separated list of scene IDs')
     return parser.parse_args()
 
 
@@ -172,8 +179,11 @@ def train_model(args):
     os.makedirs(logs_dir, exist_ok=True)
 
     # Store relative paths for database
-    relative_model_path = os.path.join('files', 'models', f'{args.algorithm}_{args.scene_id}.pth')
-    relative_log_path = os.path.join('files', 'train_logs', f'training_log_{args.algorithm}_{args.scene_id}.json')
+    scene_id_str = args.scene_ids.replace(',', '_')
+    relative_model_path = os.path.join('files', 'models',
+                                       f'{args.algorithm}_scenes_{scene_id_str}.pth')
+    relative_log_path = os.path.join('files', 'train_logs',
+                                     f'training_log_{args.algorithm}_scenes_{scene_id_str}.json')
 
     # Full paths for actual file operations
     model_path = os.path.join(base_dir, relative_model_path)
@@ -202,7 +212,7 @@ def train_model(args):
 
 
     # Create dataset
-    dataset = DatabaseDataset(db_config, scene_id=args.scene_id, is_training=True)
+    dataset = DatabaseDataset(db_config, scene_ids=args.scene_ids, is_training=True)
     dataloader = DataLoader(dataset, batch_size=args.batch_size,
                             shuffle=True, collate_fn=lambda x: tuple(zip(*x)))
 

@@ -36,9 +36,6 @@ public interface ModelConfigRepository extends JpaRepository<ModelConfig, Long> 
     // 根据训练状态查找配置
     List<ModelConfig> findByStatus(ModelConfig.TrainingStatus status);
 
-    // 根据场景id查找配置
-    List<ModelConfig> findBySceneId(int sceneId);
-
     // 查找最近创建的配置
     @Query("SELECT m FROM ModelConfig m ORDER BY m.id DESC")
     List<ModelConfig> findRecentConfigs();

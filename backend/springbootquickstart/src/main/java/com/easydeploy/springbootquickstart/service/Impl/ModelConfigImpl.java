@@ -6,10 +6,12 @@ import com.easydeploy.springbootquickstart.repository.ModelConfigRepository;
 import com.easydeploy.springbootquickstart.repository.TrainingResultRepository;
 import com.easydeploy.springbootquickstart.service.ModelConfigService;
 import com.easydeploy.springbootquickstart.service.PythonScriptService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.stream.Collectors;
 
 @Service
 public class ModelConfigImpl implements ModelConfigService {
@@ -36,6 +38,7 @@ public class ModelConfigImpl implements ModelConfigService {
         return trainingResultRepository.findById(id).orElseThrow(() -> new RuntimeException("Training result not found"));
     }
 
+    @Transactional
     public void startTraining(Long configId) throws IOException {
         ModelConfig config = getModelConfig(configId);
 
@@ -68,6 +71,11 @@ public class ModelConfigImpl implements ModelConfigService {
     }
 
     private String[] createPythonScriptArgs(ModelConfig config, Long configId) {
+        // 将场景ID列表转换为逗号分隔的字符串
+        String sceneIds = config.getScenes().stream()
+                .map(scene -> String.valueOf(scene.getSceneId()))
+                .collect(Collectors.joining(","));
+
         return new String[]{
                 "--model_config_id", String.valueOf(configId),
                 "--algorithm", config.getAlgorithm().toString(),
@@ -76,7 +84,7 @@ public class ModelConfigImpl implements ModelConfigService {
                 "--batch_size", String.valueOf(config.getBatchSize()),
                 "--momentum", String.valueOf(config.getMomentumValue()),
                 "--weight_decay", String.valueOf(config.getWeightDecay()),
-                "--scene_id", String.valueOf(config.getSceneId())
+                "--scene_ids", sceneIds  // 修改为多场景ID参数
         };
     }
 
