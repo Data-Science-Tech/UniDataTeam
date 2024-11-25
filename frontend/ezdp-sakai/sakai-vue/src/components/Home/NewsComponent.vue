@@ -1,7 +1,7 @@
 <template>
   <div class="news-section">
     <div class="news-header">
-      <h1>UniDataBank的最新动态</h1>
+      <h1>轻松部署的最新动态</h1>
       <p>新闻、博客和评论</p>
     </div>
     <div class="news-container">

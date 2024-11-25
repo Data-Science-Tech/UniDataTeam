@@ -55,7 +55,7 @@ export default {
 <style scoped>
 .home {
     padding: 1vw;
-    background: linear-gradient(0deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2)), radial-gradient(77.36% 256.97% at 77.36% 57.52%, rgb(249, 221, 231) 0%, rgb(225, 243, 255) 100%); clip-path: ellipse(150% 87% at 93% 13%);
+    background: linear-gradient(0deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2)), radial-gradient(77.36% 256.97% at 77.36% 57.52%, rgb(249, 221, 231) 0%, rgb(225, 243, 255) 100%);
 }
 .search-bar-container {
   display: flex;

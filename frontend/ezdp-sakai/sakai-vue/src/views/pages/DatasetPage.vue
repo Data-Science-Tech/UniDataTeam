@@ -118,7 +118,7 @@ const additionalDatasets = ref([
     /*height: 100vh !important;*/
     display: flex;
     flex-direction: column;
-    background-color: #f7f8fa;
+    /*background-color: #f7f8fa;*/
     /* animation: fadeIn 1s ease-in-out; */
     transition: all 0.3s ease-in-out;
 }

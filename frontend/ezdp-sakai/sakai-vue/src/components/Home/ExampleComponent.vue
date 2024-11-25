@@ -63,317 +63,102 @@ export default {
     return {
       sections: [
         {
-          name: "感知",
+          name: "模型",
           instances: [
             {
               id: 1,
-              title: "Scalability in Perception for Autonomous Driving: Waymo Open Dataset",
-              authors: "Unknown Authors",
-              date: "2024-08-16",
+              title: "BERT: Bidirectional Encoder Representations from Transformers",
+              authors: "Jacob Devlin 等",
+              date: "2019-10-11",
               status: "PUBLIC",
-              doi: "https://doi.org/10.48550/arXiv.1912.04838",
-              url: "https://github.com/waymo-research/waymo-open-dataset",
-              image: perception1
+              doi: "https://doi.org/10.48550/arXiv.1810.04805",
+              url: "https://github.com/google-research/bert",
+              image: 'model1' // 请确保已导入相应图片
             },
             {
               id: 2,
-              title: "Vision meets robotics: The KITTI dataset",
-              authors: "Unknown Authors",
-              date: "2024-08-16",
+              title: "GPT-4: Generative Pre-trained Transformer 4",
+              authors: "OpenAI",
+              date: "2023-03-14",
               status: "PUBLIC",
-              doi: "https://doi.org/10.1177/0278364913491297",
-              url: "https://github.com/alexstaravoitau/KITTI-Dataset",
-              image: perception2
-            },
-            {
-              id: 3,
-              title: "nuScenes: A Multimodal Dataset for Autonomous Driving",
-              authors: "Author Name",
-              date: "2024-08-16",
-              status: "RESTRICTED",
-              doi: "https://arxiv.org/abs/1903.11027",
-              url: "https://github.com/nutonomy/nuscenes-devkit",
-              image: perception3
-            },
-            {
-              id: 4,
-              title: "The ApolloScape Dataset for Autonomous Driving",
-              authors: "Author Name",
-              date: "2024-08-16",
-              status: "RESTRICTED",
-              doi: "https://doi.org/10.1109/TPAMI.2019.2926463",
-              url: "https://github.com/ApolloScapeAuto/dataset-api",
-              image: perception4
-            },
-          ]
-        },
-        {
-          name: "预测",
-          instances: [
-            {
-              id: 1,
-              title: "Argoverse: 3D Tracking and Forecasting With Rich Maps",
-              authors: "Author Name",
-              date: "2024-08-16",
-              status: "RESTRICTED",
-              doi: "https://doi.org/10.48550/arXiv.1911.02620",
-              url: "https://github.com/argoverse/argoverse-api",
-              image: prediction1
-            },
-            {
-              id: 2,
-              title: "INTERACTION Dataset: An INTERnational, Adversarial and Cooperative moTION Dataset in Interactive Driving Scenarios with Semantic Maps",
-              authors: "Author Name",
-              date: "2024-08-16",
-              status: "RESTRICTED",
-              doi: "https://doi.org/10.48550/arXiv.1910.03088",
-              url: "https://github.com/interaction-dataset/interaction-dataset",
-              image: prediction2
-            },
-            {
-              id: 3,
-              title: "SIND: A Drone Dataset at Signalized Intersection in China",
-              authors: "Author Name",
-              date: "2024-08-16",
-              status: "RESTRICTED",
-              doi: "https://doi.org/10.48550/arXiv.2209.02297",
-              url: "https://github.com/sotif-avlab/sind",
-              image: prediction3
-            },
-            {
-              id: 4,
-              title: "CitySim: A Drone-Based Vehicle Trajectory Dataset for Safety Oriented Research and Digital Twins",
-              authors: "Author Name",
-              date: "2024-08-16",
-              status: "RESTRICTED",
-              doi: "https://doi.org/10.1177/03611981231185768",
-              url: "https://github.com/UCF-SST-Lab/UCF-SST-CitySim1-Dataset",
-              image: prediction4
+              doi: "https://doi.org/10.48550/arXiv.2005.14165",
+              url: "https://github.com/openai/gpt-4",
+              image: 'model2' // 请确保已导入相应图片
             }
           ]
         },
         {
-          name: "规控",
+          name: "数据集",
           instances: [
             {
               id: 1,
-              title: "DBNet: A large-scale dataset for driving behavior learning",
-              authors: "Unknown Authors",
-              date: "2024-08-16",
-              status: "RESTRICTED",
-              doi: "http://www.dbehavior.net/data/egpaper_release.pdf",
-              url: "www.dbehavior.net",
-              image: control1
+              title: "ImageNet",
+              authors: "ImageNet 团队",
+              date: "2009-08-16",
+              status: "PUBLIC",
+              doi: "https://doi.org/10.1007/s11263-015-0816-y",
+              url: "http://www.image-net.org/",
+              image: 'dataset1' // 请确保已导入相应图片
             },
             {
               id: 2,
-              title: "Udacity Dataset",
-              authors: "Unknown Authors",
-              date: "2024-08-16",
-              status: "RESTRICTED",
-              doi: "https://www.udacity.com/self-driving-car",
-              url: "https://github.com/udacity/self-driving-car/tree/master/datasets",
-              image: control2
-            },
-            {
-              id: 3,
-              title: "Toward Driving Scene Understanding: A Dataset for Learning Driver Behavior and Causal Reasoning",
-              authors: "Unknown Authors",
-              date: "2024-08-16",
-              status: "RESTRICTED",
-              doi: "https://doi.org/10.48550/arXiv.1811.02307",
-              url: "https://usa.honda-ri.com/hdd",
-              image: control3
-            },
-            {
-              id: 4,
-              title: "A2D2: Audi autonomous driving dataset",
-              authors: "Unknown Authors",
-              date: "2024-08-16",
-              status: "RESTRICTED",
-              doi: "https://arxiv.org/abs/2004.06320",
-              url: "https://www.a2d2.audi/a2d2/en.html",
-              image: control4
+              title: "COCO: Common Objects in Context",
+              authors: "Tobias Müller 等",
+              date: "2014-08-16",
+              status: "PUBLIC",
+              doi: "https://doi.org/10.48550/arXiv.1405.0312",
+              url: "https://cocodataset.org/",
+              image: 'dataset2' // 请确保已导入相应图片
             }
           ]
         },
         {
-          name: "端到端",
+          name: "算法",
           instances: [
             {
               id: 1,
-              title: "DriveCoT: Integrating Chain-of-Thought Reasoning with End-to-End Driving",
-              authors: "Unknown Authors",
-              date: "2024-08-16",
-              status: "RESTRICTED",
-              doi: "https://arxiv.org/abs/2403.16996",
-              url: "https://drivecot.github.io/",
-              image: endtoend1
+              title: "梯度下降法 (Gradient Descent)",
+              authors: "多位学者",
+              date: "1858-03-01",
+              status: "PUBLIC",
+              doi: "https://doi.org/10.1002/cpa.3160390204",
+              url: "https://en.wikipedia.org/wiki/Gradient_descent",
+              image: 'algorithm1' // 请确保已导入相应图片
             },
             {
               id: 2,
-              title: "DDD20: end-to-end DAVIS driving dataset",
-              authors: "Unknown Authors",
-              date: "2024-08-16",
-              status: "RESTRICTED",
-              doi: "https://ieeexplore.ieee.org/abstract/document/9294515/",
-              url: "https://sites.google.com/view/davis-driving-dataset-2020/home",
-              image: endtoend2
-            },
-            {
-              id: 3,
-              title: "LMDrive: Closed-Loop End-to-End Driving with Large Language Models",
-              authors: "Unknown Authors",
-              date: "2024-08-16",
-              status: "RESTRICTED",
-              doi: "https://doi.org/10.48550/arXiv.2312.07488",
-              url: "https://github.com/opendilab/LMDrive",
-              image: endtoend3
-            },
-            {
-              id: 4,
-              title: "A Commute in Data: The comma2k19 Dataset",
-              authors: "Unknown Authors",
-              date: "2024-08-16",
-              status: "RESTRICTED",
-              doi: "https://doi.org/10.48550/arXiv.1812.05752",
-              url: "https://github.com/commaai/comma2k19",
-              image: endtoend4
+              title: "随机森林 (Random Forest)",
+              authors: "Leo Breiman 等",
+              date: "2001-01-01",
+              status: "PUBLIC",
+              doi: "https://doi.org/10.1023/A:1010933404324",
+              url: "https://github.com/scikit-learn/scikit-learn/tree/main/sklearn/ensemble",
+              image: 'algorithm2' // 请确保已导入相应图片
             }
           ]
         },
         {
-          name: "V2X",
+          name: "云服务",
           instances: [
             {
               id: 1,
-              title: "DAIR-V2X Dataset",
-              authors: "Unknown Authors",
-              date: "2024-08-16",
-              status: "RESTRICTED",
-              doi: "https://doi.org/10.48550/arXiv.2204.05575",
-              url: "https://github.com/AIR-THU/DAIR-V2X",
-              image: v2x1
+              title: "AWS EC2",
+              authors: "Amazon Web Services",
+              date: "2006-08-25",
+              status: "PUBLIC",
+              doi: "https://aws.amazon.com/ec2/",
+              url: "https://aws.amazon.com/ec2/",
+              image: 'cloud1' // 请确保已导入相应图片
             },
             {
               id: 2,
-              title: "V2X-Sim: Multi-agent collaborative perception dataset and benchmark for autonomous driving",
-              authors: "Unknown Authors",
-              date: "2024-08-16",
-              status: "RESTRICTED",
-              doi: "https://ieeexplore.ieee.org/abstract/document/9835036/",
-              url: "https://ai4ce.github.io/V2X-Sim/data.html",
-              image: v2x2
-            },
-            {
-              id: 3,
-              title: "V2X-Real: a Largs-Scale Dataset for Vehicle-to-Everything Cooperative Perception",
-              authors: "Unknown Authors",
-              date: "2024-08-16",
-              status: "RESTRICTED",
-              doi: "https://arxiv.org/pdf/2403.01316.pdf",
-              url: "https://tum-traffic-dataset.github.io/tumtraf-v2x/",
-              image: v2x3
-            },
-            {
-              id: 4,
-              title: "V2X-Seq Dataset",
-              authors: "Unknown Authors",
-              date: "2024-08-16",
-              status: "RESTRICTED",
-              doi: "https://doi.org/10.48550/arXiv.2305.05938",
-              url: "https://thudair.baai.ac.cn/cooplocus",
-              image: v2x4
-            }
-          ]
-        },
-        {
-          name: "LLM",
-          instances: [
-            {
-              id: 1,
-              title: "Driving with LLMs: Fusing Object-Level Vector Modality for Explainable Autonomous Driving",
-              authors: "Unknown Authors",
-              date: "2024-08-16",
-              status: "RESTRICTED",
-              doi: "https://doi.org/10.48550/arXiv.2310.01957",
-              url: "https://github.com/waveyai/Driving-with-LLMs",
-              image: llm1
-            },
-            {
-              id: 2,
-              title: "Learning to Copy for Automatic Post-Editing",
-              authors: "Unknown Authors",
-              date: "2024-08-16",
-              status: "RESTRICTED",
-              doi: "https://doi.org/10.48550/arXiv.1911.03627",
-              url: "https://github.com/talk2car/Talk2Car",
-              image: llm2
-            },
-            {
-              id: 3,
-              title: "DriveLM: Driving with Graph Visual Question Answering",
-              authors: "Unknown Authors",
-              date: "2024-08-16",
-              status: "RESTRICTED",
-              doi: "https://doi.org/10.48550/arXiv.2312.14150",
-              url: "https://github.com/OpenDriveLab/DriveLM",
-              image: llm3
-            },
-            {
-              id: 4,
-              title: "Automated Evaluation of Large Vision-Language Models on Self-driving Corner Cases",
-              authors: "Unknown Authors",
-              date: "2024-08-16",
-              status: "RESTRICTED",
-              doi: "https://doi.org/10.48550/arXiv.2404.10595",
-              url: "https://github.com/DLUT-LYZ/CODA-LM",
-              image: llm4
-            }
-          ]
-        },
-        {
-          name: "NeRF",
-          instances: [
-            {
-              id: 1,
-              title: "DriveEnv-NeRF: Exploration of A NeRF-Based Autonomous Driving Environment for Real-World Performance Validation",
-              authors: "Unknown Authors",
-              date: "2024-08-16",
-              status: "RESTRICTED",
-              doi: "https://doi.org/10.48550/arXiv.2403.15791",
-              url: "https://github.com/muyishen2040/DriveEnvNeRF",
-              image: nerf1
-            },
-            {
-              id: 2,
-              title: "NeuroNCAP: Photorealistic Closed-loop Safety Testing for Autonomous Driving",
-              authors: "Unknown Authors",
-              date: "2024-08-16",
-              status: "RESTRICTED",
-              doi: "https://doi.org/10.48550/arXiv.2404.07762",
-              url: "https://github.com/atonderski/neuro-ncap",
-              image: nerf2
-            },
-            {
-              id: 3,
-              title: "LiDAR4D: Dynamic Neural Fields for Novel Space-time View LiDAR Synthesis",
-              authors: "Unknown Authors",
-              date: "2024-08-16",
-              status: "RESTRICTED",
-              doi: "https://doi.org/10.48550/arXiv.2404.02742",
-              url: "https://github.com/ispc-lab/LiDAR4D",
-              image: nerf3
-            },
-            {
-              id: 4,
-              title: "Learning to Copy for Automatic Post-Editing",
-              authors: "Unknown Authors",
-              date: "2024-08-16",
-              status: "RESTRICTED",
-              doi: "https://doi.org/10.48550/arXiv.2403.05907",
-              url: "https://github.com/VISION-SJTU/Lightning-NeRF",
-              image: nerf4
+              title: "Google Cloud Storage",
+              authors: "Google Cloud",
+              date: "2010-04-07",
+              status: "PUBLIC",
+              doi: "https://cloud.google.com/storage",
+              url: "https://cloud.google.com/storage",
+              image: 'cloud2' // 请确保已导入相应图片
             }
           ]
         }
@@ -414,12 +199,12 @@ export default {
 }
 
 .section-title {
-  width: 30%;
-  background-color: #f2f2f2;
+  width: 10vw;
+  background-color: #f1f1a9;
   text-align: center;
   font-size: 24px;
-  padding: 15px;
-  border-radius: 8px;
+  padding: 10px;
+  border-radius: 20px;
   margin: 0 auto 20px auto; /* 设置左右 margin 为 auto, 确保居中 */
   font-weight: bold;
 }
