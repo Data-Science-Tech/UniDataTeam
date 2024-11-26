@@ -38,14 +38,29 @@
                     step="0.0001" />
             </div>
 
-            <div class="form-group">
-                <label for="sceneIds">场景ID及描述:</label>
-                <select v-model="globalStore.modelConfig.sceneIds" id="sceneIds" class="input-field" multiple>
-                    <option v-for="scene in scenes" :key="scene.sceneId" :value="scene.sceneId">
-                        {{ scene.sceneId }} - {{ scene.sceneDescription }}
-                    </option>
-                </select>
-            </div>
+            <MultiSelect v-model="globalStore.modelConfig.sceneId" :options="scenes" optionLabel="sceneDescription"
+                optionValue="sceneId" placeholder="请选择场景" :filter="true">
+                <template #value="slotProps">
+                    <div class="inline-flex items-center py-1 px-2 bg-primary text-primary-contrast rounded-border mr-2"
+                        v-for="option of slotProps.value" :key="option">
+                        <div>{{ getSceneDescriptionById(option) }}</div>
+                    </div>
+                    <template v-if="!slotProps.value || slotProps.value.length === 0">
+                        <div class="p-1">请选择场景</div>
+                    </template>
+                </template>
+                <template #option="slotProps">
+                    <div class="flex items-center">
+                        <div>{{ slotProps.option.sceneId }} - {{ slotProps.option.sceneDescription }}</div>
+                    </div>
+                </template>
+            </MultiSelect>
+
+
+            <!-- 调试输出 -->
+            <div>{{ globalStore.modelConfig.sceneId }}</div>
+
+
 
             <div class="button-group">
                 <button type="button" @click="createModelConfig" class="button create-btn">创建参数配置</button>
@@ -98,6 +113,12 @@ const getallscene = async () => {
     } catch (error) {
         console.error('获取场景数据失败:', error);
     }
+};
+
+
+const getSceneDescriptionById = (sceneId) => {
+    const scene = scenes.value.find(item => item.sceneId === sceneId);
+    return scene ? scene.sceneDescription : '';
 };
 
 // 组件挂载时获取场景数据
