@@ -12,8 +12,8 @@
 
             <div class="form-group">
                 <label for="learningRate">学习率(Learning Rate):</label>
-                <input type="number" v-model="globalStore.modelConfig.learningRate" id="learningRate" class="input-field"
-                    step="0.005" />
+                <input type="number" v-model="globalStore.modelConfig.learningRate" id="learningRate"
+                    class="input-field" step="0.005" />
             </div>
 
             <div class="form-group">
@@ -28,8 +28,8 @@
 
             <div class="form-group">
                 <label for="momentumValue">动量值(Momentum Value):</label>
-                <input type="number" v-model="globalStore.modelConfig.momentumValue" id="momentumValue" class="input-field"
-                    step="0.1" />
+                <input type="number" v-model="globalStore.modelConfig.momentumValue" id="momentumValue"
+                    class="input-field" step="0.1" />
             </div>
 
             <div class="form-group">
@@ -39,8 +39,8 @@
             </div>
 
             <div class="form-group">
-                <label for="sceneId">场景ID及描述:</label>
-                <select v-model="globalStore.modelConfig.sceneId" id="sceneId" class="input-field">
+                <label for="sceneIds">场景ID及描述:</label>
+                <select v-model="globalStore.modelConfig.sceneIds" id="sceneIds" class="input-field" multiple>
                     <option v-for="scene in scenes" :key="scene.sceneId" :value="scene.sceneId">
                         {{ scene.sceneId }} - {{ scene.sceneDescription }}
                     </option>
@@ -60,7 +60,7 @@
 </template>
 
 <script setup>
-import { ref ,onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import TrainModelApi from '@/Api/TrainModelApi';
 import { useGlobalStore } from '@/stores/ConfigStore.js';
 import { useRouter } from 'vue-router';
@@ -165,8 +165,8 @@ h2 {
 
 .button-group {
     display: flex;
-    justify-content: center; 
-    align-items: center; 
+    justify-content: center;
+    align-items: center;
 }
 
 .button {
