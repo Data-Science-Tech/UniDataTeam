@@ -1,7 +1,0 @@
-{
-  "dependencies": {
-    "@primevue/themes": "^4.1.1",
-    "pinia": "^2.2.6",
-    "primevue": "^4.1.1"
-  }
-}
