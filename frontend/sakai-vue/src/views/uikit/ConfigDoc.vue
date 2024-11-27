@@ -38,7 +38,8 @@
                     step="0.0001" />
             </div>
 
-            <MultiSelect v-model="globalStore.modelConfig.sceneId" :options="scenes" optionLabel="sceneDescription"
+            <label for="scene">场景ID:</label>
+            <MultiSelect v-model="globalStore.modelConfig.sceneIds" :options="scenes" optionLabel="sceneDescription"
                 optionValue="sceneId" placeholder="请选择场景" :filter="true">
                 <template #value="slotProps">
                     <div class="inline-flex items-center py-1 px-2 bg-primary text-primary-contrast rounded-border mr-2"

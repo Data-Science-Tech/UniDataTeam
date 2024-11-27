@@ -9,7 +9,7 @@ export const useGlobalStore = defineStore('global', {
             batchSize: 4,
             momentumValue: 0.9,
             weightDecay: 0.0005,
-            sceneId: [],
+            sceneIds: [],
             modelSavePath: '/path/to/save/model',
             status: 'PENDING',
             trainingResults: ''
