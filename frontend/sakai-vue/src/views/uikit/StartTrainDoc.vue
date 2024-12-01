@@ -1,3 +1,35 @@
+<template>
+  <div class="card">
+        <div class="font-semibold text-xl mb-4">步骤</div>
+        <Stepper value="5">
+            <StepList>
+                <Step value="1">服务器选择</Step>
+                <Step value="2">数据集选择</Step>
+                <Step value="3">算法选择</Step>
+                <Step value="4">参数配置</Step>
+                <Step value="5">训练启动</Step>
+            </StepList>
+        </Stepper>
+    </div>
+    <div class="container">
+    <h1>模型配置</h1>
+    <div class="model-config">
+      <ul>
+        <li v-for="(value, key) in filteredModelConfig" :key="key">
+          <strong>{{ key }}:</strong> {{ value }}
+        </li>
+      </ul>
+    </div>
+  </div>
+  <!-- 显示操作状态 -->
+  <div v-if="responseMessage" class="response-message">
+            <p>{{ responseMessage }}</p>
+        </div>
+    <div class="button-group">
+        <button type="button" @click="startTraining" class="button create-btn">开始训练</button>
+    </div>
+</template>
+
 <script setup>
 import { ref ,computed } from 'vue';
 import TrainModelApi from '@/Api/TrainModelApi';
@@ -30,26 +62,6 @@ const startTraining = async () => {
 };
 
 </script>
-
-<template>
-    <div class="container">
-    <h1>模型配置</h1>
-    <div class="model-config">
-      <ul>
-        <li v-for="(value, key) in filteredModelConfig" :key="key">
-          <strong>{{ key }}:</strong> {{ value }}
-        </li>
-      </ul>
-    </div>
-  </div>
-  <!-- 显示操作状态 -->
-  <div v-if="responseMessage" class="response-message">
-            <p>{{ responseMessage }}</p>
-        </div>
-    <div class="button-group">
-        <button type="button" @click="startTraining" class="button create-btn">开始训练</button>
-    </div>
-</template>
 
 
 <style scoped>

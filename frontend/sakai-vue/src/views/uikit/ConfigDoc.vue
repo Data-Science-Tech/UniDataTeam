@@ -1,14 +1,26 @@
 <template>
+    <div class="card">
+        <div class="font-semibold text-xl mb-4">步骤</div>
+        <Stepper value="4">
+            <StepList>
+                <Step value="1">服务器选择</Step>
+                <Step value="2">数据集选择</Step>
+                <Step value="3">算法选择</Step>
+                <Step value="4">参数配置</Step>
+                <Step value="5">训练启动</Step>
+            </StepList>
+        </Stepper>
+    </div>
     <div class="container">
         <h2>算法选择和模型参数配置</h2>
         <!-- 表单输入字段 -->
         <form @submit.prevent="createModelConfig" class="form-container">
-            <div class="form-group">
+            <!-- <div class="form-group">
                 <label for="algorithm">算法(Algorithm):</label>
                 <select v-model="globalStore.modelConfig.algorithm" id="algorithm" class="input-field">
                     <option v-for="algorithm in algorithms" :key="algorithm" :value="algorithm">{{ algorithm }}</option>
                 </select>
-            </div>
+            </div> -->
 
             <div class="form-group">
                 <label for="learningRate">学习率(Learning Rate):</label>
@@ -64,7 +76,7 @@
 
 
             <div class="button-group">
-                <button type="button" @click="createModelConfig" class="button create-btn">创建参数配置</button>
+                <button type="button" @click="createModelConfig" class="button create-btn">确定参数配置</button>
             </div>
         </form>
 
@@ -87,7 +99,7 @@ const router = useRouter();
 
 // 本地状态
 const scenes = ref([]); // 场景数据
-const algorithms = ref(['FAST_R_CNN', 'SSD']);// 后续可以向后端发送代码查询所有存在的算法，完成赋值。
+// const algorithms = ref(['FAST_R_CNN', 'SSD']);// 后续可以向后端发送代码查询所有存在的算法，完成赋值。
 const responseMessage = ref('');
 
 // 创建模型配置
@@ -98,7 +110,7 @@ const createModelConfig = async () => {
         responseMessage.value = '模型参数配置成功!';
         console.log("模型参数配置创建成功:", response.data);
         globalStore.setConfigId(response.data.id);
-        router.push('/uikit/implement');
+        // router.push('/uikit/implement');
     } catch (error) {
         responseMessage.value = '创建模型配置失败.';
         console.error("创建模型配置失败:", error);

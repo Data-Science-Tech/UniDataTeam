@@ -1,4 +1,16 @@
 <template>
+    <div class="card">
+        <div class="font-semibold text-xl mb-4">步骤</div>
+        <Stepper value="1">
+            <StepList>
+                <Step value="1">服务器选择</Step>
+                <Step value="2">数据集选择</Step>
+                <Step value="3">算法选择</Step>
+                <Step value="4">参数配置</Step>
+                <Step value="5">训练启动</Step>
+            </StepList>
+        </Stepper>
+    </div>
     <div class="container">
         <div class="title">
             环境配置
@@ -7,9 +19,8 @@
         <div class="form-group">
             <h3 class="label">操作系统</h3>
             <div class="button-group">
-                <button v-for="os in Object.keys(osTree)" :key="os" 
-                    :class="['button', selectedOS === os ? 'primary' : 'default']"
-                    @click="selectOS(os)">
+                <button v-for="os in Object.keys(osTree)" :key="os"
+                    :class="['button', selectedOS === os ? 'primary' : 'default']" @click="selectOS(os)">
                     {{ os }}
                 </button>
             </div>
@@ -43,9 +54,8 @@
         <div v-if="selectedDistribution" class="form-group">
             <h3 class="label">版本</h3>
             <div class="button-group">
-                <button v-for="version in osTree[selectedOS][selectedArchitecture][selectedDistribution].versions" 
-                    :key="version"
-                    :class="['button', selectedVersion === version ? 'primary' : 'default']"
+                <button v-for="version in osTree[selectedOS][selectedArchitecture][selectedDistribution].versions"
+                    :key="version" :class="['button', selectedVersion === version ? 'primary' : 'default']"
                     @click="selectVersion(version)">
                     {{ version }}
                 </button>
@@ -56,9 +66,9 @@
         <div v-if="selectedVersion" class="form-group">
             <h3 class="label">安装包类型</h3>
             <div class="button-group">
-                <button v-for="installer in osTree[selectedOS][selectedArchitecture][selectedDistribution].installerTypes" 
-                    :key="installer"
-                    :class="['button', selectedInstallerType === installer ? 'primary' : 'default']"
+                <button
+                    v-for="installer in osTree[selectedOS][selectedArchitecture][selectedDistribution].installerTypes"
+                    :key="installer" :class="['button', selectedInstallerType === installer ? 'primary' : 'default']"
                     @click="selectInstallerType(installer)">
                     {{ installer }}
                 </button>
@@ -77,7 +87,7 @@
 
 
 <script setup>
-import { ref, computed } from "vue"; 
+import { ref, computed } from "vue";
 import { useGlobalStore } from '@/stores/ConfigStore.js';
 import { useRouter } from 'vue-router';
 
@@ -187,7 +197,7 @@ const SelectServer = async () => {
     }
     try {
         console.log("选择服务器成功:");
-        router.push("/uikit/start");
+        router.push("/uikit/dataset");
     } catch (error) {
         console.error("选择服务器失败:", error);
     }
@@ -301,13 +311,15 @@ const selectInstallerType = (installer) => {
 }
 
 .button.primary {
-    background-color: #409eff; /* 选项按钮的主色调 */
+    background-color: #409eff;
+    /* 选项按钮的主色调 */
     color: #fff;
     border: none;
 }
 
 .button.primary:hover {
-    background-color: #66b1ff; /* 选项按钮的悬停色 */
+    background-color: #66b1ff;
+    /* 选项按钮的悬停色 */
 }
 
 .button:disabled {
@@ -325,7 +337,8 @@ const selectInstallerType = (installer) => {
 .confirm-btn {
     font-size: 1rem;
     font-weight: bold;
-    background-color: #52c41a; /* 确认按钮的主色调 */
+    background-color: #52c41a;
+    /* 确认按钮的主色调 */
     color: #fff;
     padding: 10px 20px;
     border: none;
@@ -335,7 +348,8 @@ const selectInstallerType = (installer) => {
 }
 
 .confirm-btn:hover {
-    background-color: #73d13d; /* 确认按钮的悬停色 */
+    background-color: #73d13d;
+    /* 确认按钮的悬停色 */
 }
 
 .confirm-btn:disabled {

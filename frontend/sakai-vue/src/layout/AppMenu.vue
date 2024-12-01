@@ -23,9 +23,12 @@ const model = ref([
     {
         label: '训练管理',
         items: [
-            { label: '一键训练启动', icon: 'pi pi-fw pi-play', to: '/uikit/start' },
-            { label: '训练参数配置', icon: 'pi pi-fw pi-sliders-h', to: '/uikit/config' },
-            { label: '服务器端训练执行', icon: 'pi pi-fw pi-server', to: '/uikit/implement' }
+            { label: '服务器选择', icon: 'pi pi-fw pi-server', to: '/uikit/server' },
+            { label: '数据集选择', icon: 'pi pi-fw pi-server', to: '/uikit/dataset' },
+            { label: '算法选择', icon: 'pi pi-fw pi-server', to: '/uikit/algorithm' },
+            { label: '参数配置', icon: 'pi pi-fw pi-sliders-h', to: '/uikit/config' },
+            { label: '训练启动', icon: 'pi pi-fw pi-play', to: '/uikit/start' },
+        
         ]
     },
     {

@@ -14,6 +14,7 @@ export const useGlobalStore = defineStore('global', {
             status: 'PENDING',
             trainingResults: ''
         },
+        algorithmId:1,
         configId: 1,
         resultId: 1,
     }),
@@ -23,6 +24,12 @@ export const useGlobalStore = defineStore('global', {
         },
         getSharedData(key) {
             return this.sharedData[key];
+        },
+        setAlgorithmId(id) {
+            this.algorithmId = id;
+        },
+        getAlgorithmId() {
+            return this.algorithmId;
         },
         setConfigId(id) {
             this.configId = id;

@@ -38,21 +38,38 @@ const router = createRouter({
                     name: 'table',
                     component: () => import('@/views/uikit/TableDoc.vue')
                 },
+                // 自定义路由
+                // 服务器选择
+                {
+                    path: '/uikit/server',
+                    name: 'Server',
+                    component: () => import('@/views/uikit/ServerDoc.vue')
+                },
+                // 数据集选择
+                {
+                    path: '/uikit/dataset',
+                    name: 'Dataset',
+                    component: () => import('@/views/uikit/DatasetDoc.vue')
+                },
+                // 算法选择
+                {
+                    path: '/uikit/algorithm',
+                    name: 'Algorithm',
+                    component: () => import('@/views/uikit/AlgorithmDoc.vue')
+                },
+                //配置选择
                 {
                     path: '/uikit/config',
-                    name: 'config',
+                    name: 'Config',
                     component: () => import('@/views/uikit/ConfigDoc.vue')
                 },
+                //开始训练选择
                 {
                     path: '/uikit/start',
-                    name: 'start',
+                    name: 'Start',
                     component: () => import('@/views/uikit/StartTrainDoc.vue')
                 },
-                {
-                    path: '/uikit/implement',
-                    name: 'implement',
-                    component: () => import('@/views/uikit/ImplementDoc.vue')
-                },
+                // 自定义路由结束
                 {
                     path: '/uikit/panel',
                     name: 'panel',
