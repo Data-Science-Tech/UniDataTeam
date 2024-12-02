@@ -182,9 +182,12 @@ def create_ssd_model():
     model = ssdlite320_mobilenet_v3_large(weights=weights)
     return model
 
-def train_epoch(model, dataloader, optimizer, device):
+def train_epoch(model, dataloader, optimizer, device, epoch, total_epochs):
     epoch_loss = 0
-    for images, targets in dataloader:
+    # 获取数据加载器的总批次数
+    total_batches = len(dataloader)
+
+    for batch_idx, (images, targets) in enumerate(dataloader):
         images = [img.to(device) for img in images]
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
 
@@ -196,9 +199,43 @@ def train_epoch(model, dataloader, optimizer, device):
         optimizer.zero_grad()
         losses.backward()
         optimizer.step()
-        epoch_loss += losses.item()
 
-    return epoch_loss / len(dataloader)
+        # 累计损失
+        current_loss = losses.item()
+        epoch_loss += current_loss
+
+        # 计算当前批次的平均损失
+        avg_loss = epoch_loss / (batch_idx + 1)
+
+        # 输出进度信息
+        progress = {
+            "type": "progress",
+            "current_epoch": epoch + 1,
+            "total_epochs": total_epochs,
+            "current_batch": batch_idx + 1,
+            "total_batches": total_batches,
+            "current_loss": current_loss,
+            "avg_loss": avg_loss,
+            "progress_percentage": ((epoch * total_batches + batch_idx + 1) / (total_epochs * total_batches)) * 100
+        }
+
+        # 使用特定前缀输出进度信息
+        print(f"PROGRESS:{json.dumps(progress)}", flush=True)
+
+        # 计算整个epoch的平均损失
+    epoch_avg_loss = epoch_loss / len(dataloader)
+
+    # 输出epoch完成信息
+    epoch_progress = {
+        "type": "epoch_complete",
+        "epoch": epoch + 1,
+        "total_epochs": total_epochs,
+        "epoch_loss": epoch_avg_loss,
+        "progress_percentage": ((epoch + 1) / total_epochs) * 100
+    }
+    print(f"PROGRESS:{json.dumps(epoch_progress)}", flush=True)
+
+    return epoch_avg_loss
 
 def train_model(args):
     start_time = datetime.now()
@@ -275,14 +312,22 @@ def train_model(args):
             'model_path': relative_model_path
         }
 
+        # 计算总训练步数
+        total_steps = args.num_epochs * len(dataloader)
+        current_step = 0
+
         model.train()
         for epoch in range(args.num_epochs):
-            epoch_loss = train_epoch(model, dataloader, optimizer, device)
+            epoch_loss = train_epoch(model, dataloader, optimizer, device, epoch, args.num_epochs)
             results['epoch_losses'].append(epoch_loss)
-            print(json.dumps({
-                'epoch': epoch + 1,
-                'loss': epoch_loss
-            }))
+
+        # 输出训练完成信息
+        completion_info = {
+            "type": "complete",
+            "final_loss": results['epoch_losses'][-1],
+            "training_time": str(datetime.now() - start_time)
+        }
+        print(f"PROGRESS:{json.dumps(completion_info)}", flush=True)
 
         if not conn.is_connected():
             conn = get_connection_from_pool()

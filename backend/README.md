@@ -2,6 +2,8 @@
 
 ## 部分接口使用说明
 
+### 普通接口
+
 **创建模型配置 (/api/model-configs)**
 
 请求方式：POST
@@ -154,5 +156,34 @@ response.data.forEach(result => {
     console.log(result.startTime);  // 打印每个训练结果的开始时间  
     // ... 其他属性  
 });
+```
+
+### WebSocket接口
+
+**实时获取训练进度(ws://localhost:8080/ws/training-progress/{config_id})**
+
+```javascript
+// 建立WebSocket连接  
+const ws = new WebSocket('ws://localhost:8080/ws/training-progress/16');  
+
+// 接收消息  
+ws.onmessage = (event) => {  
+    const data = JSON.parse(event.data);  
+    if (data.type === 'progress') {  
+        console.log('训练进度:', data.progress_percentage + '%');  
+        console.log('当前轮次:', data.current_epoch + '/' + data.total_epochs);  
+        console.log('当前损失:', data.current_loss);  
+    }  
+};  
+
+// 连接建立  
+ws.onopen = () => {  
+    console.log('连接已建立');  
+};  
+
+// 连接关闭  
+ws.onclose = () => {  
+    console.log('连接已关闭');  
+};
 ```
 

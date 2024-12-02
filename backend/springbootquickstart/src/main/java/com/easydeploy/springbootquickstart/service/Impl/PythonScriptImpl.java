@@ -2,6 +2,7 @@ package com.easydeploy.springbootquickstart.service.Impl;
 
 import com.easydeploy.springbootquickstart.config.PythonScriptConfig;
 import com.easydeploy.springbootquickstart.service.PythonScriptService;
+import com.easydeploy.springbootquickstart.websocket.TrainingProgressHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,13 +11,11 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -31,6 +30,9 @@ public class PythonScriptImpl implements PythonScriptService {
 
     @Autowired
     private ResourceLoader resourceLoader;
+
+    @Autowired
+    private TrainingProgressHandler progressHandler;
 
     private Path getScriptPath(String scriptName) throws IOException {
         // 首先尝试从resources目录加载
@@ -89,12 +91,21 @@ public class PythonScriptImpl implements PythonScriptService {
             try {
                 Process process = processBuilder.start();
 
-                // 读取输出
+                // 从args中获取configId
+                String configId = extractConfigId(args);
+
+                // 读取输出并通过WebSocket发送给前端
                 try (BufferedReader reader = new BufferedReader(
                         new InputStreamReader(process.getInputStream()))) {
                     String line;
                     while ((line = reader.readLine()) != null) {
-                        logger.info("Python output: " + line);
+                        logger.info("Python output: {}", line);
+
+                        // 解析Python输出的进度信息并通过WebSocket发送
+                        if (line.startsWith("PROGRESS:")) {
+                            String progress = line.substring("PROGRESS:".length()).trim();
+                            progressHandler.sendProgressUpdate(configId, progress);
+                        }
                     }
                 }
 
@@ -109,6 +120,16 @@ public class PythonScriptImpl implements PythonScriptService {
                 throw new RuntimeException("Failed to execute Python script", e);
             }
         });
+    }
+
+    private String extractConfigId(String[] args) {
+        // 从参数中提取model_config_id
+        for (int i = 0; i < args.length - 1; i++) {
+            if (args[i].equals("--model_config_id")) {
+                return args[i + 1];
+            }
+        }
+        return null;
     }
 
     // 可选：添加检查conda环境是否可用的方法
