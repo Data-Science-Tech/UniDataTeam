@@ -2,6 +2,7 @@ from sqlite3 import connect
 from turtle import update
 import mysql.connector
 import os
+import posixpath
 from datetime import datetime
 
 local_connection = mysql.connector.connect(
@@ -20,7 +21,7 @@ remote_connection = mysql.connector.connect(
 
 def connect_database():
     """连接本地 MySQL 数据库"""
-    return remote_connection
+    return local_connection
 
 def insert_sensor(conn, sensor_type, sensor_name):
     """插入传感器信息"""
@@ -381,41 +382,45 @@ def parse_kitti_directory(root_path, dataset_type):
     lidar_folder = "kitti_mini_data_object_veloyne"
 
     if dataset_type == "training":
-        base_image_path = os.path.join(root_path, image_folder, "training")
-        base_label_path = os.path.join(root_path, label_folder, "training")
-        base_calib_path = os.path.join(root_path, calib_folder, "training")
-        base_lidar_path = os.path.join(root_path, lidar_folder, "training")
+        base_image_path = posixpath.join(root_path, image_folder, "training")
+        base_label_path = posixpath.join(root_path, label_folder, "training")
+        base_calib_path = posixpath.join(root_path, calib_folder, "training")
+        base_lidar_path = posixpath.join(root_path, lidar_folder, "training")
     elif dataset_type == "testing":
-        base_image_path = os.path.join(root_path, image_folder, "testing")
-        base_calib_path = os.path.join(root_path, calib_folder, "testing")
-        base_lidar_path = os.path.join(root_path, lidar_folder, "testing")
+        base_image_path = posixpath.join(root_path, image_folder, "testing")
+        base_calib_path = posixpath.join(root_path, calib_folder, "testing")
+        base_lidar_path = posixpath.join(root_path, lidar_folder, "testing")
     else:
         raise ValueError("Invalid dataset type. Must be 'training' or 'testing'")
 
     # 解析图像数据
     for root, _, files in os.walk(base_image_path):
         for file in sorted(files):
+            root = root.replace("\\", "/")
             if file.endswith(".png"):
-                data["images"].append(os.path.join(root, file))
+                data["images"].append(posixpath.join(root, file))
 
     # 解析标签数据（仅训练集有标签）
     if dataset_type == "training":
         for root, _, files in os.walk(base_label_path):
+            root = root.replace("\\", "/")
             for file in sorted(files):
                 if file.endswith(".txt"):
-                    data["labels"].append(os.path.join(root, file))
+                    data["labels"].append(posixpath.join(root, file))
     
     # 解析标定数据
     for root, _, files in os.walk(base_calib_path):
+        root = root.replace("\\", "/")
         for file in sorted(files):
             if file.endswith(".txt"):
-                data["calib"].append(os.path.join(root, file))
+                data["calib"].append(posixpath.join(root, file))
 
     # 解析LiDAR数据
     for root, _, files in os.walk(base_lidar_path):
+        root = root.replace("\\", "/")
         for file in sorted(files):
             if file.endswith(".bin"):
-                data["lidar"].append(os.path.join(root, file))
+                data["lidar"].append(posixpath.join(root, file))
 
     return data
 
@@ -664,5 +669,6 @@ def process_kitti_data(kitti_root):
     conn.close()
 
 if __name__ == "__main__":
-    kitti_root = "D:\datasets\kitti\mini_kitti"
+    os.chdir("D:/datasets")
+    kitti_root = "kitti/mini_kitti"
     process_kitti_data(kitti_root)

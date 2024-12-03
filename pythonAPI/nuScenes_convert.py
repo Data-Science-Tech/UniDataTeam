@@ -23,7 +23,7 @@ local_db_config = {
     'database': 'car_perception_db'
 }
 
-root_pth = 'D:/datasets/nuScenes/v1.0-mini/'
+root_pth = 'nuScenes/v1.0-mini/'
 
 # Debug 模式开关
 DEBUG_MODE = False  # 设置为 True 开启调试信息，设置为 False 禁用调试信息
@@ -392,7 +392,7 @@ def get_2d_bbox_from_sampleData_auto_obj(cursor, nusc, sample_data, debug=False)
 
 def main():
     # 连接到数据库
-    connection = mysql.connector.connect(**remote_db_config)
+    connection = mysql.connector.connect(**local_db_config)
     cursor = connection.cursor()
 
     # 加载 nuScenes 数据集
