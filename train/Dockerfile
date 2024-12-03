@@ -23,4 +23,4 @@ WORKDIR /app
 COPY . /app
 
 # 默认启动命令
-CMD ["python", "train_model.py", "--model_config_id", "1", "--scene_ids", "1"]
+CMD ["python", "train_model.py", "--model_config_id", "1", "--scene_ids", "3"]

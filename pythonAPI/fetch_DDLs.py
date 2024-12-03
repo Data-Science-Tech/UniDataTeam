@@ -17,7 +17,7 @@ local_db_config = {
 
 
 # 创建数据库连接
-connection = mysql.connector.connect(**local_db_config)
+connection = mysql.connector.connect(**remote_db_config)
 cursor = connection.cursor()
 
 try:

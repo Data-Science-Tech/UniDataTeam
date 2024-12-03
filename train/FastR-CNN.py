@@ -3,13 +3,11 @@ import torch
 import cv2
 import numpy as np
 from torch.utils.data import Dataset, DataLoader
-from torch.utils.data import Subset
 import torchvision
 from torchvision.transforms import functional as F
 from torchvision.models.detection import FasterRCNN_ResNet50_FPN_Weights
 import torch.optim as optim
 import matplotlib.pyplot as plt
-import random
 
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 print(f"Using device: {device}")
