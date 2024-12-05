@@ -15,8 +15,8 @@ const router = createRouter({
             children: [
                 {
                     path: '',
-                    name: 'train',
-                    component: () => import('@/views/pages/TrainConfig/SaveConfig.vue')
+                    name: 'workbench',
+                    component: () => import('@/views/Dashboard.vue')
                 },
                 {
                     path: '/uikit/formlayout',

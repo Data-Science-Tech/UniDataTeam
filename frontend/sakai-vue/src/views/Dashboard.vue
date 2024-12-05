@@ -106,66 +106,66 @@ watch([getPrimary, getSurface, isDarkTheme], () => {
             <div class="card mb-0">
                 <div class="flex justify-between mb-4">
                     <div>
-                        <span class="block text-muted-color font-medium mb-4">Orders</span>
-                        <div class="text-surface-900 dark:text-surface-0 font-medium text-xl">152</div>
+                        <span class="block text-muted-color font-medium mb-4">已部署模型</span>
+                        <div class="text-surface-900 dark:text-surface-0 font-medium text-xl">28</div>
                     </div>
                     <div class="flex items-center justify-center bg-blue-100 dark:bg-blue-400/10 rounded-border" style="width: 2.5rem; height: 2.5rem">
-                        <i class="pi pi-shopping-cart text-blue-500 !text-xl"></i>
+                        <i class="pi pi-cloud text-blue-500 !text-xl"></i>
                     </div>
                 </div>
-                <span class="text-primary font-medium">24 new </span>
-                <span class="text-muted-color">since last visit</span>
+                <span class="text-primary font-medium">5个 </span>
+                <span class="text-muted-color">本周新增</span>
             </div>
         </div>
         <div class="col-span-12 lg:col-span-6 xl:col-span-3">
             <div class="card mb-0">
                 <div class="flex justify-between mb-4">
                     <div>
-                        <span class="block text-muted-color font-medium mb-4">Revenue</span>
-                        <div class="text-surface-900 dark:text-surface-0 font-medium text-xl">$2.100</div>
+                        <span class="block text-muted-color font-medium mb-4">CPU使用率</span>
+                        <div class="text-surface-900 dark:text-surface-0 font-medium text-xl">76%</div>
                     </div>
                     <div class="flex items-center justify-center bg-orange-100 dark:bg-orange-400/10 rounded-border" style="width: 2.5rem; height: 2.5rem">
-                        <i class="pi pi-dollar text-orange-500 !text-xl"></i>
+                        <i class="pi pi-server text-orange-500 !text-xl"></i>
                     </div>
                 </div>
-                <span class="text-primary font-medium">%52+ </span>
-                <span class="text-muted-color">since last week</span>
+                <span class="text-primary font-medium">↑12% </span>
+                <span class="text-muted-color">相比昨日</span>
             </div>
         </div>
         <div class="col-span-12 lg:col-span-6 xl:col-span-3">
             <div class="card mb-0">
                 <div class="flex justify-between mb-4">
                     <div>
-                        <span class="block text-muted-color font-medium mb-4">Customers</span>
-                        <div class="text-surface-900 dark:text-surface-0 font-medium text-xl">28441</div>
+                        <span class="block text-muted-color font-medium mb-4">训练任务</span>
+                        <div class="text-surface-900 dark:text-surface-0 font-medium text-xl">15</div>
                     </div>
                     <div class="flex items-center justify-center bg-cyan-100 dark:bg-cyan-400/10 rounded-border" style="width: 2.5rem; height: 2.5rem">
-                        <i class="pi pi-users text-cyan-500 !text-xl"></i>
+                        <i class="pi pi-cog text-cyan-500 !text-xl"></i>
                     </div>
                 </div>
-                <span class="text-primary font-medium">520 </span>
-                <span class="text-muted-color">newly registered</span>
+                <span class="text-primary font-medium">3个 </span>
+                <span class="text-muted-color">正在进行</span>
             </div>
         </div>
         <div class="col-span-12 lg:col-span-6 xl:col-span-3">
             <div class="card mb-0">
                 <div class="flex justify-between mb-4">
                     <div>
-                        <span class="block text-muted-color font-medium mb-4">Comments</span>
-                        <div class="text-surface-900 dark:text-surface-0 font-medium text-xl">152 Unread</div>
+                        <span class="block text-muted-color font-medium mb-4">系统告警</span>
+                        <div class="text-surface-900 dark:text-surface-0 font-medium text-xl">2 未处理</div>
                     </div>
                     <div class="flex items-center justify-center bg-purple-100 dark:bg-purple-400/10 rounded-border" style="width: 2.5rem; height: 2.5rem">
-                        <i class="pi pi-comment text-purple-500 !text-xl"></i>
+                        <i class="pi pi-exclamation-triangle text-purple-500 !text-xl"></i>
                     </div>
                 </div>
-                <span class="text-primary font-medium">85 </span>
-                <span class="text-muted-color">responded</span>
+                <span class="text-primary font-medium">0 </span>
+                <span class="text-muted-color">紧急告警</span>
             </div>
         </div>
 
         <div class="col-span-12 xl:col-span-6">
             <div class="card">
-                <div class="font-semibold text-xl mb-4">Recent Sales</div>
+                <div class="font-semibold text-xl mb-4">近期部署记录</div>
                 <DataTable :value="products" :rows="5" :paginator="true" responsiveLayout="scroll">
                     <Column style="width: 15%" header="Image">
                         <template #body="slotProps">
@@ -187,7 +187,7 @@ watch([getPrimary, getSurface, isDarkTheme], () => {
             </div>
             <div class="card">
                 <div class="flex justify-between items-center mb-6">
-                    <div class="font-semibold text-xl">Best Selling Products</div>
+                    <div class="font-semibold text-xl">模型训练状态</div>
                     <div>
                         <Button icon="pi pi-ellipsis-v" class="p-button-text p-button-plain p-button-rounded" @click="$refs.menu2.toggle($event)"></Button>
                         <Menu ref="menu2" :popup="true" :model="items" class="!min-w-40"></Menu>
@@ -196,14 +196,14 @@ watch([getPrimary, getSurface, isDarkTheme], () => {
                 <ul class="list-none p-0 m-0">
                     <li class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
                         <div>
-                            <span class="text-surface-900 dark:text-surface-0 font-medium mr-2 mb-1 md:mb-0">Space T-Shirt</span>
-                            <div class="mt-1 text-muted-color">Clothing</div>
+                            <span class="text-surface-900 dark:text-surface-0 font-medium mr-2 mb-1 md:mb-0">图像分类模型 A</span>
+                            <div class="mt-1 text-muted-color">训练中</div>
                         </div>
                         <div class="mt-2 md:mt-0 flex items-center">
                             <div class="bg-surface-300 dark:bg-surface-500 rounded-border overflow-hidden w-40 lg:w-24" style="height: 8px">
                                 <div class="bg-orange-500 h-full" style="width: 50%"></div>
                             </div>
-                            <span class="text-orange-500 ml-4 font-medium">%50</span>
+                            <span class="text-orange-500 ml-4 font-medium">50%</span>
                         </div>
                     </li>
                     <li class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
@@ -271,7 +271,7 @@ watch([getPrimary, getSurface, isDarkTheme], () => {
         </div>
         <div class="col-span-12 xl:col-span-6">
             <div class="card">
-                <div class="font-semibold text-xl mb-4">Revenue Stream</div>
+                <div class="font-semibold text-xl mb-4">资源使用统计</div>
                 <Chart type="bar" :data="chartData" :options="chartOptions" class="h-80" />
             </div>
             <div class="card">
@@ -287,11 +287,10 @@ watch([getPrimary, getSurface, isDarkTheme], () => {
                 <ul class="p-0 mx-0 mt-0 mb-6 list-none">
                     <li class="flex items-center py-2 border-b border-surface">
                         <div class="w-12 h-12 flex items-center justify-center bg-blue-100 dark:bg-blue-400/10 rounded-full mr-4 shrink-0">
-                            <i class="pi pi-dollar !text-xl text-blue-500"></i>
+                            <i class="pi pi-check-circle !text-xl text-blue-500"></i>
                         </div>
-                        <span class="text-surface-900 dark:text-surface-0 leading-normal"
-                            >Richard Jones
-                            <span class="text-surface-700 dark:text-surface-100">has purchased a blue t-shirt for <span class="text-primary font-bold">$79.00</span></span>
+                        <span class="text-surface-900 dark:text-surface-0 leading-normal">
+                            模型 B <span class="text-surface-700 dark:text-surface-100">部署完成,运行状态正常</span>
                         </span>
                     </li>
                     <li class="flex items-center py-2">
