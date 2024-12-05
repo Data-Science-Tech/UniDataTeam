@@ -32,22 +32,11 @@ const model = ref([
         ]
     },
     {
-        label: '训练监控',
+        label: '任务管理',
         items: [
-            { label: '训练状态反馈', icon: 'pi pi-fw pi-info-circle', to: '/uikit/overlay' },
-            { label: '训练进度展示', icon: 'pi pi-fw pi-chart-line', to: '/uikit/media' }
+            { label: '任务概览', icon: 'pi pi-fw pi-info-circle', to: '/uikit/overlay' },
         ]
     },
-    {
-        label: '训练结果管理',
-        items: [
-            { label: '模型文件生成', icon: 'pi pi-fw pi-file', to: '/uikit/menu' },
-            { label: '训练数据与日志存储', icon: 'pi pi-fw pi-database', to: '/uikit/message' },
-            { label: '结果文件下载', icon: 'pi pi-fw pi-download', to: '/uikit/file' },
-            { label: '操作日志记录', icon: 'pi pi-fw pi-book', to: '/uikit/charts' },
-            { label: '历史记录追踪', icon: 'pi pi-fw pi-history', to: '/uikit/timeline' }
-        ]
-    }
 ]);
 </script>
 
