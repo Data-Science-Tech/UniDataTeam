@@ -12,29 +12,57 @@
         </Stepper>
     </div>
 
-    <label for="scene">场景ID:</label>
-    <MultiSelect v-model="globalStore.modelConfig.sceneIds" :options="scenes" optionLabel="sceneDescription"
-        optionValue="sceneId" placeholder="请选择场景" :filter="true">
-        <template #value="slotProps">
-            <div class="inline-flex items-center py-1 px-2 bg-primary text-primary-contrast rounded-border mr-2"
-                v-for="option of slotProps.value" :key="option">
-                <div>{{ getSceneDescriptionById(option) }}</div>
+    <div class="font-semibold text-xl mb-4">场景选择</div>
+    <!-- 带有分页、搜索和单选功能的 DataTable -->
+    <DataTable 
+        :value="scenes" 
+        :paginator="true" 
+        :rows="10" 
+        dataKey="sceneId" 
+        :loading="loading" 
+        v-model:selection="selectedScenes"
+        :filters="filters" 
+        v-model:filters="filters" 
+        filterDisplay="menu" 
+        showGridlines
+    >
+        <template #header>
+            <div class="flex justify-between">
+                <!-- 搜索框 -->
+                <InputText v-model="filters['global'].value" placeholder="按描述搜索" style="width: 200px" />
+
+                <!-- 清除筛选按钮 -->
+                <Button type="button" icon="pi pi-filter-slash" label="清除筛选" outlined @click="clearFilters" />
             </div>
-            <template v-if="!slotProps.value || slotProps.value.length === 0">
-                <div class="p-1">请选择场景</div>
-            </template>
         </template>
-        <template #option="slotProps">
-            <div class="flex items-center">
-                <div>{{ slotProps.option.sceneId }} - {{ slotProps.option.sceneDescription }}</div>
-            </div>
+
+        <!-- 空数据时显示的消息 -->
+        <template #empty>
+            没有找到场景。
         </template>
-    </MultiSelect>
+
+        <!-- 选择列 -->
+        <Column selectionMode="multiple" style="width: 3rem" />
+
+        <!-- 场景ID列 -->
+        <Column field="sceneId" header="数据集ID" style="min-width: 10rem" />
+
+        <!-- 场景描述列 -->
+        <Column field="sceneDescription" header="数据集描述" style="min-width: 20rem" />
+
+    </DataTable>
 
     <!-- 确认按钮 -->
-    <button type="button" @click="SelectDataset" class="button confirm-btn">
-        确定数据集选择
-    </button>
+    <div class="confirm-group">
+        <button 
+            type="button" 
+            @click="SelectDataset" 
+            class="button confirm-btn" 
+            :disabled="selectedScenes.length === 0"
+        >
+            确定数据集选择
+        </button>
+    </div>
 </template>
 
 <script setup>
@@ -44,38 +72,52 @@ import { useRouter } from 'vue-router';
 // 导入接口
 import TrainModelApi from '@/Api/TrainModelApi';
 
-// 初始化 Pinia Store 和 Router
 const globalStore = useGlobalStore();
 const router = useRouter();
+
 // 本地状态
-const scenes = ref([]); // 场景数据
+// 保存初始展示的所有场景
+const scenes = ref([]); 
+// 保存选中场景的所有信息
+const selectedScenes = ref([]); 
+const filters = ref({
+    global: { value: null },
+    name: { value: null },
+  });
+const loading = ref(false);
 
 // 获取场景数据
 const getallscene = async () => {
     try {
+        loading.value = true;
         const response = await TrainModelApi.getallscene();
         scenes.value = response.data;
         console.log('场景数据获取成功:', scenes.value);
     } catch (error) {
         console.error('获取场景数据失败:', error);
+    } finally {
+        loading.value = false;
     }
 };
 
-
-const getSceneDescriptionById = (sceneId) => {
-    const scene = scenes.value.find(item => item.sceneId === sceneId);
-    return scene ? scene.sceneDescription : '';
+// 清除筛选条件
+const clearFilters = () => {
+    filters.value = {};
 };
-
 
 // 确定数据集的选择
 const SelectDataset = async () => {
-    console.log('选择的数据集:',globalStore.modelConfig.sceneIds);
+    if (selectedScenes.length === 0) {
+        alert('请选择至少一个场景');
+        return;
+    }
+    console.log('selectedScenes:', selectedScenes.value);
+    globalStore.modelConfig.sceneIds = selectedScenes.value.map(scene => scene.sceneId);
+    console.log('选择的场景:', globalStore.modelConfig.sceneIds);
     router.push('/uikit/algorithm');
 };
 
-
-// 组件挂载时获取场景数据
+// 获取场景数据
 onMounted(getallscene);
 </script>
 
@@ -104,14 +146,12 @@ onMounted(getallscene);
 
 .button.primary {
     background-color: #409eff;
-    /* 主色调 */
     color: #fff;
     border: none;
 }
 
 .button.primary:hover {
     background-color: #66b1ff;
-    /* 悬停色 */
 }
 
 .button:disabled {

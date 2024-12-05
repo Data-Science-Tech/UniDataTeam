@@ -1,7 +1,7 @@
 <template>
     <div class="card">
       <div class="font-semibold text-xl mb-4">步骤</div>
-      <Stepper value="2">
+      <Stepper value="3">
         <StepList>
           <Step value="1">服务器选择</Step>
           <Step value="2">数据集选择</Step>
