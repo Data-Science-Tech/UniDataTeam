@@ -7,10 +7,10 @@ const model = ref([
         label: '主页',
         items: [{ label: '首页', icon: 'pi pi-fw pi-home', to: '/' }]
     },
-    // {
-    //     label: '工作台',
-    //     items: [{ label: '工作台', icon: 'pi pi-fw pi-desktop', to: '/workbench' }]
-    // },
+    {
+        label: '工作台',
+        items: [{ label: '工作台', icon: 'pi pi-fw pi-desktop', to: '/workbench' }]
+    },
     {
         label: '数据与算法管理',
         items: [
@@ -34,7 +34,7 @@ const model = ref([
     {
         label: '任务管理',
         items: [
-            { label: '任务概览', icon: 'pi pi-fw pi-info-circle', to: '/uikit/overlay' },
+            { label: '任务概览', icon: 'pi pi-fw pi-info-circle', to: '/missionManage/mission' },
         ]
     },
 ]);

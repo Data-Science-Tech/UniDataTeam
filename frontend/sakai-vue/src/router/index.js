@@ -77,9 +77,9 @@ const router = createRouter({
                 },
 
                 {
-                    path: '/uikit/overlay',
-                    name: 'overlay',
-                    component: () => import('@/views/uikit/OverlayDoc.vue')
+                    path: '/missionManage/mission',
+                    name: 'mission',
+                    component: () => import('@/views/pages/missionManage/mission.vue')
                 },
                 {
                     path: '/uikit/media',
