@@ -2,7 +2,7 @@ import argparse
 import json
 import sys
 import torch
-from torch.utils.data import DataLoader, Dataset, random_split
+from torch.utils.data import DataLoader, Dataset
 import cv2
 import mysql.connector
 from mysql.connector import pooling
@@ -13,17 +13,35 @@ import os
 from datetime import datetime
 import time
 from mysql.connector import Error
-import random
 
 script_path_parent = os.path.dirname(os.path.abspath(__file__))
+if not os.path.exists("datasets"):
+    os.makedirs("datasets")
+os.chdir("datasets")
+
+base_dir = "/app/datasets"
 
 # 数据库连接池配置
+# DB_CONFIG = {
+#     'pool_name': 'mypool',
+#     'pool_size': 5,
+#     'host': '122.51.133.37',
+#     'user': 'dev',
+#     'password': 'dev123',
+#     'database': 'car_perception_db',
+#     'connect_timeout': 86400,
+#     'pool_reset_session': True,
+#     'autocommit': True,
+#     'get_warnings': True,
+#     'raise_on_warnings': True,
+#     'connection_timeout': 86400
+# }
 DB_CONFIG = {
     'pool_name': 'mypool',
     'pool_size': 5,
-    'host': '122.51.133.37',
-    'user': 'dev',
-    'password': 'dev123',
+    'host': '100.80.142.150',
+    'user': 'root',
+    'password': 'root',
     'database': 'car_perception_db',
     'connect_timeout': 86400,
     'pool_reset_session': True,
@@ -169,8 +187,6 @@ def parse_args():
     parser.add_argument('--weight_decay', type=float, default=5e-4)
     parser.add_argument('--scene_ids', type=str, required=True,
                         help='Comma-separated list of scene IDs')
-    parser.add_argument('--val_split', type=float, default=0.2,
-                        help='Proportion of dataset to use for validation (default: 0.2)')
     return parser.parse_args()
 
 def create_faster_rcnn_model():
@@ -184,58 +200,6 @@ def create_ssd_model():
     weights = SSDLite320_MobileNet_V3_Large_Weights.DEFAULT
     model = ssdlite320_mobilenet_v3_large(weights=weights)
     return model
-
-def compute_iou(box1, box2):
-    """
-    Compute Intersection over Union (IoU) between two boxes.
-    box: [xmin, ymin, xmax, ymax]
-    """
-    xA = max(box1[0], box2[0])
-    yA = max(box1[1], box2[1])
-    xB = min(box1[2], box2[2])
-    yB = min(box1[3], box2[3])
-
-    interArea = max(0, xB - xA + 1) * max(0, yB - yA + 1)
-
-    box1Area = (box1[2] - box1[0] + 1) * (box1[3] - box1[1] + 1)
-    box2Area = (box2[2] - box2[0] + 1) * (box2[3] - box2[1] + 1)
-
-    iou = interArea / float(box1Area + box2Area - interArea)
-    return iou
-
-def evaluate_model(model, dataloader, device, iou_threshold=0.5):
-    model.eval()
-    correct = 0
-    total = 0
-
-    with torch.no_grad():
-        for images, targets in dataloader:
-            images = [img.to(device) for img in images]
-            outputs = model(images)
-
-            for output, target in zip(outputs, targets):
-                pred_boxes = output['boxes'].cpu().numpy()
-                pred_labels = output['labels'].cpu().numpy()
-                pred_scores = output['scores'].cpu().numpy()
-
-                gt_boxes = target['boxes'].numpy()
-                gt_labels = target['labels'].numpy()
-
-                # For simplicity, match each ground truth box with the highest scoring prediction
-                for gt_box, gt_label in zip(gt_boxes, gt_labels):
-                    matched = False
-                    for pred_box, pred_label, pred_score in zip(pred_boxes, pred_labels, pred_scores):
-                        if pred_label == gt_label:
-                            iou = compute_iou(gt_box, pred_box)
-                            if iou >= iou_threshold:
-                                matched = True
-                                break
-                    if matched:
-                        correct += 1
-                    total += 1
-
-    accuracy = correct / total if total > 0 else 0
-    return accuracy
 
 def train_epoch(model, dataloader, optimizer, device, epoch, total_epochs):
     epoch_loss = 0
@@ -277,7 +241,7 @@ def train_epoch(model, dataloader, optimizer, device, epoch, total_epochs):
         # 使用特定前缀输出进度信息
         print(f"PROGRESS:{json.dumps(progress)}", flush=True)
 
-    # 计算整个epoch的平均损失
+        # 计算整个epoch的平均损失
     epoch_avg_loss = epoch_loss / len(dataloader)
 
     # 输出epoch完成信息
@@ -299,7 +263,7 @@ def train_model(args):
 
     try:
         # Define base directory and relative paths
-        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(script_path_parent)))
+        # base_dir = os.path.dirname(os.path.dirname(os.path.dirname(script_path_parent)))
         results_dir = os.path.join(base_dir, 'files', 'models')
         logs_dir = os.path.join(base_dir, 'files', 'train_logs')
 
@@ -340,19 +304,9 @@ def train_model(args):
         conn.commit()
 
         # Create dataset
-        full_dataset = DatabaseDataset(scene_ids=args.scene_ids, is_training=True)
-        dataset_size = len(full_dataset)
-        val_size = int(args.val_split * dataset_size)
-        train_size = dataset_size - val_size
-
-        train_dataset, val_dataset = random_split(full_dataset, [train_size, val_size],
-                                                  generator=torch.Generator().manual_seed(42))
-
-        dataloader = DataLoader(train_dataset, batch_size=args.batch_size,
+        dataset = DatabaseDataset(scene_ids=args.scene_ids, is_training=True)
+        dataloader = DataLoader(dataset, batch_size=args.batch_size,
                                 shuffle=True, collate_fn=lambda x: tuple(zip(*x)))
-
-        val_dataloader = DataLoader(val_dataset, batch_size=args.batch_size,
-                                    shuffle=False, collate_fn=lambda x: tuple(zip(*x)))
 
         # Initialize model
         if args.algorithm == 'FAST_R_CNN':
@@ -374,7 +328,6 @@ def train_model(args):
             'training_result_id': training_result_id,
             'epoch_losses': [],
             'final_loss': 0,
-            'accuracy': 0.0,
             'model_path': relative_model_path
         }
 
@@ -387,15 +340,10 @@ def train_model(args):
             epoch_loss = train_epoch(model, dataloader, optimizer, device, epoch, args.num_epochs)
             results['epoch_losses'].append(epoch_loss)
 
-        # 评估模型
-        accuracy = evaluate_model(model, val_dataloader, device)
-        results['accuracy'] = accuracy
-
         # 输出训练完成信息
         completion_info = {
             "type": "complete",
             "final_loss": results['epoch_losses'][-1],
-            "accuracy": results['accuracy'],
             "training_time": str(datetime.now() - start_time)
         }
         print(f"PROGRESS:{json.dumps(completion_info)}", flush=True)
@@ -433,9 +381,9 @@ def train_model(args):
                 end_time = datetime.now()
                 cursor.execute("""  
                     UPDATE training_result  
-                    SET end_time = %s, training_logs = %s, final_loss = %s, accuracy = %s
+                    SET end_time = %s, training_logs = %s, final_loss = %s  
                     WHERE id = %s  
-                """, (end_time, relative_log_path, results['final_loss'], results['accuracy'], training_result_id))
+                """, (end_time, relative_log_path, results['final_loss'], training_result_id))
                 conn.commit()
                 break
             except Error as err:
