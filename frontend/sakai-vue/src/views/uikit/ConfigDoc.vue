@@ -50,26 +50,6 @@
                     step="0.0001" />
             </div>
 
-            <label for="scene">场景ID:</label>
-            <MultiSelect v-model="globalStore.modelConfig.sceneIds" :options="scenes" optionLabel="sceneDescription"
-                optionValue="sceneId" placeholder="请选择场景" :filter="true">
-                <template #value="slotProps">
-                    <div class="inline-flex items-center py-1 px-2 bg-primary text-primary-contrast rounded-border mr-2"
-                        v-for="option of slotProps.value" :key="option">
-                        <div>{{ getSceneDescriptionById(option) }}</div>
-                    </div>
-                    <template v-if="!slotProps.value || slotProps.value.length === 0">
-                        <div class="p-1">请选择场景</div>
-                    </template>
-                </template>
-                <template #option="slotProps">
-                    <div class="flex items-center">
-                        <div>{{ slotProps.option.sceneId }} - {{ slotProps.option.sceneDescription }}</div>
-                    </div>
-                </template>
-            </MultiSelect>
-
-
             <!-- 调试输出 -->
             <div>{{ globalStore.modelConfig.sceneId }}</div>
 
@@ -88,7 +68,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref} from 'vue';
 import TrainModelApi from '@/Api/TrainModelApi';
 import { useGlobalStore } from '@/stores/ConfigStore.js';
 import { useRouter } from 'vue-router';
@@ -98,44 +78,23 @@ const globalStore = useGlobalStore();
 const router = useRouter();
 
 // 本地状态
-const scenes = ref([]); // 场景数据
-// const algorithms = ref(['FAST_R_CNN', 'SSD']);// 后续可以向后端发送代码查询所有存在的算法，完成赋值。
 const responseMessage = ref('');
 
 // 创建模型配置
 const createModelConfig = async () => {
     try {
-        console.log(globalStore.modelConfig);
+        console.log("modelconfig",globalStore.modelConfig);
         const response = await TrainModelApi.createModelConfig(globalStore.modelConfig);
         responseMessage.value = '模型参数配置成功!';
         console.log("模型参数配置创建成功:", response.data);
         globalStore.setConfigId(response.data.id);
-        // router.push('/uikit/implement');
+        router.push('/uikit/start');
     } catch (error) {
         responseMessage.value = '创建模型配置失败.';
         console.error("创建模型配置失败:", error);
     }
 };
 
-// 获取场景数据
-const getallscene = async () => {
-    try {
-        const response = await TrainModelApi.getallscene();
-        scenes.value = response.data;
-        console.log('场景数据获取成功:', scenes.value);
-    } catch (error) {
-        console.error('获取场景数据失败:', error);
-    }
-};
-
-
-const getSceneDescriptionById = (sceneId) => {
-    const scene = scenes.value.find(item => item.sceneId === sceneId);
-    return scene ? scene.sceneDescription : '';
-};
-
-// 组件挂载时获取场景数据
-onMounted(getallscene);
 </script>
 
 

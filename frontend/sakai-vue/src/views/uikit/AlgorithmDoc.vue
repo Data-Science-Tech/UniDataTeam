@@ -16,7 +16,8 @@
   
       <!-- 带有分页、搜索和单选功能的DataTable -->
       <DataTable :value="algorithms" :paginator="true" :rows="10" dataKey="id" :rowHover="true" :loading="loading"
-        :filters="filters" v-model:filters="filters" filterDisplay="menu" showGridlines>
+        :filters="filters" v-model:filters="filters" filterDisplay="menu" showGridlines
+        v-model:selection="selectedAlgorithm">
         <template #header>
           <div class="flex justify-between">
             <!-- 搜索框 -->
@@ -82,38 +83,14 @@
     date: { value: null },
   });
   
-  // 算法类别
-  const categories = ref([
-    { name: 'Sorting', code: 'sorting' },
-    { name: 'Search', code: 'search' },
-    { name: 'Graph', code: 'graph' },
-  ]);
-  
   // 算法列表，使用英文数据
   const algorithms = ref([
-    { id: 1, name: 'Quick Sort', category: 'Sorting', date: '2024-01-01' },
-    { id: 2, name: 'Binary Search', category: 'Search', date: '2024-02-01' },
-    { id: 3, name: 'Dijkstra', category: 'Graph', date: '2024-03-01' },
-    { id: 4, name: 'Merge Sort', category: 'Sorting', date: '2024-01-10' },
-    { id: 5, name: 'Breadth-First Search', category: 'Graph', date: '2024-04-01' },
-    { id: 6, name: 'Selection Sort', category: 'Sorting', date: '2024-05-01' },
-    { id: 7, name: 'Quick Sort', category: 'Sorting', date: '2024-01-01' },
-    { id: 8, name: 'Binary Search', category: 'Search', date: '2024-02-01' },
-    { id: 9, name: 'Dijkstra', category: 'Graph', date: '2024-03-01' },
-    { id: 10, name: 'Merge Sort', category: 'Sorting', date: '2024-01-10' },
-    { id: 11, name: 'Quick Sort', category: 'Sorting', date: '2024-01-01' },
-    { id: 12, name: 'Binary Search', category: 'Search', date: '2024-02-01' },
-    { id: 13, name: 'Dijkstra', category: 'Graph', date: '2024-03-01' },
-    { id: 14, name: 'Merge Sort', category: 'Sorting', date: '2024-01-10' },
-    { id: 15, name: 'Breadth-First Search', category: 'Graph', date: '2024-04-01' },
-    { id: 16, name: 'Selection Sort', category: 'Sorting', date: '2024-05-01' },
-    { id: 17, name: 'Quick Sort', category: 'Sorting', date: '2024-01-01' },
-    { id: 18, name: 'Binary Search', category: 'Search', date: '2024-02-01' },
-    { id: 19, name: 'Dijkstra', category: 'Graph', date: '2024-03-01' },
+    { id: 1, name: 'FAST_R_CNN', category: 'Perception', date: '2024-01-01' },
+    { id: 2, name: 'SSD', category: 'Perception', date: '2024-02-01' },
   ]);
   
   // 保存选中的算法（只包含id和name）
-  const selectedAlgorithms = ref([]);
+  const selectedAlgorithm = ref([]);
   
   // 清除所有筛选器
   const clearFilters = () => {
@@ -133,7 +110,10 @@
   
   // 处理算法选择
   const SelectAlgorithms = async () => {
-    console.log('选择的算法:', );
+    globalStore.modelConfig.algorithm = selectedAlgorithm.value.name;
+    console.log('selectedAlgorithm:', selectedAlgorithm.value);
+    console.log('selectedAlgorithm.name:', selectedAlgorithm.value.name);
+    console.log('选择的算法:', globalStore.modelConfig.algorithm);
     router.push('/uikit/config');
   };
   </script>

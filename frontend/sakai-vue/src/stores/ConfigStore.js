@@ -3,15 +3,14 @@ import { defineStore } from 'pinia';
 export const useGlobalStore = defineStore('global', {
     state: () => ({
         modelConfig: {
-            algorithm: 'FAST_R_CNN',
+            algorithm: null,
             learningRate: 0.005,
             numEpochs: 10,
             batchSize: 4,
             momentumValue: 0.9,
             weightDecay: 0.0005,
             sceneIds: [],
-            modelSavePath: '/path/to/save/model',
-            status: 'PENDING',
+            status: null,
             trainingResults: ''
         },
         algorithmId:1,
