@@ -28,8 +28,8 @@ public class AlipayTradePagePay {
 
         // 设置业务参数到biz_content
         String bizContent = "{" +
-                "\"out_trade_no\":\"daniel82AAAA000032333361X88\"," +
-                "\"total_amount\":\"0.02\"," +
+                "\"out_trade_no\":\"daniel82AAAA000032333361X89\"," +
+                "\"total_amount\":\"1200\"," +
                 "\"subject\":\"测试商品\"," +
                 "\"product_code\":\"FAST_INSTANT_TRADE_PAY\"" +
                 "}";
