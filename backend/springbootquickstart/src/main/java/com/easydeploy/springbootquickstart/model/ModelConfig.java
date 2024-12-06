@@ -9,6 +9,7 @@ import java.util.Set;
 
 @Setter
 @Getter
+@Table(name = "model_config")
 @Entity
 public class ModelConfig {
 

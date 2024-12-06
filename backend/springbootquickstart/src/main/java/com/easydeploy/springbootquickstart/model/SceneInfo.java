@@ -6,6 +6,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
+@Table(name = "scene_info")
 @Entity
 public class SceneInfo {
 

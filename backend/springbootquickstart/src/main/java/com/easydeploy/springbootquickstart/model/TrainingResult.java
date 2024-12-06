@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 
 @Setter
 @Getter
+@Table(name = "training_result")
 @Entity
 public class TrainingResult {
 
