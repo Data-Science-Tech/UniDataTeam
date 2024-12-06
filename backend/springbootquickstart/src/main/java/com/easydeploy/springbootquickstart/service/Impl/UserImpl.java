@@ -1,12 +1,15 @@
 package com.easydeploy.springbootquickstart.service.Impl;
 
+import com.easydeploy.springbootquickstart.dto.request.UserLoginDTO;
+import com.easydeploy.springbootquickstart.dto.request.UserRegisterDTO;
 import com.easydeploy.springbootquickstart.model.User;
 import com.easydeploy.springbootquickstart.repository.UserRepository;
 import com.easydeploy.springbootquickstart.service.UserService;
 import jakarta.annotation.Resource;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
-
+@Service
 public class UserImpl implements UserService {
     @Resource
     private UserRepository userRepository;
@@ -15,25 +18,38 @@ public class UserImpl implements UserService {
     private PasswordEncoder passwordEncoder;
 
     @Override
-    public Boolean login(String username, String password) {
-        User user = userRepository.findByUsername(username);
-
-        if (user != null) {
-            // 使用matches方法验证密码
-            return passwordEncoder.matches(password, user.getPassword());
+    public User login(UserLoginDTO loginDTO) {
+    // 查找用户
+        User user = userRepository.findByUsername(loginDTO.getUsername());
+        if (user == null) {
+            throw new RuntimeException("用户不存在") ;
         }
 
-        return false;
+        // 验证密码
+        if (!passwordEncoder.matches(loginDTO.getPassword(), user.getPassword())) {
+            throw new RuntimeException("密码错误");
+        }
+
+        // 生成登录Token（这里可以使用JWT）
+        return user;
     }
 
     @Override
-    public User register(User user) {
-        if (userRepository.findByUsername(user.getUsername())!=null) {
-            return null;
-        } else {
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
-            userRepository.save(user);
-            return user;
+    public void register(UserRegisterDTO registerDTO) {
+        // 检查用户名是否已存在
+        if (userRepository.existsUserByUsername((registerDTO.getUsername()))) {
+            throw new RuntimeException("用户名已存在");
         }
+
+        // 创建新用户
+        User newUser = new User();
+        newUser.setUsername(registerDTO.getUsername());
+
+        // 密码加密
+        String encodedPassword = passwordEncoder.encode(registerDTO.getPassword());
+        newUser.setPassword(encodedPassword);
+
+        // 保存用户
+        userRepository.save(newUser);
     }
 }

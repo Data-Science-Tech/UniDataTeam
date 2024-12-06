@@ -2,7 +2,7 @@
 
 ## 部分接口使用说明
 
-### 普通接口
+### REST API
 
 **创建模型配置 (/api/model-configs)**
 
@@ -158,7 +158,63 @@ response.data.forEach(result => {
 });
 ```
 
-### WebSocket接口
+**登录注册相关接口**
+
+```javascript
+data() {  
+	return {  
+		registerForm: {  
+			username: '',  
+			password: ''  
+			},
+		loginForm: {
+  			username: '',
+  			password: ''
+			}
+		}
+	}
+```
+
+
+
+```javascript
+import axios from 'axios'  
+
+// 创建axios实例  
+const request = axios.create({  
+  baseURL: '/api', // 根据实际后端地址配置  
+  timeout: 5000,  
+  withCredentials: true 
+})  
+
+export default {  
+  // 用户注册  
+  register(data) {  
+    return request.post('/auth/register', data)  
+  },  
+
+  // 用户登录  
+  login(data) {  
+    return request.post('/auth/login', data)  
+  },  
+
+  // 获取当前用户信息  
+  getCurrentUser() {  
+    return request.get('/auth/current')  
+  },  
+
+  // 退出登录  
+  logout() {  
+    return request.post('/auth/logout')  
+  }  
+}
+```
+
+
+
+
+
+### WebSocket API
 
 **实时获取训练进度(ws://localhost:8080/ws/training-progress/{config_id})**
 
