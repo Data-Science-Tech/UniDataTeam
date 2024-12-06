@@ -11,7 +11,5 @@ public interface ModelConfigService {
 
     ModelConfig getModelConfig(Long id);
 
-    TrainingResult getTrainingResult(Long id);
-
     void startTraining(Long configId) throws IOException;
 }

@@ -34,10 +34,6 @@ public class ModelConfigImpl implements ModelConfigService {
         return modelConfigRepository.findById(id).orElseThrow(() -> new RuntimeException("Config not found"));
     }
 
-    public TrainingResult getTrainingResult(Long id) {
-        return trainingResultRepository.findById(id).orElseThrow(() -> new RuntimeException("Training result not found"));
-    }
-
     @Transactional
     public void startTraining(Long configId) throws IOException {
         ModelConfig config = getModelConfig(configId);

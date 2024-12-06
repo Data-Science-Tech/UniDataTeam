@@ -47,14 +47,4 @@ public class ModelConfigController {
         modelConfigService.startTraining(id);
     }
 
-    @GetMapping("/{id}/status")
-    public ModelConfig.TrainingStatus getTrainingStatus(@PathVariable Long id) {
-        return modelConfigService.getModelConfig(id).getStatus();
-    }
-
-    @GetMapping("/{id}/result")
-    public TrainingResult getTrainingResult(@PathVariable Long id) {
-        return modelConfigService.getTrainingResult(id);
-    }
-
 }
