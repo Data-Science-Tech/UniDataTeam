@@ -52,4 +52,9 @@ public class UserImpl implements UserService {
         // 保存用户
         userRepository.save(newUser);
     }
+
+    @Override
+    public User findById(int userId) {
+        return userRepository.findById(userId).orElse(null);
+    }
 }

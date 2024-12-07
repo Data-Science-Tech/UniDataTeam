@@ -26,7 +26,8 @@ public class ModelConfig {
     private int batchSize;
     private double momentumValue;
     private double weightDecay;
-    @ManyToMany
+
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "model_config_scenes",
             joinColumns = @JoinColumn(name = "model_config_id"),
@@ -37,6 +38,10 @@ public class ModelConfig {
 
     @Enumerated(EnumType.STRING)
     private TrainingStatus status;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")  // 指定外键列名称
+    private User user;  // 对应的 User 实体
 
     public enum Algorithm {
         FAST_R_CNN,

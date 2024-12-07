@@ -30,8 +30,8 @@ import java.util.List;
 @Repository
 public interface ModelConfigRepository extends JpaRepository<ModelConfig, Long> {
 
-    // 根据算法类型查找配置
-    List<ModelConfig> findByAlgorithm(String algorithm);
+    // 根据用户查找配置
+    List<ModelConfig> findByUser_UserId(int userId);
 
     // 根据训练状态查找配置
     List<ModelConfig> findByStatus(ModelConfig.TrainingStatus status);

@@ -4,6 +4,7 @@ import com.easydeploy.springbootquickstart.model.ModelConfig;
 import com.easydeploy.springbootquickstart.model.TrainingResult;
 
 import java.io.IOException;
+import java.util.List;
 
 public interface ModelConfigService {
 
@@ -12,4 +13,6 @@ public interface ModelConfigService {
     ModelConfig getModelConfig(Long id);
 
     void startTraining(Long configId) throws IOException;
+
+    public List<ModelConfig> findByUserId(int userId);
 }

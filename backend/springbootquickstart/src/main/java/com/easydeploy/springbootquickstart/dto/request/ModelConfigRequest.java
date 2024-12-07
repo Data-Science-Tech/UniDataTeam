@@ -33,4 +33,7 @@ public class ModelConfigRequest {
     @NotEmpty(message = "场景ID列表不能为空")
     @Size(min = 1, message = "至少选择一个场景")
     private List<Integer> sceneIds;
+
+    @NotNull(message = "用户ID不能为空")
+    private int userId;
 }
