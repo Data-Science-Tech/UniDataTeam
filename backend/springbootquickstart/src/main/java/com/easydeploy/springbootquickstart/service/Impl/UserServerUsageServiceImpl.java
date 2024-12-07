@@ -2,18 +2,21 @@ package com.easydeploy.springbootquickstart.service.Impl;
 
 import com.easydeploy.springbootquickstart.dto.response.UserServerUsageResponseDTO;
 import com.easydeploy.springbootquickstart.model.ServerType;
+import com.easydeploy.springbootquickstart.model.TrainingResult;
 import com.easydeploy.springbootquickstart.model.UserServerUsage;
 import com.easydeploy.springbootquickstart.repository.ServerTypeRepository;
 import com.easydeploy.springbootquickstart.repository.TrainingResultRepository;
 import com.easydeploy.springbootquickstart.repository.UserServerUsageRepository;
+import com.easydeploy.springbootquickstart.service.UserServerUsageService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
-public class UserServerUsageServiceImpl {
+public class UserServerUsageServiceImpl implements UserServerUsageService {
     @Resource
     private UserServerUsageRepository userServerUsageRepository;
 
@@ -38,8 +41,9 @@ public class UserServerUsageServiceImpl {
             dto.setUserServerName(usage.getName());
             dto.setStatus(usage.getStatus());
 
+            System.out.println(usage.getServerType());
             // 3. 获取 ServerType 数据
-            Optional<ServerType> serverTypeOpt = serverTypeRepository.findById(usage.getServerType().getServerTypeId());
+            Optional<ServerType> serverTypeOpt = serverTypeRepository.findById(usage.getServerType().getId());
             if (serverTypeOpt.isPresent()) {
                 ServerType serverType = serverTypeOpt.get();
                 dto.setServerTypeName(serverType.getName());

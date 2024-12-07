@@ -1,9 +1,7 @@
 package com.easydeploy.springbootquickstart.model;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,12 +11,20 @@ import lombok.Setter;
 @Entity
 public class UserServerUsage {
     @Id
-    private Long usageId;
+    private Integer usageId;
+
 
     private Long userId;
     private String name;
     private String status;
-    private Long serverTypeId;
-    private Long resultId;
+
+
+    @ManyToOne
+    @JoinColumn(name = "server_type_id")
+    private ServerType serverType;
+
+    @ManyToOne
+    @JoinColumn(name = "result_id")
+    private TrainingResult trainingResult;
 
 }

@@ -12,7 +12,7 @@ import lombok.Setter;
 @Entity
 public class ServerType {
     @Id
-    private Long serverTypeId;
+    private Integer Id;
 
     private String name;
     private Double pricePerHour;
