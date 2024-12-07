@@ -28,10 +28,10 @@ public class UserServerUsageServiceImpl implements UserServerUsageService {
 
     @Override
     public List<UserServerUsageResponseDTO> getUserServerUsageDetails(Long userId) {
-        // 1. 获取所有指定 userId 的 UserServerUsage 记录
+        // 获取所有指定 userId 的 UserServerUsage 记录
         List<UserServerUsage> userServerUsages = userServerUsageRepository.findByUserId(userId);
 
-        // 2. 将每个 UserServerUsage 转换为 UserServerUsageResponseDTO
+        // 保存返回的数据
         List<UserServerUsageResponseDTO> responseDTOs = new ArrayList<>();
 
         for (UserServerUsage usage : userServerUsages) {
@@ -40,9 +40,10 @@ public class UserServerUsageServiceImpl implements UserServerUsageService {
             // 设置 UserServerUsage 的基本字段
             dto.setUserServerName(usage.getName());
             dto.setStatus(usage.getStatus());
+            dto.setId(usage.getUsageId());
 
             System.out.println(usage.getServerType());
-            // 3. 获取 ServerType 数据
+            // 获取 ServerType 数据
             Optional<ServerType> serverTypeOpt = serverTypeRepository.findById(usage.getServerType().getId());
             if (serverTypeOpt.isPresent()) {
                 ServerType serverType = serverTypeOpt.get();
@@ -54,7 +55,7 @@ public class UserServerUsageServiceImpl implements UserServerUsageService {
                 dto.setRamSize(serverType.getRamSize());
             }
 
-            // 4. 获取 TrainingResult 数据
+            // 获取 TrainingResult 数据
             Optional<TrainingResult> trainingResultOpt = trainingResultRepository.findById(usage.getTrainingResult().getId());
             if (trainingResultOpt.isPresent()) {
                 TrainingResult trainingResult = trainingResultOpt.get();
@@ -64,7 +65,7 @@ public class UserServerUsageServiceImpl implements UserServerUsageService {
                 dto.setModelFilePath(trainingResult.getModelFilePath());
             }
 
-            // 5. 将数据添加到返回的 DTO 列表
+            // 将数据添加到返回的 DTO 列表
             responseDTOs.add(dto);
         }
 

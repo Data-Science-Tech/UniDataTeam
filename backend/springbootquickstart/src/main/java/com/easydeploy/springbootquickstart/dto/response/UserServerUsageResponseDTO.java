@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 
 @Data
 public class UserServerUsageResponseDTO {
+    private Integer Id;
     private String userServerName;
     private String status;
     private String serverTypeName;
