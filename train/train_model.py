@@ -23,26 +23,12 @@ os.chdir("datasets") # 必须在datasets目录下运行，否则无法导入Data
 base_dir = "/app/datasets"
 
 # 数据库连接池配置
-# DB_CONFIG = {
-#     'pool_name': 'mypool',
-#     'pool_size': 5,
-#     'host': '122.51.133.37',
-#     'user': 'dev',
-#     'password': 'dev123',
-#     'database': 'car_perception_db',
-#     'connect_timeout': 86400,
-#     'pool_reset_session': True,
-#     'autocommit': True,
-#     'get_warnings': True,
-#     'raise_on_warnings': True,
-#     'connection_timeout': 86400
-# }
 DB_CONFIG = {
     'pool_name': 'mypool',
     'pool_size': 5,
-    'host': '100.80.142.150',
-    'user': 'root',
-    'password': 'root',
+    'host': '122.51.133.37',
+    'user': 'dev',
+    'password': 'dev123',
     'database': 'car_perception_db',
     'connect_timeout': 86400,
     'pool_reset_session': True,
@@ -51,6 +37,20 @@ DB_CONFIG = {
     'raise_on_warnings': True,
     'connection_timeout': 86400
 }
+# DB_CONFIG = {
+#     'pool_name': 'mypool',
+#     'pool_size': 5,
+#     'host': '100.80.142.150',
+#     'user': 'root',
+#     'password': 'root',
+#     'database': 'car_perception_db',
+#     'connect_timeout': 86400,
+#     'pool_reset_session': True,
+#     'autocommit': True,
+#     'get_warnings': True,
+#     'raise_on_warnings': True,
+#     'connection_timeout': 86400
+# }
 
 def get_connection_from_pool():
     max_retries = 3

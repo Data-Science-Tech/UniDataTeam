@@ -21,6 +21,3 @@ WORKDIR /app
 
 # 复制当前目录下的代码到容器
 COPY . /app
-
-# 默认启动命令
-CMD ["python", "train_model.py", "--model_config_id", "1", "--scene_ids", "1"]

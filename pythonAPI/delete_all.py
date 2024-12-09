@@ -24,7 +24,6 @@ tables_to_truncate = [
     "instance",
     "log_info",
     "map_info",
-    "model_config",
     "nuscene_token_to_id",
     "sample_annotation",
     "sample_info",
@@ -33,7 +32,6 @@ tables_to_truncate = [
     "sensor",
     "sensor_calibration",
     "sensor_data",
-    "training_result"
 ]
 
 def clear_tables(cursor):
@@ -58,7 +56,7 @@ def clear_tables(cursor):
 
 def main():
     # 连接数据库
-    connection = mysql.connector.connect(**local_db_config)
+    connection = mysql.connector.connect(**remote_db_config)
     cursor = connection.cursor()
 
     try:

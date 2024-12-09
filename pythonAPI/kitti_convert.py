@@ -21,7 +21,7 @@ remote_connection = mysql.connector.connect(
 
 def connect_database():
     """连接本地 MySQL 数据库"""
-    return local_connection
+    return remote_connection
 
 def insert_sensor(conn, sensor_type, sensor_name):
     """插入传感器信息"""
