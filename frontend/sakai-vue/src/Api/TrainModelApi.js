@@ -20,7 +20,7 @@ export default {
   },
   // 获取所有场景id和对应的描述
   getallscene() {
-    return apiClient.get(`api/scene-info/all`);
+    return apiClient.get(`/api/scene-info/all`);
   }
 };
 
