@@ -2,12 +2,10 @@ package com.easydeploy.springbootquickstart.controller;
 
 import com.easydeploy.springbootquickstart.model.ModelConfig;
 import com.easydeploy.springbootquickstart.model.SceneInfo;
-import com.easydeploy.springbootquickstart.model.TrainingResult;
 import com.easydeploy.springbootquickstart.model.User;
 import com.easydeploy.springbootquickstart.service.ModelConfigService;
 import com.easydeploy.springbootquickstart.service.SceneInfoService;
 import com.easydeploy.springbootquickstart.dto.request.ModelConfigRequest;
-import com.easydeploy.springbootquickstart.dto.response.ModelConfigResponse;
 import com.easydeploy.springbootquickstart.service.UserService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;

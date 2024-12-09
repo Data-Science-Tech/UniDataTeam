@@ -1,9 +1,7 @@
 package com.easydeploy.springbootquickstart.service.Impl;
 
 import com.easydeploy.springbootquickstart.model.ModelConfig;
-import com.easydeploy.springbootquickstart.model.TrainingResult;
 import com.easydeploy.springbootquickstart.repository.ModelConfigRepository;
-import com.easydeploy.springbootquickstart.repository.TrainingResultRepository;
 import com.easydeploy.springbootquickstart.service.ModelConfigService;
 import com.easydeploy.springbootquickstart.service.PythonScriptService;
 import jakarta.transaction.Transactional;
@@ -19,9 +17,6 @@ public class ModelConfigImpl implements ModelConfigService {
 
     @Autowired
     private ModelConfigRepository modelConfigRepository;
-
-    @Autowired
-    private TrainingResultRepository trainingResultRepository;
 
     @Autowired
     private PythonScriptService pythonScriptService;

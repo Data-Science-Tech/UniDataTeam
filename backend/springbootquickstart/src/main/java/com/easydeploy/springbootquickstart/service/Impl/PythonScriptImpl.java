@@ -3,22 +3,15 @@ package com.easydeploy.springbootquickstart.service.Impl;
 import com.easydeploy.springbootquickstart.config.PythonScriptConfig;
 import com.easydeploy.springbootquickstart.service.PythonScriptService;
 import com.easydeploy.springbootquickstart.websocket.TrainingProgressHandler;
+import com.jcraft.jsch.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.io.InputStream;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -29,32 +22,22 @@ public class PythonScriptImpl implements PythonScriptService {
     private PythonScriptConfig config;
 
     @Autowired
-    private ResourceLoader resourceLoader;
-
-    @Autowired
     private TrainingProgressHandler progressHandler;
 
-    private Path getScriptPath(String scriptName) throws IOException {
-        // 首先尝试从resources目录加载
-        String scriptPath = config.getScript().getPath() + scriptName;
-        Resource resource = resourceLoader.getResource("classpath:" + scriptPath);
+    @Value("${remote.server.host}")
+    private String remoteHost;
 
-        if (resource.exists()) {
-            // 如果脚本在jar包内，需要先复制到临时目录
-            // File tempFile = File.createTempFile(scriptName, ".py");
-            // Files.copy(resource.getInputStream(), tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            // return tempFile.toPath();
-            return Paths.get(resource.getURI());
-        }
+    @Value("${remote.server.port}")
+    private int remotePort;
 
-        // 如果不在resources中，尝试从外部目录加载
-        Path externalPath = Paths.get(config.getScript().getPath(), scriptName);
-        if (Files.exists(externalPath)) {
-            return externalPath;
-        }
+    @Value("${remote.server.username}")
+    private String remoteUsername;
 
-        throw new IOException("Script not found: " + scriptName);
-    }
+    @Value("${remote.server.password}")
+    private String remotePassword;
+
+    @Value("${docker.image.name}")
+    private String dockerImageName;
 
     public CompletableFuture<Process> executeTrainingScript(String[] args) throws IOException {
         return executeScript(config.getScript().getTrainScript(), args);
@@ -64,60 +47,141 @@ public class PythonScriptImpl implements PythonScriptService {
         return executeScript(config.getScript().getPredictScript(), args);
     }
 
-    private CompletableFuture<Process> executeScript(String scriptName, String[] args) throws IOException {
-        Path scriptPath = getScriptPath(scriptName);
+    // 简化DockerOutputReader，直接输出到控制台
+    private static class DockerOutputReader implements Runnable {
+        private final ChannelExec channel;
+        private final InputStream in;
+        private final String configId;
+        private final TrainingProgressHandler progressHandler;
 
-        // 构建命令列表
-        List<String> command = new ArrayList<>();
+        public DockerOutputReader(ChannelExec channel, InputStream in, String configId, 
+                                TrainingProgressHandler progressHandler) {
+            this.channel = channel;
+            this.in = in;
+            this.configId = configId;
+            this.progressHandler = progressHandler;
+        }
 
-        // 使用conda环境的Python解释器
-        command.add(config.getConda().getPath());
-        command.add(scriptPath.toString());
-
-        // 添加参数
-        command.addAll(Arrays.asList(args));
-
-        // 创建进程构建器
-        ProcessBuilder processBuilder = new ProcessBuilder(command);
-        processBuilder.redirectErrorStream(true);
-
-        // 设置工作目录为脚本所在目录
-        processBuilder.directory(scriptPath.getParent().toFile());
-
-        logger.info("Executing command: {}", String.join(" ", command));
-
-        // 异步执行
-        return CompletableFuture.supplyAsync(() -> {
+        @Override
+        public void run() {
             try {
-                Process process = processBuilder.start();
-
-                // 从args中获取configId
-                String configId = extractConfigId(args);
-
-                // 读取输出并通过WebSocket发送给前端
-                try (BufferedReader reader = new BufferedReader(
-                        new InputStreamReader(process.getInputStream()))) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        logger.info("Python output: {}", line);
-
-                        // 解析Python输出的进度信息并通过WebSocket发送
-                        if (line.startsWith("PROGRESS:")) {
-                            String progress = line.substring("PROGRESS:".length()).trim();
-                            progressHandler.sendProgressUpdate(configId, progress);
+                byte[] buffer = new byte[1024];
+                while (!channel.isClosed()) {
+                    while (in.available() > 0) {
+                        int len = in.read(buffer, 0, buffer.length);
+                        if (len < 0) break;
+                        
+                        String output = new String(buffer, 0, len);
+                        System.out.print(output); // 直接打印到控制台
+                        
+                        // 只处理进度信息
+                        if (output.contains("PROGRESS:")) {
+                            String[] lines = output.split("\n");
+                            for (String line : lines) {
+                                if (line.startsWith("PROGRESS:")) {
+                                    String progress = line.substring("PROGRESS:".length()).trim();
+                                    progressHandler.sendProgressUpdate(configId, progress);
+                                }
+                            }
                         }
                     }
+                    Thread.sleep(100);
+                }
+            } catch (Exception e) {
+                System.err.println("读取输出时发生错误: " + e.getMessage());
+            }
+        }
+    }
+
+    private CompletableFuture<Process> executeScript(String scriptName, String[] args) throws IOException {
+        return CompletableFuture.supplyAsync(() -> {
+            Session session = null;
+            ChannelExec channel = null;
+            try {
+                logger.info("开始连接训练服务器 {}:{}", remoteHost, remotePort);
+                
+                JSch jsch = new JSch();
+                session = jsch.getSession(remoteUsername, remoteHost, remotePort);
+                session.setPassword(remotePassword);
+                
+                // 设置JSch配置
+                java.util.Properties config = new java.util.Properties();
+                config.put("StrictHostKeyChecking", "no");
+                // 添加这些配置以确保正确的输出处理
+                config.put("PreferredAuthentications", "password");
+                session.setConfig(config);
+                
+                // 设置连接超时时间为30秒
+                session.setTimeout(30000);
+                session.connect();
+                logger.info("成功连接到训练服务器");
+
+                // 修改Docker命令，移除-it参数（因为是非交互式执行）
+                StringBuilder dockerCommand = new StringBuilder();
+                dockerCommand.append("docker run -it -v /root/datasets:/app/datasets -v /mnt:/mnt -v /root:/root --rm --gpus all ")
+                        .append(dockerImageName)
+                        .append(" python3 train_model.py");
+
+                // 添加参数
+                for (String arg : args) {
+                    dockerCommand.append(" ").append(arg);
+                }
+                
+                logger.info("准备执行Docker命令: {}", dockerCommand);
+
+                try {
+                    channel = (ChannelExec) session.openChannel("exec");
+                    
+                    // 设置PTY以确保能获取到输出
+                    ((ChannelExec) channel).setPty(true);
+                    
+                    channel.setCommand(dockerCommand.toString());
+                    
+                    // 获取输入流和错误流
+                    InputStream in = channel.getInputStream();
+
+                    channel.connect(5000);
+                    logger.info("Docker命令开始执行");
+
+                    String configId = extractConfigId(args);
+                    
+                    // 使用简化后的DockerOutputReader
+                    Thread outputThread = new Thread(
+                        new DockerOutputReader(channel, in, configId, progressHandler)
+                    );
+                    outputThread.start();
+
+                    // 等待命令执行完成
+                    outputThread.join();
+                    
+                    int exitStatus = channel.getExitStatus();
+                    if (exitStatus != 0) {
+                        throw new RuntimeException("Docker命令执行失败，退出码: " + exitStatus);
+                    }
+
+                    logger.info("Docker命令执行成功完成");
+                    return null;
+
+                } catch (Exception e) {
+                    String errorMsg = "执行Docker命令时发生错误: " + e.getMessage();
+                    logger.error(errorMsg, e);
+                    throw new RuntimeException(errorMsg);
                 }
 
-                // 等待进程完成
-                int exitCode = process.waitFor();
-                if (exitCode != 0) {
-                    throw new RuntimeException("Python script failed with exit code: " + exitCode);
+            } catch (Exception e) {
+                String errorMsg = "训练任务执行失败: " + e.getMessage();
+                logger.error(errorMsg, e);
+                throw new RuntimeException(errorMsg);
+                
+            } finally {
+                if (channel != null && channel.isConnected()) {
+                    channel.disconnect();
+                    logger.info("已断开Docker命令通道");
                 }
-
-                return process;
-            } catch (IOException | InterruptedException e) {
-                throw new RuntimeException("Failed to execute Python script", e);
+                if (session != null && session.isConnected()) {
+                    session.disconnect();
+                    logger.info("已断开训练服务器连接");
+                }
             }
         });
     }
