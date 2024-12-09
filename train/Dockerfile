@@ -3,7 +3,7 @@ FROM nvidia/cuda:12.6.2-cudnn-devel-ubuntu22.04
 
 # 安装 Python 3.10 和必要系统依赖
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3.10 python3-pip python3.10-dev libmysqlclient-dev git \
+    python3.10 \
     libgl1 libglib2.0-0 && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -23,4 +23,4 @@ WORKDIR /app
 COPY . /app
 
 # 默认启动命令
-CMD ["python", "train_model.py", "--model_config_id", "1", "--scene_ids", "3"]
+CMD ["python", "train_model.py", "--model_config_id", "1", "--scene_ids", "1"]

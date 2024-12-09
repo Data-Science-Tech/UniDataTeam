@@ -1,0 +1,30 @@
+
+version: '3.8'
+services:
+  frontend:
+    build:
+      context: ./frontend/sakai-vue
+      dockerfile: ../Dockerfile.dev
+    volumes:
+      - ./frontend/sakai-vue:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    networks:
+      - app-network
+  backend:
+    build:
+      context: ./backend/springbootquickstart
+      dockerfile: ../Dockerfile.dev
+    volumes:
+      - ./backend/springbootquickstart:/app
+      - /app/.mvn
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+    networks:
+      - app-network
+networks:
+  app-network:
+    driver: bridge
