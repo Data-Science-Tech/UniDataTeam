@@ -83,6 +83,7 @@ const responseMessage = ref('');
 // 创建模型配置
 const createModelConfig = async () => {
     try {
+        globalStore.modelConfig.userId = 1;
         console.log("modelconfig",globalStore.modelConfig);
         const response = await TrainModelApi.createModelConfig(globalStore.modelConfig);
         responseMessage.value = '模型参数配置成功!';

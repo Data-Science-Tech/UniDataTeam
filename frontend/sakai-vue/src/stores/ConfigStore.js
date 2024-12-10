@@ -10,6 +10,7 @@ export const useGlobalStore = defineStore('global', {
             momentumValue: 0.9,
             weightDecay: 0.0005,
             sceneIds: [],
+            userId: null,
             status: null,
             trainingResults: ''
         },

@@ -186,6 +186,42 @@ public class PythonScriptImpl implements PythonScriptService {
         });
     }
 
+    public byte[] downloadFileFromServer(String remoteFilePath) throws JSchException, IOException {
+        Session session = null;
+        ChannelSftp channelSftp = null;
+        try {
+            JSch jsch = new JSch();
+            session = jsch.getSession(remoteUsername, remoteHost, remotePort);
+            session.setPassword(remotePassword);
+            java.util.Properties config = new java.util.Properties();
+            config.put("StrictHostKeyChecking", "no");
+            session.setConfig(config);
+            session.connect();
+
+            channelSftp = (ChannelSftp) session.openChannel("sftp");
+            channelSftp.connect();
+
+            InputStream inputStream = null;
+            byte[] fileContent = null;
+            try {
+                inputStream = channelSftp.get(remoteFilePath);
+                fileContent = inputStream.readAllBytes();
+                inputStream.close();
+                return fileContent;
+            } catch (SftpException e) {
+                logger.error("Failed to download file from server", e);
+                throw new IOException("Failed to download file from server", e);
+            }
+        } finally {
+            if (channelSftp != null && channelSftp.isConnected()) {
+                channelSftp.disconnect();
+            }
+            if (session != null && session.isConnected()) {
+                session.disconnect();
+            }
+        }
+    }
+
     private String extractConfigId(String[] args) {
         // 从参数中提取model_config_id
         for (int i = 0; i < args.length - 1; i++) {
