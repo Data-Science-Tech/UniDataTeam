@@ -4,18 +4,8 @@ import com.alipay.api.AlipayApiException;
 import com.alipay.api.AlipayClient;
 import com.alipay.api.DefaultAlipayClient;
 import com.alipay.api.AlipayConfig;
-import com.alipay.api.domain.AlipayTradePagePayModel;
-import com.alipay.api.domain.ExtUserInfo;
-import com.alipay.api.domain.InvoiceKeyInfo;
 import com.alipay.api.response.AlipayTradePagePayResponse;
-import com.alipay.api.domain.InvoiceInfo;
 import com.alipay.api.request.AlipayTradePagePayRequest;
-import com.alipay.api.domain.ExtendParams;
-import com.alipay.api.domain.GoodsDetail;
-import com.alipay.api.domain.SubMerchant;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class AlipayTradePagePay {
 

@@ -1,7 +1,6 @@
 package com.easydeploy.springbootquickstart.service;
 
 import com.easydeploy.springbootquickstart.model.ModelConfig;
-import com.easydeploy.springbootquickstart.model.TrainingResult;
 
 import java.io.IOException;
 import java.util.List;
