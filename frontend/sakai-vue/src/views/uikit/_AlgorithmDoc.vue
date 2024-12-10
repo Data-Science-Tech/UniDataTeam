@@ -3,11 +3,11 @@
       <div class="font-semibold text-xl mb-4">步骤</div>
       <Stepper value="3">
         <StepList>
-          <Step value="1">服务器选择</Step>
-          <Step value="2">数据集选择</Step>
-          <Step value="3">算法选择</Step>
-          <Step value="4">参数配置</Step>
-          <Step value="5">训练启动</Step>
+          <Step value="1" @click="navigateTo('/uikit/server')">服务器选择</Step>
+          <Step value="2" @click="navigateTo('/uikit/dataset')">数据集选择</Step>
+          <Step value="3" @click="navigateTo('/uikit/algorithm')">算法选择</Step>
+          <Step value="4" @click="navigateTo('/uikit/config')">参数配置</Step>
+          <Step value="5" @click="navigateTo('/uikit/start')">训练启动</Step>
         </StepList>
       </Stepper>
     </div>
@@ -116,6 +116,10 @@
     console.log('选择的算法:', globalStore.modelConfig.algorithm);
     router.push('/uikit/config');
   };
+
+  const navigateTo = (path) => {
+    router.push(path);
+  };
   </script>
   
   <style scoped>
@@ -170,4 +174,3 @@
     font-size: 16px;
   }
   </style>
-  

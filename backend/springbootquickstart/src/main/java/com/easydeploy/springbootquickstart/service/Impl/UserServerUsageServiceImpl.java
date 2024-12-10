@@ -4,6 +4,7 @@ import com.easydeploy.springbootquickstart.dto.response.UserServerUsageResponseD
 import com.easydeploy.springbootquickstart.model.ServerType;
 import com.easydeploy.springbootquickstart.model.TrainingResult;
 import com.easydeploy.springbootquickstart.model.UserServerUsage;
+import com.easydeploy.springbootquickstart.model.ModelConfig; // 添加此行
 import com.easydeploy.springbootquickstart.repository.ServerTypeRepository;
 import com.easydeploy.springbootquickstart.repository.TrainingResultRepository;
 import com.easydeploy.springbootquickstart.repository.UserServerUsageRepository;
@@ -63,6 +64,15 @@ public class UserServerUsageServiceImpl implements UserServerUsageService {
                 dto.setEndTime(trainingResult.getEndTime());
                 dto.setTrainingLogs(trainingResult.getTrainingLogs());
                 dto.setModelFilePath(trainingResult.getModelFilePath());
+
+                // 获取 ModelConfig 数据
+                ModelConfig modelConfig = trainingResult.getModelConfig();
+                dto.setAlgorithm(modelConfig.getAlgorithm().name());
+                dto.setLearningRate(modelConfig.getLearningRate());
+                dto.setNumEpochs(modelConfig.getNumEpochs());
+                dto.setBatchSize(modelConfig.getBatchSize());
+                dto.setMomentumValue(modelConfig.getMomentumValue());
+                dto.setWeightDecay(modelConfig.getWeightDecay());
             }
 
             // 将数据添加到返回的 DTO 列表

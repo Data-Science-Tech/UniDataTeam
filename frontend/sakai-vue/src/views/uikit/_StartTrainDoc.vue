@@ -3,11 +3,11 @@
         <div class="font-semibold text-xl mb-4">步骤</div>
         <Stepper value="5">
             <StepList>
-                <Step value="1">服务器选择</Step>
-                <Step value="2">数据集选择</Step>
-                <Step value="3">算法选择</Step>
-                <Step value="4">参数配置</Step>
-                <Step value="5">训练启动</Step>
+                <Step value="1" @click="navigateTo('/uikit/server')">服务器选择</Step>
+                <Step value="2" @click="navigateTo('/uikit/dataset')">数据集选择</Step>
+                <Step value="3" @click="navigateTo('/uikit/algorithm')">算法选择</Step>
+                <Step value="4" @click="navigateTo('/uikit/config')">参数配置</Step>
+                <Step value="5" @click="navigateTo('/uikit/start')">训练启动</Step>
             </StepList>
         </Stepper>
     </div>
@@ -35,12 +35,13 @@
 </template>
 
 <script setup>
-import { ref ,computed } from 'vue';
+import { ref, computed } from 'vue';
 import TrainModelApi from '@/Api/TrainModelApi';
 import { useGlobalStore } from '@/stores/ConfigStore.js';
-// 获取 Pinia store 的实例
-const globalStore = useGlobalStore();
+import { useRouter } from 'vue-router';
 
+const globalStore = useGlobalStore();
+const router = useRouter();
 
 const responseMessage = ref('');
 const taskName = ref('');
@@ -50,7 +51,6 @@ const filteredModelConfig = computed(() => {
   const { status, trainingResults, ...filteredConfig } = globalStore.modelConfig;
   return filteredConfig;
 });
-
 
 // 开始训练模型
 const startTraining = async () => {
@@ -64,6 +64,10 @@ const startTraining = async () => {
         responseMessage.value = '模型训练失败.';
         console.error("模型训练失败:", error);
     }
+};
+
+const navigateTo = (path) => {
+  router.push(path);
 };
 
 </script>

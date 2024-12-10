@@ -78,11 +78,12 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useGlobalStore } from '@/stores/ConfigStore.js';
 // 导入接口
 import GetAllTasksApi from '@/Api/GetAllTasksApi.js';
 
-
 const router = useRouter();
+const globalStore = useGlobalStore();
 const missions = ref([]);
 const filters = ref({
     global: { value: null, matchMode: 'contains' }
@@ -119,6 +120,7 @@ const formatDate = (dateStr) => {
 // 跳转到新建任务页面
 const goToNewTaskPage = () => {
     console.log('跳转到服务器选择页面');
+    globalStore.resetForm();
     router.push('/uikit/server');
 };
 

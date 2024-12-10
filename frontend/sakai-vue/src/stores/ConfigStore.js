@@ -1,8 +1,9 @@
 import { defineStore } from 'pinia';
+import { useStorage } from '@vueuse/core';
 
 export const useGlobalStore = defineStore('global', {
     state: () => ({
-        modelConfig: {
+        modelConfig: useStorage('modelConfig', {
             algorithm: null,
             learningRate: 0.005,
             numEpochs: 10,
@@ -13,11 +14,11 @@ export const useGlobalStore = defineStore('global', {
             userId: null,
             status: null,
             trainingResults: ''
-        },
-        algorithmId: 1,
-        configId: 1,
-        resultId: 1,
-        serverId: null, // 添加 serverId
+        }),
+        algorithmId: useStorage('algorithmId', 1),
+        configId: useStorage('configId', 1),
+        resultId: useStorage('resultId', 1),
+        serverId: useStorage('serverId', null),
     }),
     actions: {
         setSharedData(key, value) {
@@ -50,6 +51,24 @@ export const useGlobalStore = defineStore('global', {
         getServerId() {
             return this.serverId;
         },
+        resetForm() {
+            this.modelConfig = {
+                algorithm: null,
+                learningRate: 0.005,
+                numEpochs: 10,
+                batchSize: 4,
+                momentumValue: 0.9,
+                weightDecay: 0.0005,
+                sceneIds: [],
+                userId: null,
+                status: null,
+                trainingResults: ''
+            };
+            this.algorithmId = 1;
+            this.configId = 1;
+            this.resultId = 1;
+            this.serverId = null;
+        }
     }
 });
 
