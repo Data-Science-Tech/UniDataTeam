@@ -14,9 +14,10 @@ export const useGlobalStore = defineStore('global', {
             status: null,
             trainingResults: ''
         },
-        algorithmId:1,
+        algorithmId: 1,
         configId: 1,
         resultId: 1,
+        serverId: null, // 添加 serverId
     }),
     actions: {
         setSharedData(key, value) {

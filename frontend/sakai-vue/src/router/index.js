@@ -43,31 +43,31 @@ const router = createRouter({
                 {
                     path: '/uikit/server',
                     name: 'Server',
-                    component: () => import('@/views/uikit/ServerDoc.vue')
+                    component: () => import('@/views/uikit/_ServerDocNew.vue')
                 },
                 // 数据集选择
                 {
                     path: '/uikit/dataset',
                     name: 'Dataset',
-                    component: () => import('@/views/uikit/DatasetDoc.vue')
+                    component: () => import('@/views/uikit/_DatasetDoc.vue')
                 },
                 // 算法选择
                 {
                     path: '/uikit/algorithm',
                     name: 'Algorithm',
-                    component: () => import('@/views/uikit/AlgorithmDoc.vue')
+                    component: () => import('@/views/uikit/_AlgorithmDoc.vue')
                 },
                 //配置选择
                 {
                     path: '/uikit/config',
                     name: 'Config',
-                    component: () => import('@/views/uikit/ConfigDoc.vue')
+                    component: () => import('@/views/uikit/_ConfigDoc.vue')
                 },
                 //开始训练选择
                 {
                     path: '/uikit/start',
                     name: 'Start',
-                    component: () => import('@/views/uikit/StartTrainDoc.vue')
+                    component: () => import('@/views/uikit/_StartTrainDoc.vue')
                 },
                 // 自定义路由结束
                 {
