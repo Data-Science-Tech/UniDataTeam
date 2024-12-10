@@ -120,8 +120,8 @@ const SelectServer = async () => {
         return;
     }
     console.log('selectedServer:', selectedServer.value);
-    globalStore.modelConfig.serverId = selectedServer.value.id;
-    console.log('选择的服务器:', globalStore.modelConfig.serverId);
+    globalStore.serverId = selectedServer.value.id;
+    console.log('选择的服务器:', globalStore.serverId);
     router.push('/uikit/dataset');
 };
 

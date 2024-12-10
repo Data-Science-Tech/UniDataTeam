@@ -20,6 +20,10 @@
         </li>
       </ul>
     </div>
+    <div class="input-group">
+      <label for="taskName">任务名称:</label>
+      <input type="text" id="taskName" v-model="taskName" />
+    </div>
   </div>
   <!-- 显示操作状态 -->
   <div v-if="responseMessage" class="response-message">
@@ -39,6 +43,7 @@ const globalStore = useGlobalStore();
 
 
 const responseMessage = ref('');
+const taskName = ref('');
 
 // 过滤掉不需要显示的键
 const filteredModelConfig = computed(() => {
@@ -50,8 +55,8 @@ const filteredModelConfig = computed(() => {
 // 开始训练模型
 const startTraining = async () => {
     try {
-        console.log(globalStore.getConfigId());
-        const response = await TrainModelApi.startTraining(globalStore.getConfigId());
+        const serverId = globalStore.getServerId();
+        const response = await TrainModelApi.startTraining(globalStore.getConfigId(), serverId, taskName.value);
         responseMessage.value = '模型开始训练成功!';
         console.log("模型开始训练成功:", response.data);
         globalStore.setResultId(response.data.id);
@@ -114,5 +119,21 @@ strong {
 }
 .button:hover {
   background-color: #0056b3;
+}
+.input-group {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.input-group label {
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.input-group input {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 </style>

@@ -17,8 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
@@ -42,6 +43,8 @@ public class ModelConfigController {
     private ServerTypeRepository serverTypeRepository;
     @Autowired
     private UserService userService;
+
+    private static final Logger logger = LoggerFactory.getLogger(ModelConfigController.class);
 
     @PostMapping
     public ResponseEntity<ModelConfig> createModelConfig(@RequestBody ModelConfigRequest request) {
@@ -68,34 +71,49 @@ public class ModelConfigController {
         return ResponseEntity.ok(modelConfigService.createModelConfig(config));
     }
     
+    public static class TrainingRequest {
+        private Long serverId;
+        private String taskName;
+
+        // Getters and setters
+        public Long getServerId() {
+            return serverId;
+        }
+
+        public void setServerId(Long serverId) {
+            this.serverId = serverId;
+        }
+
+        public String getTaskName() {
+            return taskName;
+        }
+
+        public void setTaskName(String taskName) {
+            this.taskName = taskName;
+        }
+    }
 
     @PostMapping("/{id}/train")
-    public void startTraining(@PathVariable Long id, @RequestParam Long serverId, @RequestParam String taskName) throws IOException {
-        modelConfigService.startTraining(id);
+    public void startTraining(@PathVariable Long id, @RequestBody TrainingRequest request) throws IOException {
+        logger.info("Received serverId: {}", request.getServerId());
+        
+        // 创建 TrainingResult
+        TrainingResult trainingResult = new TrainingResult();
+        trainingResult.setModelConfig(modelConfigService.getModelConfig(id));
+        trainingResultRepository.save(trainingResult);
+
+        // 创建 UserServerUsage
         UserServerUsage usage = new UserServerUsage();
         usage.setUsageId(null); // 让数据库自动生成ID
         usage.setUserId(modelConfigService.getModelConfig(id).getUser().getUserId().longValue());
-        usage.setServerType(serverTypeRepository.findById(serverId.intValue()).orElseThrow(() -> new RuntimeException("Server not found")));
+        usage.setServerType(serverTypeRepository.findById(request.getServerId().intValue()).orElseThrow(() -> new RuntimeException("Server not found")));
         usage.setStatus("RUNNING");
-        usage.setName(taskName); // 设置训练任务名称
+        usage.setName(request.getTaskName()); // 设置训练任务名称
+        usage.setTrainingResult(trainingResult); // 设置训练结果
         userServerUsageRepository.save(usage);
 
-        // 异步任务，1秒后更新 TrainingResult
-        updateTrainingResult(id, usage);
-    }
-
-    @Async
-    public void updateTrainingResult(Long configId, UserServerUsage usage) {
-        try {
-            Thread.sleep(1000);
-            List<TrainingResult> trainingResults = trainingResultRepository.findByModelConfigId(configId);
-            if (trainingResults != null && !trainingResults.isEmpty()) {
-                usage.setTrainingResult(trainingResults.get(0)); // Assuming you want the first result
-                userServerUsageRepository.save(usage);
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        // 开始训练
+        modelConfigService.startTraining(id, trainingResult.getId(), usage); // 传递 usage 对象
     }
 
     @Transactional

@@ -44,6 +44,12 @@ export const useGlobalStore = defineStore('global', {
         getResultId() {
             return this.resultId;
         },
+        setServerId(id) {
+            this.serverId = id;
+        },
+        getServerId() {
+            return this.serverId;
+        },
     }
 });
 
