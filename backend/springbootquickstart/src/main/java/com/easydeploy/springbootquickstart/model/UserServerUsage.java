@@ -11,6 +11,7 @@ import lombok.Setter;
 @Entity
 public class UserServerUsage {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer usageId;
 
 
