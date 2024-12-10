@@ -19,4 +19,10 @@ public class UserServerUsageResponseDTO {
     private LocalDateTime endTime;
     private String trainingLogs;
     private String modelFilePath;
+    private String algorithm;
+    private double learningRate;
+    private int numEpochs;
+    private int batchSize;
+    private double momentumValue;
+    private double weightDecay;
 }
