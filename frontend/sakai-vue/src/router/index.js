@@ -81,6 +81,13 @@ const router = createRouter({
                     name: 'mission',
                     component: () => import('@/views/pages/missionManage/mission.vue')
                 },
+
+                {
+                    path: '/pages/missionManage/missionDetail/:id',
+                    name: 'missionDetail',
+                    component: () => import('@/views/pages/missionManage/missionDetail.vue')
+                },
+                
                 {
                     path: '/uikit/media',
                     name: 'media',

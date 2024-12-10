@@ -20,7 +20,9 @@
         'userServerName', 'status', 'serverTypeName', 'gpuType' -->
         <DataTable :value="missions" :paginator="true" :rows="10" :filters="filters" dataKey="id" filterDisplay="menu"
             :globalFilterFields="['userServerName', 'status', 'serverTypeName', 'gpuType']"
-            tableStyle="min-width: 80rem">
+            tableStyle="min-width: 80rem"
+            selectionMode="single"
+            @rowSelect="onRowSelect">
             <!-- Task Name -->
             <Column field="userServerName" header="训练任务名称" sortable style="min-width: 12rem"></Column>
 
@@ -120,6 +122,10 @@ const goToNewTaskPage = () => {
     router.push('/uikit/server');
 };
 
+// 添加行选择处理函数
+const onRowSelect = (event) => {
+    router.push(`/pages/missionManage/missionDetail/${event.data.id}`);
+};
 
 // 获取任务数据
 onMounted(getalltest);
