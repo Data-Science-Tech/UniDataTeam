@@ -27,11 +27,11 @@ const consoleLogs = ref([]);
 const maxLogs = 100; // 最大日志数量
 
 // 添加日志
-const addLog = (message, type = 'info') => {
+const addLog = (message, type = 'info', isDebug = false) => {
     const log = {
         timestamp: new Date().toLocaleTimeString(),
-        message,
-        type, // info, error, warning, success
+        message: isDebug ? `[Debug] ${message}` : message,
+        type: isDebug ? 'debug' : type,
         id: Date.now()
     };
     consoleLogs.value.unshift(log);
@@ -40,17 +40,72 @@ const addLog = (message, type = 'info') => {
     }
 };
 
+// 添加任务状态变量
+const taskStatus = ref('pending'); // 'pending', 'completed', 'failed'
+const receivedResults = new Set(); // 用于追踪已接收的结果
+
 // 获取任务详情
 const getTaskDetail = async () => {
     try {
+        addLog('开始获取任务详情: ' + taskId, 'info', true);
         const response = await GetAllTasksApi.getalltests(1);
+        addLog('API响应数据: ' + JSON.stringify(response.data).slice(0, 200) + '...', 'debug', true);
         const foundTask = response.data.find(task => task.id === parseInt(taskId));
-        taskDetail.value = foundTask || defaultTaskDetail;
-        addLog(`成功加载任务 ${taskId} 的详情`, 'success');
+        
+        if (foundTask) {
+            taskDetail.value = foundTask;
+            addLog('成功解析任务数据', 'success', true);
+            await checkTaskStatus();
+        } else {
+            addLog('未找到任务，使用默认值', 'warning', true);
+            taskDetail.value = defaultTaskDetail;
+        }
     } catch (error) {
-        console.error('获取任务详情失败:', error);
+        addLog(`获取任务详情失败: ${error.message}`, 'error', true);
         taskDetail.value = defaultTaskDetail;
-        addLog(`加载任务详情失败: ${error.message}`, 'error');
+    }
+};
+
+// 添加检查任务状态的方法
+const checkTaskStatus = async () => {
+    try {
+        console.log('[Debug] 开始检查任务状态');
+        const response = await fetch(`http://localhost:8080/api/training-process/user-server-usage/${taskId}`);
+        const data = await response.json();
+        console.log('[Debug] 任务状态数据:', data);
+        
+        if (data.status === 'completed') {
+            console.log('[Debug] 任务已完成，准备获取历史数据');
+            taskStatus.value = 'completed';
+            await getHistoricalData();
+        } else if (data.status === 'failed') {
+            console.warn('[Debug] 任务执行失败');
+            taskStatus.value = 'failed';
+            addLog('任务执行失败', 'error');
+        } else {
+            console.log('[Debug] 任务进行中，准备建立WebSocket连接');
+            taskStatus.value = 'pending';
+            connectWebSocket();
+        }
+    } catch (error) {
+        console.error('[Debug] 检查任务状态失败:', error);
+        addLog(`检查任务状态失败: ${error.message}`, 'error');
+    }
+};
+
+// 添加获取历史数据的方法
+const getHistoricalData = async () => {
+    try {
+        const response = await fetch(`http://localhost:8080/api/training-process/history/${taskId}`);
+        const data = await response.json();
+        
+        // 更新图表和进度
+        updateChartWithHistoricalData(data);
+        getTrainingResults();
+        
+        addLog('已加载历史训练数据', 'success');
+    } catch (error) {
+        addLog(`获取历史数据失败: ${error.message}`, 'error');
     }
 };
 
@@ -93,65 +148,77 @@ const chartOptions = {
     }
 };
 
+// 修改WebSocket消息处理逻辑
+const handleWebSocketMessage = (data) => {
+    const resultKey = `${data.current_epoch}-${data.current_batch}`;
+    
+    if (!receivedResults.has(resultKey)) {
+        receivedResults.add(resultKey);
+        addLog(`处理新的训练数据: Epoch ${data.current_epoch}, Batch ${data.current_batch}`, 'debug', true);
+        
+        progress.value = Math.round(data.progress_percentage);
+        addLog(`当前进度: ${progress.value}%`, 'info', true);
+        
+        if (data.current_epoch && data.current_batch) {
+            addLog(`更新损失值数据: ${parseFloat(data.current_loss).toFixed(4)}`, 'debug', true);
+            updateChartData(data);
+        }
+        
+        if (progress.value >= 100) {
+            addLog('训练完成，正在关闭连接...', 'success', true);
+            taskStatus.value = 'completed';
+            if (ws) {
+                ws.close();
+                ws = null;
+            }
+            getTrainingResults();
+        }
+    } else {
+        addLog(`跳过重复数据: ${resultKey}`, 'debug', true);
+    }
+};
+
+// 修改WebSocket连接逻辑
 const connectWebSocket = () => {
+    if (taskStatus.value === 'completed') {
+        addLog('任务已完成，无需建立连接', 'info', true);
+        return;
+    }
+    
     try {
         if (ws) {
+            addLog('关闭现有WebSocket连接', 'warning', true);
             ws.close();
         }
         
+        addLog(`正在连接WebSocket: ${taskId}`, 'info', true);
         ws = new WebSocket(`ws://localhost:8080/ws/training-progress/${taskId}`);
         
         ws.onopen = () => {
-            addLog('WebSocket连接成功', 'success');
+            addLog('WebSocket连接建立成功', 'success', true);
         };
         
         ws.onmessage = (event) => {
             try {
                 const data = JSON.parse(event.data);
-                // 更新进度
-                progress.value = Math.round(data.progress_percentage);
-                
-                // 更新图表数据
-                if (data.current_epoch && data.current_batch) {
-                    const batchLabel = `E${data.current_epoch}-B${data.current_batch}`;
-                    lossChartData.value.labels.push(batchLabel);
-                    lossChartData.value.datasets[0].data.push(parseFloat(data.current_loss));
-                    lossChartData.value.datasets[1].data.push(parseFloat(data.avg_loss));
-                    
-                    // 限制显示的数据点数量
-                    const maxDataPoints = 20;
-                    if (lossChartData.value.labels.length > maxDataPoints) {
-                        lossChartData.value.labels = lossChartData.value.labels.slice(-maxDataPoints);
-                        lossChartData.value.datasets[0].data = lossChartData.value.datasets[0].data.slice(-maxDataPoints);
-                        lossChartData.value.datasets[1].data = lossChartData.value.datasets[1].data.slice(-maxDataPoints);
-                    }
-                    
-                    // 强制更新图表
-                    lossChartData.value = { ...lossChartData.value };
-                }
-                
-                // 添加日志
-                addLog(`Epoch: ${data.current_epoch}/${data.total_epochs} | Batch: ${data.current_batch}/${data.total_batches} | Loss: ${parseFloat(data.current_loss).toFixed(4)}`, 'info');
-                
-                // 如果训练完成，获取结果
-                if (progress.value >= 100) {
-                    getTrainingResults();
-                }
+                handleWebSocketMessage(data);
             } catch (error) {
                 addLog(`解析WebSocket数据失败: ${error.message}`, 'error');
             }
         };
 
         ws.onerror = (error) => {
+            console.error('[Debug] WebSocket错误:', error);
             addLog(`WebSocket错误: ${error}`, 'error');
         };
 
         ws.onclose = () => {
+            console.log('[Debug] WebSocket连接已关闭');
             addLog('WebSocket连接已关闭', 'warning');
         };
 
     } catch (error) {
-        addLog(`建立WebSocket连接失败: ${error.message}`, 'error');
+        addLog(`WebSocket连接失败: ${error.message}`, 'error', true);
     }
 };
 
@@ -189,13 +256,14 @@ const downloadLogs = async () => {
 };
 
 onMounted(() => {
+    console.log('[Debug] 组件挂载，任务ID:', taskId);
     getTaskDetail();
-    connectWebSocket();
-    getTrainingResults();
 });
 
 onBeforeUnmount(() => {
+    console.log('[Debug] 组件即将卸载');
     if (ws) {
+        console.log('[Debug] 关闭WebSocket连接');
         ws.close();
     }
 });
@@ -467,6 +535,10 @@ const toggleConsole = () => {
     background: rgba(107, 255, 107, 0.15); 
     color: #6bff6b; 
 }
+.type-debug { 
+    background: rgba(147, 147, 147, 0.15); 
+    color: #93c5fd; 
+}
 
 .console-message {
     font-size: 0.95rem;
@@ -495,7 +567,7 @@ const toggleConsole = () => {
     background: rgba(255, 255, 255, 0.1);
 }
 
-/* 动画���果增强 */
+/* 动画效果增强 */
 .log-list-enter-active {
     transition: all 0.4s ease-out;
 }
