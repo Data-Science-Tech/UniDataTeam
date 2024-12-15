@@ -100,6 +100,7 @@ public class ModelConfigController {
         // 创建 TrainingResult
         TrainingResult trainingResult = new TrainingResult();
         trainingResult.setModelConfig(modelConfigService.getModelConfig(id));
+        trainingResult.setStartTime(java.time.LocalDateTime.now()); // 设置当前时间
         trainingResultRepository.save(trainingResult);
 
         // 创建 UserServerUsage
