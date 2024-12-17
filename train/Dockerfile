@@ -1,13 +1,15 @@
 # 使用基础镜像（带 CUDA 支持的 PyTorch 镜像）
-FROM nvidia/cuda:12.6.2-cudnn-devel-ubuntu22.04
+# FROM nvidia/cuda:12.6.2-cudnn-devel-ubuntu22.04
+FROM cr.infini-ai.com/infini-ai/cuda:12.2.2-cudnn8-devel-ubuntu20.04
 
 # 安装 Python 3.10 和必要系统依赖
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3.10 \
+    python3-pip \
     libgl1 libglib2.0-0 && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# 设置 Python 3.10 为默认版本
+# 设置 Python 3.10 和 pip 为默认版本
 RUN ln -sf /usr/bin/python3.10 /usr/bin/python && \
     ln -sf /usr/bin/pip3 /usr/bin/pip
 

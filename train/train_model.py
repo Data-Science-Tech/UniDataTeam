@@ -190,6 +190,7 @@ def parse_args():
                         help='Comma-separated list of scene IDs')
     parser.add_argument('--val_split', type=float, default=0.2,
                         help='Proportion of dataset to use for validation (default: 0.2)')
+    parser.add_argument('--training_result_id', type=int, required=True)
     return parser.parse_args()
 
 def create_faster_rcnn_model():
@@ -257,6 +258,8 @@ def evaluate_model(model, dataloader, device, iou_threshold=0.5):
     return accuracy
 
 def train_epoch(model, dataloader, optimizer, device, epoch, total_epochs):
+    conn = get_connection_from_pool()
+    cursor = conn.cursor()
     epoch_loss = 0
     # 获取数据加载器的总批次数
     total_batches = len(dataloader)
@@ -292,6 +295,21 @@ def train_epoch(model, dataloader, optimizer, device, epoch, total_epochs):
             "avg_loss": avg_loss,
             "progress_percentage": ((epoch * total_batches + batch_idx + 1) / (total_epochs * total_batches)) * 100
         }
+
+        cursor.execute("""
+                       SELECT usage_id FROM user_server_usage WHERE result_id = %s
+                          """, (args.training_result_id,))
+        
+        usage_id = cursor.fetchone()
+        if not usage_id:
+            raise ValueError(f"Usage with ID {args.training_result_id} not found")
+        usage_id = usage_id[0]
+
+        cursor.execute("""
+                       INSERT INTO training_progress (type, current_epoch, total_epochs, current_batch, total_batches, current_loss, avg_loss, progress_percentage, user_server_usage_id)
+                          VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        """, (progress["type"], progress["current_epoch"], progress["total_epochs"], progress["current_batch"], progress["total_batches"], progress["current_loss"], progress["avg_loss"], progress["progress_percentage"], usage_id))
+        conn.commit()
 
         # 使用特定前缀输出进度信息
         print(f"PROGRESS:{json.dumps(progress)}", flush=True)
@@ -349,13 +367,7 @@ def train_model(args):
 
         model_config_id = model_config[0]
 
-        # 插入训练结果
-        cursor.execute("""  
-                INSERT INTO training_result (model_config_id, start_time, model_file_path)  
-                VALUES (%s, %s, %s)  
-            """, (model_config_id, start_time, relative_model_path))
-
-        training_result_id = cursor.lastrowid
+        training_result_id = args.training_result_id
         conn.commit()
 
         # Create dataset
@@ -452,9 +464,9 @@ def train_model(args):
                 end_time = datetime.now()
                 cursor.execute("""  
                     UPDATE training_result  
-                    SET end_time = %s, training_logs = %s, final_loss = %s, accuracy = %s
+                    SET end_time = %s, training_logs = %s, final_loss = %s, accuracy = %s, model_file_path = %s
                     WHERE id = %s  
-                """, (end_time, relative_log_path, results['final_loss'], results['accuracy'], training_result_id))
+                """, (end_time, relative_log_path, results['final_loss'], results['accuracy'], relative_model_path, training_result_id))
                 conn.commit()
                 break
             except Error as err:
