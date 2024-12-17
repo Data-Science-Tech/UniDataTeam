@@ -1,4 +1,4 @@
-package com.easydeploy.springbootquickstart.controller;
+package com.easydeploy.springbootquickstart.controller.utils;
 
 import com.alipay.api.AlipayApiException;
 import com.alipay.api.AlipayClient;
