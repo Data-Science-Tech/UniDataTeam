@@ -2,6 +2,7 @@ package com.easydeploy.springbootquickstart.controller;
 
 
 import com.easydeploy.springbootquickstart.dto.request.ModelConfigRequest;
+import com.easydeploy.springbootquickstart.dto.request.TrainingRequest;
 import com.easydeploy.springbootquickstart.model.*;
 import com.easydeploy.springbootquickstart.repository.ServerTypeRepository;
 import com.easydeploy.springbootquickstart.repository.TrainingResultRepository;
@@ -11,6 +12,8 @@ import com.easydeploy.springbootquickstart.service.SceneInfoService;
 import com.easydeploy.springbootquickstart.service.UserService;
 import jakarta.annotation.Resource;
 import jakarta.transaction.Transactional;
+import lombok.Getter;
+import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,31 +75,11 @@ public class TrainingConfigurationController {
 
 
 
-    public static class TrainingRequest {
-        private Long serverId;
-        private String taskName;
 
-        // Getters and setters
-        public Long getServerId() {
-            return serverId;
-        }
-
-        public void setServerId(Long serverId) {
-            this.serverId = serverId;
-        }
-
-        public String getTaskName() {
-            return taskName;
-        }
-
-        public void setTaskName(String taskName) {
-            this.taskName = taskName;
-        }
-    }
 
     // 根据model_id等参数进行训练
     @PostMapping("/train/{id}")
-    public void startTraining(@PathVariable Long id, @RequestBody TrainingConfigurationController.TrainingRequest request) throws IOException {
+    public void startTraining(@PathVariable Long id, @RequestBody TrainingRequest request) throws IOException {
         logger.info("Received serverId: {}", request.getServerId());
 
         // 创建 TrainingResult
