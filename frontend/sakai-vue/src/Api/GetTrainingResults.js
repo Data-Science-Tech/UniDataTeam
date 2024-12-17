@@ -11,7 +11,7 @@ const apiClient = axios.create({
 export default {
   // 创建模型配置
   getTrainingResults(taskId) {
-    return apiClient.get(`/api/training-results/by-config/${taskId}`);
+    return apiClient.get(`/api/task_management/get_training_result_by_model_config/${taskId}`);
   },
 };
 

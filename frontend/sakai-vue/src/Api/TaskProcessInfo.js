@@ -11,7 +11,7 @@ const apiClient = axios.create({
 export default {
   // 创建模型配置
   getTaskProcessInfo(taskId) {
-    return apiClient.get(`/api/training-process/user-server-usage/${taskId}`);
+    return apiClient.get(`/api/monitoring/training_process/${taskId}`);
   },
 };
 
