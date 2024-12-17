@@ -216,9 +216,10 @@ const processTrainingData = async () => {
     }
 };
 
+let isTaskActive = true;
 // 实时获取流程控制函数
 const updateProcessData = async () => {
-    let isTaskActive = true;
+    
 
     const checkStatus = async () => {
         if (!isTaskActive) return;
