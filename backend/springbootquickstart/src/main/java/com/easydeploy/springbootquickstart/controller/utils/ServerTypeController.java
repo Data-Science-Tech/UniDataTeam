@@ -1,4 +1,4 @@
-package com.easydeploy.springbootquickstart.controller;
+package com.easydeploy.springbootquickstart.controller.utils;
 
 import com.easydeploy.springbootquickstart.model.ServerType;
 import com.easydeploy.springbootquickstart.service.ServerTypeService;
@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/server-types")
+@RequestMapping("/api/servertypes")
 public class ServerTypeController {
 
     @Autowired

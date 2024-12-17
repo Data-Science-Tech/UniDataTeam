@@ -1,4 +1,4 @@
-package com.easydeploy.springbootquickstart.controller;
+package com.easydeploy.springbootquickstart.controller.utils;
 
 import com.easydeploy.springbootquickstart.dto.request.UserLoginDTO;
 import com.easydeploy.springbootquickstart.dto.request.UserRegisterDTO;

@@ -10,7 +10,7 @@ const apiClient = axios.create({
 
 const GetAllServers = async () => {
   try {
-    const response = await apiClient.get('/api/server-types');
+    const response = await apiClient.get('/api/servertypes');
     console.log('响应头:', response.headers);
     console.log('响应数据:', response.data);
     if (response.headers['content-type'] !== 'application/json') {

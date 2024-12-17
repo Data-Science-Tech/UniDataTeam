@@ -10,7 +10,8 @@ const apiClient = axios.create({
 
 export default {
     // 根据id获取所有热任务
-    getalltests(id) {
-        return apiClient.get(`api/tests/${id}`);
+    getalltests(userId) {
+        return apiClient.get(`/api/task_management/get_user_server_usage_by_userid/${userId}`);
       }
   };
+

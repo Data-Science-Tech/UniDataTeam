@@ -1,4 +1,4 @@
-package com.easydeploy.springbootquickstart.controller;
+package com.easydeploy.springbootquickstart.controller.utils;
 
 import com.easydeploy.springbootquickstart.model.SceneInfo;
 import com.easydeploy.springbootquickstart.service.SceneInfoService;
@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/scene-info")
+@RequestMapping("/api/sceneinfo")
 public class SceneInfoController {
     @Autowired
     private SceneInfoService sceneInfoService;
