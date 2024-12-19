@@ -59,10 +59,11 @@
       </DataTable>
     </div>
   
-    <!-- 确认按钮 -->
+    <div class="confirm-group">
     <button type="button" @click="SelectAlgorithms" class="button confirm-btn">
       确定算法选择
     </button>
+  </div>
   </template>
   
   <script setup>
@@ -147,14 +148,12 @@
   
   .button.primary {
     background-color: #409eff;
-    /* 主色调 */
     color: #fff;
     border: none;
   }
   
   .button.primary:hover {
     background-color: #66b1ff;
-    /* 悬停色 */
   }
   
   .button:disabled {
@@ -166,11 +165,14 @@
   .confirm-group {
     margin-top: 20px;
     display: flex;
-    justify-content: center;
+    justify-content: center; /* Center the button horizontally */
+    width: 100%; /* Ensure the parent container takes up the full width */
   }
+  
   .confirm-btn {
     background-color: #2d8cf0;
     color: white;
     font-size: 16px;
+    padding: 10px 20px;
   }
   </style>

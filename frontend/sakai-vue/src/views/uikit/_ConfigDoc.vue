@@ -102,10 +102,7 @@ const navigateTo = (path) => {
 
 </script>
 
-
 <style scoped>
-
-
 body {
     font-family: 'Arial', sans-serif;
     background-color: #f9f9f9;
@@ -126,7 +123,6 @@ h2 {
     margin-bottom: 20px;
     color: #333;
 }
-
 
 .form-container {
     display: flex;
@@ -171,22 +167,23 @@ h2 {
     cursor: pointer;
 }
 
+/* 统一按钮颜色 */
 .create-btn {
-    background-color: #28a745;
+    background-color: #2d8cf0; /* 修改为与confirm-btn相同的颜色 */
     color: white;
 }
 
 .create-btn:hover {
-    background-color: #218838;
+    background-color: #66b1ff; /* 悬停时修改为淡蓝色 */
 }
 
 .train-btn {
-    background-color: #007bff;
+    background-color: #2d8cf0; /* 修改为与confirm-btn相同的颜色 */
     color: white;
 }
 
 .train-btn:hover {
-    background-color: #0056b3;
+    background-color: #66b1ff; /* 悬停时修改为淡蓝色 */
 }
 
 .response-message {

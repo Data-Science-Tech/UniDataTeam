@@ -73,6 +73,7 @@ const navigateTo = (path) => {
 </script>
 
 
+
 <style scoped>
 .container {
   max-width: 600px;
@@ -81,12 +82,13 @@ const navigateTo = (path) => {
   background-color: white;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  color: #000; /* 全局设置文字颜色为黑色 */
 }
 
 h1 {
   text-align: center;
   margin-bottom: 20px;
-  color: #333;
+  color: #000; /* 确保 h1 的文字颜色为黑色 */
 }
 
 .model-config {
@@ -103,11 +105,17 @@ li {
   padding: 8px;
   background-color: #f4f4f4;
   border-radius: 4px;
+  color: #000; /* 确保列表项的文字颜色为黑色 */
+  display: flex;
+  align-items: center;
 }
 
 strong {
-  color: #007bff;
+  min-width: 150px; /* 设置一个固定的宽度，保证对齐 */
+  margin-right: 10px; /* 给 strong 添加右边距，使值与 key 有间隔 */
+  color: #000;
 }
+
 .button {
   padding: 10px 15px;
   color: #fff;
@@ -116,14 +124,17 @@ strong {
   border-radius: 4px;
   cursor: pointer;
 }
+
 .button-group {
-    display: flex;
-    justify-content: center; 
-    align-items: center; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
+
 .button:hover {
   background-color: #0056b3;
 }
+
 .input-group {
   margin-top: 20px;
   display: flex;
@@ -132,7 +143,7 @@ strong {
 
 .input-group label {
   margin-bottom: 5px;
-  color: #333;
+  color: #000; /* 设置输入框标签文字为黑色 */
 }
 
 .input-group input {
@@ -141,3 +152,4 @@ strong {
   border-radius: 4px;
 }
 </style>
+
