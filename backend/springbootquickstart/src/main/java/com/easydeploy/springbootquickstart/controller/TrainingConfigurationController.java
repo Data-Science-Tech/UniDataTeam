@@ -71,9 +71,6 @@ public class TrainingConfigurationController {
     }
 
 
-
-
-
     // 根据model_id等参数进行训练
     @PostMapping("/train/{id}")
     public void startTraining(@PathVariable Long id, @RequestBody TrainingRequest request) throws IOException {

@@ -203,6 +203,59 @@ def compute_iou(box1, box2):
     iou = interArea / float(box1Area + box2Area - interArea)
     return iou
 
+def visualize_predictions(model, dataloader, device, num_images=5):
+    """
+    Visualizes predictions of the model on a sample of images from the dataloader.
+    """
+
+    model.eval()
+    images_so_far = 0
+    image_paths = []
+
+    # 创建 images/{training_result_id} 文件夹
+    save_dir = os.path.join("files", "images", str(training_result_id))
+    os.makedirs(save_dir, exist_ok=True)
+
+    with torch.no_grad():
+        for images, targets in dataloader:
+            images = [img.to(device) for img in images]
+            outputs = model(images)
+
+            for img, output, target in zip(images, outputs, targets):
+                # Convert image tensor to numpy array
+                img = img.cpu().numpy().transpose(1, 2, 0)
+                # Denormalize the image if necessary (depends on your transformations)
+                # img = img * 255  # Example for simple normalization
+                img = np.clip(img, 0, 1)  # Clip values to 0-1 range
+                img = (img * 255).astype(np.uint8)
+
+                # Draw bounding boxes and labels
+                boxes = output['boxes'].cpu().numpy()
+                labels = output['labels'].cpu().numpy()
+                scores = output['scores'].cpu().numpy()
+
+                for box, label, score in zip(boxes, labels, scores):
+                    if score > 0.5:  # Filter predictions based on score
+                        xmin, ymin, xmax, ymax = box.astype(int)
+                        cv2.rectangle(img, (xmin, ymin), (xmax, ymax), (0, 255, 0), 2)
+                        cv2.putText(img, f"Car: {score:.2f}", (xmin, ymin - 10),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+
+                # 保存图像到指定路径
+                image_name = f"visualization_{images_processed}.jpg"
+                image_path = os.path.join(save_dir, image_name)
+                plt.savefig(image_path)
+                plt.close()
+
+                # 添加相对路径到列表
+                image_paths.append(os.path.join(str(training_result_id), image_name))
+
+                images_processed += 1
+                if images_processed >= num_images:
+                    return image_paths
+
+    return image_paths
+
 def evaluate_model(model, dataloader, device, iou_threshold=0.5):
     model.eval()
     correct = 0
@@ -390,6 +443,10 @@ def train_model(args):
         # 评估模型
         accuracy = evaluate_model(model, val_dataloader, device)
         results['accuracy'] = accuracy
+
+        # 可视化部分预测结果
+        visualized_images = visualize_predictions(model, val_dataloader, device, num_images=5)  # 可视化5张图片
+        results['visualized_images'] = visualized_images
 
         # 输出训练完成信息
         completion_info = {

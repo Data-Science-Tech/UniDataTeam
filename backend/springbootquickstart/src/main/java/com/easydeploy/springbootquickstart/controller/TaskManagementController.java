@@ -6,7 +6,6 @@ import com.easydeploy.springbootquickstart.service.PythonScriptService;
 import com.easydeploy.springbootquickstart.service.TrainingResultService;
 import com.easydeploy.springbootquickstart.service.UserServerUsageService;
 import jakarta.annotation.Resource;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -99,5 +98,20 @@ public class TaskManagementController {
     public ResponseEntity<List<UserServerUsageResponseDTO>> getUserServerUsageDetails(@PathVariable Long userId) {
         List<UserServerUsageResponseDTO> details = userServerUsageService.getUserServerUsageDetails(userId);
         return ResponseEntity.ok(details);
+    }
+
+    @GetMapping("/get_visualized_image_paths/{trainingResultId}")
+    public ResponseEntity<List<String>> getVisualizedImagePaths(@PathVariable Long trainingResultId) {
+        try {
+            TrainingResult result = trainingResultService.getTrainingResult(trainingResultId);
+            List<String> imagePaths = result.getVisualizedImages();
+            if (imagePaths.isEmpty()) {
+                return ResponseEntity.noContent().build();
+            }
+            return ResponseEntity.ok(imagePaths);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(null);
+        }
     }
 }

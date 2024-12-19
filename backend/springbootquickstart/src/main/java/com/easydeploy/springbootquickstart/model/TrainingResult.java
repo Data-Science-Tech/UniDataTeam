@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Setter
 @Getter
@@ -28,5 +29,9 @@ public class TrainingResult {
     private String modelFilePath;
     private double finalLoss;
     private double accuracy;
+
+    @ElementCollection
+    @CollectionTable(name = "visualized_image", joinColumns = @JoinColumn(name = "training_result_id"))
+    private List<String> visualizedImages; // 存储图片路径
 
 }
