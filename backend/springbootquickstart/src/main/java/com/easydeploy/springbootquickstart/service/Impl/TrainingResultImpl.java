@@ -16,11 +16,14 @@ public class TrainingResultImpl implements TrainingResultService {
     @Autowired
     private TrainingResultRepository trainingResultRepository;
 
+    @Override
+    @Transactional
     public TrainingResult getTrainingResult(Long trainingResultId) {
         return trainingResultRepository.findById(trainingResultId)
                 .orElseThrow(() -> new RuntimeException("Training result not found"));
     }
 
+    @Override
     @Transactional
     public List<TrainingResult> getTrainingResultsByModelConfigId(Long modelConfigId) {
         List<TrainingResult> results = trainingResultRepository.findByModelConfigId(modelConfigId);

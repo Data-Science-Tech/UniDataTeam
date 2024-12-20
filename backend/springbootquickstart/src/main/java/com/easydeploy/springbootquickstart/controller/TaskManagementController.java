@@ -6,6 +6,8 @@ import com.easydeploy.springbootquickstart.service.PythonScriptService;
 import com.easydeploy.springbootquickstart.service.TrainingResultService;
 import com.easydeploy.springbootquickstart.service.UserServerUsageService;
 import jakarta.annotation.Resource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.File;
-import java.util.List;
+import java.util.*;
 
 
 @RestController
@@ -31,6 +33,8 @@ public class TaskManagementController {
 
     @Resource
     private UserServerUsageService userServerUsageService;
+
+    private static final Logger logger = LoggerFactory.getLogger(TaskManagementController.class);
 
     @GetMapping("/get_training_result_by_model_config/{modelConfigId}")
     public ResponseEntity<List<TrainingResult>> getTrainingResultsByModelConfig(@PathVariable Long modelConfigId) {
@@ -100,18 +104,47 @@ public class TaskManagementController {
         return ResponseEntity.ok(details);
     }
 
-    @GetMapping("/get_visualized_image_paths/{trainingResultId}")
-    public ResponseEntity<List<String>> getVisualizedImagePaths(@PathVariable Long trainingResultId) {
+    @GetMapping("/get_visualized_images/{trainingResultId}")
+    public ResponseEntity<?> getVisualizedImages(@PathVariable Long trainingResultId) {
         try {
             TrainingResult result = trainingResultService.getTrainingResult(trainingResultId);
+            if (result == null) {
+                logger.error("Training result not found for ID: {}", trainingResultId);
+                return ResponseEntity.notFound().build();
+            }
+
             List<String> imagePaths = result.getVisualizedImages();
-            if (imagePaths.isEmpty()) {
+            if (imagePaths == null || imagePaths.isEmpty()) {
+                logger.info("No visualized images found for training result ID: {}", trainingResultId);
                 return ResponseEntity.noContent().build();
             }
-            return ResponseEntity.ok(imagePaths);
+
+            List<Map<String, Object>> response = new ArrayList<>();
+            for (String imagePath : imagePaths) {
+                try {
+                    String remoteImagePath = "/root/datasets/" + imagePath;
+                    byte[] imageContent = pythonScriptService.downloadFileFromServer(remoteImagePath);
+
+                    Map<String, Object> imageData = new HashMap<>();
+                    imageData.put("path", imagePath);
+                    imageData.put("data", Base64.getEncoder().encodeToString(imageContent));
+                    response.add(imageData);
+                } catch (Exception e) {
+                    logger.error("Error processing image {}: {}", imagePath, e.getMessage());
+                    // 继续处理下一张图片
+                }
+            }
+
+            if (response.isEmpty()) {
+                return ResponseEntity.noContent().build();
+            }
+
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
+            logger.error("Error getting visualized images for training result {}: {}", trainingResultId, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(null);
+                    .body(Collections.singletonMap("error", e.getMessage()));
         }
     }
+
 }

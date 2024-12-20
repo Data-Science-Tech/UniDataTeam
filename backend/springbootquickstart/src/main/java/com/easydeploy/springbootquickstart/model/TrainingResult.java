@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Setter
@@ -30,8 +31,11 @@ public class TrainingResult {
     private double finalLoss;
     private double accuracy;
 
-    @ElementCollection
-    @CollectionTable(name = "visualized_image", joinColumns = @JoinColumn(name = "training_result_id"))
-    private List<String> visualizedImages; // 存储图片路径
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "visualized_image",
+            joinColumns = @JoinColumn(name = "training_result_id")
+    )
+    @Column(name = "image_path")
+    private List<String> visualizedImages = new ArrayList<>();  // 初始化为空列表
 
 }
