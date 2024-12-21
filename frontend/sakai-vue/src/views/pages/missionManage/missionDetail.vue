@@ -7,6 +7,8 @@ import Chart from 'primevue/chart'; // 添加图表组件
 import TaskProcessInfo from '@/Api/TaskProcessInfo.js';
 import GetTrainingResults from '@/Api/GetTrainingResults';
 import GetTrainingResultLogs from '@/Api/GetTrainingResultLogs';
+import DownloadModel from '@/Api/DownloadModel';
+import GetImages from '@/Api/GetImages';
 
 const route = useRoute();
 const taskId = route.params.id;
@@ -440,6 +442,8 @@ const chartOptions = {
 // };
 
 // 获取训练结果
+const isDownloading = ref(false);
+
 const getTrainingResults = async () => {
     try {
         const response = await GetTrainingResults.getTrainingResults(taskId);
@@ -447,14 +451,17 @@ const getTrainingResults = async () => {
         trainingResult.value = data;
         addLog('成功获取训练结果', 'success');
 
-        defaultTaskDetail.resultId = trainingResult.value[0].id; // 使用训练结果中的id
-        defaultTaskDetail.startTime = trainingResult.value[0].startTime;
-        defaultTaskDetail.endTime = trainingResult.value[0].endTime;
-        defaultTaskDetail.accuracy = trainingResult.value[0].accuracy;
-        defaultTaskDetail.finalLoss = trainingResult.value[0].finalLoss;
-        defaultTaskDetail.trainingLogs = trainingResult.value[0].trainingLogs;
-        defaultTaskDetail.modelFilePath = trainingResult.value[0].modelFilePath;
-        //console.log('训练结果ID', resultId);
+        // 获取最后一个结果
+        const latestResult = trainingResult.value[trainingResult.value.length - 1];
+        
+        defaultTaskDetail.resultId = latestResult.id;
+        defaultTaskDetail.startTime = latestResult.startTime;
+        defaultTaskDetail.endTime = latestResult.endTime;
+        defaultTaskDetail.accuracy = latestResult.accuracy;
+        defaultTaskDetail.finalLoss = latestResult.finalLoss;
+        defaultTaskDetail.trainingLogs = latestResult.trainingLogs;
+        defaultTaskDetail.modelFilePath = latestResult.modelFilePath;
+        
         addLog(`训练结果ID:${defaultTaskDetail.resultId}`, 'debug', true);
         addLog(`训练开始时间:${defaultTaskDetail.startTime}`, 'debug', true);
     
@@ -467,15 +474,13 @@ const getTrainingResults = async () => {
 // 下载训练日志
 const downloadLogs = async () => {
     try {
-        if (!trainingResult.value || !trainingResult.value[0].id) {
-            addLog('没有可用的训练结果ID', 'error');
+        if (!trainingResult.value || trainingResult.value.length === 0) {
+            addLog('没有可用的训练结果', 'error');
             return;
         }
 
-        const trainingResultId = trainingResult.value[0].id;
-        const response = await GetTrainingResultLogs.getTrainingResultLogs(trainingResultId);
-        //addLog(`训练log: ${response}`, 'debug');
-        //console.log('训练log', response);
+        const latestResult = trainingResult.value[trainingResult.value.length - 1];
+        const response = await GetTrainingResultLogs.getTrainingResultLogs(latestResult.id);
 
         if (response.status !== 200) throw new Error('下载日志失败');
 
@@ -483,17 +488,80 @@ const downloadLogs = async () => {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `training-log-${trainingResult.value[0].id}.txt`;
+        a.download = `training-log-${latestResult.id}.txt`;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
 
         addLog('成功下载训练日志', 'success');
+    } catch (error) {
+        addLog(`下载日志失败: ${error.message}`, 'error');
+    }
+};
 
-        } catch (error) {
-            addLog(`下载日志失败: ${error.message}`, 'error');
+// 添加新的方法
+const downloadModel = async () => {
+    try {
+        if (!trainingResult.value || trainingResult.value.length === 0) {
+            addLog('没有可用的训练结果', 'error');
+            return;
         }
+
+        isDownloading.value = true;
+        const latestResult = trainingResult.value[trainingResult.value.length - 1];
+        const response = await DownloadModel.downloadModel(latestResult.id);
+
+        if (response.status !== 200) throw new Error('下载模型失败');
+
+        // 创建Blob对象并下载
+        const blob = new Blob([response.data]);
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `model-${latestResult.id}.pth`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        addLog('成功下载模型文件', 'success');
+    } catch (error) {
+        addLog(`下载模型失败: ${error.message}`, 'error');
+    } finally {
+        isDownloading.value = false;
+    }
+};
+
+const visualizedImages = ref([]);
+const isImageDialogVisible = ref(false);
+
+const getVisualizedImages = async () => {
+    try {
+        if (!trainingResult.value || !trainingResult.value[0].id) {
+            addLog('没有可用的训练结果ID', 'error');
+            return;
+        }
+
+        const latestResult = trainingResult.value[trainingResult.value.length - 1];
+        const response = await GetImages.getImage(latestResult.id);
+
+        if (response.status === 204) {
+            addLog('没有可用的可视化图像', 'warning');
+            return;
+        }
+
+        if (response.status === 200) {
+            visualizedImages.value = response.data.map(item => ({
+                path: item.path,
+                dataUrl: `data:image/png;base64,${item.data}`
+            }));
+            isImageDialogVisible.value = true;
+            addLog(`成功获取${visualizedImages.value.length}张可视化图像`, 'success');
+        }
+    } catch (error) {
+        addLog(`获取可视化图像失败: ${error.message}`, 'error');
+    }
 };
 
 onMounted(() => {
@@ -592,7 +660,29 @@ const toggleConsole = () => {
                     <div class="p-2">
                         <strong>模型文件路径:</strong> {{ defaultTaskDetail.modelFilePath }}
                     </div>
-                    <Button label="下载训练日志" icon="pi pi-download" @click="downloadLogs" />
+                    <div class="button-container">
+                        <Button label="训练日志" 
+                               icon="pi pi-file-pdf"
+                               class="p-button-rounded p-button-info action-btn"
+                               @click="downloadLogs">
+                            <span class="button-text">下载日志</span>
+                        </Button>
+                        
+                        <Button label="模型文件" 
+                               icon="pi pi-download"
+                               class="p-button-rounded p-button-success action-btn"
+                               @click="downloadModel"
+                               :loading="isDownloading">
+                            <span class="button-text">{{ isDownloading ? '下载中...' : '下载模型' }}</span>
+                        </Button>
+                        
+                        <Button label="可视化" 
+                               icon="pi pi-images"
+                               class="p-button-rounded p-button-help action-btn"
+                               @click="getVisualizedImages">
+                            <span class="button-text">查看图像</span>
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -651,6 +741,28 @@ const toggleConsole = () => {
                 </div>
             </div>
         </div>
+
+        <!-- 添加图像预览对话框 -->
+        <Dialog v-model:visible="isImageDialogVisible" 
+                modal 
+                header="可视化图像" 
+                :style="{width: '80vw'}"
+                :maximizable="true">
+            <div class="grid">
+                <div v-for="(image, index) in visualizedImages" 
+                     :key="index" 
+                     class="col-12 md:col-6 lg:col-4">
+                    <div class="card visualization-card">
+                        <img :src="image.dataUrl" 
+                             :alt="image.path"
+                             class="visualization-image" />
+                        <div class="image-caption">
+                            {{ image.path.split('/').pop() }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Dialog>
     </div>
 </template>
 
@@ -988,6 +1100,226 @@ const toggleConsole = () => {
 @media screen and (max-width: 991px) {
     .grid {
         padding-bottom: 440px;
+    }
+}
+
+.button-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem;
+}
+
+.visualization-card {
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    transition: transform 0.2s;
+}
+
+.visualization-card:hover {
+    transform: scale(1.02);
+}
+
+.visualization-image {
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+}
+
+.image-caption {
+    text-align: center;
+    color: #e0e0e0;
+    font-size: 0.9rem;
+}
+
+:deep(.p-dialog) {
+    background: rgba(14, 14, 18, 0.95);
+}
+
+:deep(.p-dialog-header) {
+    background: transparent;
+    color: #e0e0e0;
+}
+
+:deep(.p-dialog-content) {
+    background: transparent;
+    color: #e0e0e0;
+}
+
+.action-buttons-container {
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    margin-top: 1rem;
+}
+
+.button-row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.action-button {
+    flex: 1;
+    min-width: 200px;
+    max-width: 300px;
+    height: 3.5rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+.action-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+:deep(.action-button .p-button-label) {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+:deep(.action-button .p-button-icon) {
+    font-size: 1.2rem;
+    margin-right: 0.5rem;
+}
+
+:deep(.p-button.p-button-raised) {
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 按钮特定样式 */
+:deep(.p-button-primary) {
+    background: linear-gradient(135deg, #42A5F5 0%, #2196F3 100%);
+    border: none;
+}
+
+:deep(.p-button-secondary) {
+    background: linear-gradient(135deg, #7E57C2 0%, #673AB7 100%);
+    border: none;
+}
+
+:deep(.p-button-help) {
+    background: linear-gradient(135deg, #26C6DA 0%, #00BCD4 100%);
+    border: none;
+}
+
+/* Loading 状态样式 */
+:deep(.p-button.p-button-loading) {
+    background: linear-gradient(135deg, #7E57C2 0%, #673AB7 100%);
+    opacity: 0.8;
+}
+
+:deep(.p-button.p-button-loading .p-button-label) {
+    opacity: 0.8;
+}
+
+/* 响应式调整 */
+@media screen and (max-width: 768px) {
+    .action-button {
+        min-width: 100%;
+    }
+    
+    .button-row {
+        flex-direction: column;
+    }
+}
+
+/* 新增的按钮样式 */
+.button-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.action-btn {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    min-width: 140px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+}
+
+.action-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.action-btn:active {
+    transform: translateY(-1px);
+}
+
+/* 按钮文字动效 */
+.button-text {
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.action-btn:hover .button-text {
+    transform: scale(1.05);
+}
+
+/* 按钮渐变背景 */
+.p-button-info.action-btn {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.p-button-success.action-btn {
+    background: linear-gradient(135deg, #48c6ef 0%, #6f86d6 100%);
+}
+
+.p-button-help.action-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* 按钮加载状态样式 */
+.action-btn.p-button-loading {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    opacity: 0.8;
+}
+
+.action-btn.p-button-loading .button-text {
+    opacity: 0.8;
+}
+
+/* 为按钮添加涟漪效果 */
+.action-btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease-out, height 0.6s ease-out;
+}
+
+.action-btn:active::after {
+    width: 200px;
+    height: 200px;
+    opacity: 0;
+}
+
+/* 响应式调整 */
+@media screen and (max-width: 768px) {
+    .button-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .action-btn {
+        width: 100%;
     }
 }
 </style>
