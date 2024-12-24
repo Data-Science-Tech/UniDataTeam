@@ -73,6 +73,7 @@ public class UserServerUsageServiceImpl implements UserServerUsageService {
                 dto.setBatchSize(modelConfig.getBatchSize());
                 dto.setMomentumValue(modelConfig.getMomentumValue());
                 dto.setWeightDecay(modelConfig.getWeightDecay());
+                dto.setModelConfigId(modelConfig.getId());
             }
 
             // 将数据添加到返回的 DTO 列表

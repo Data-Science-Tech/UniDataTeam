@@ -83,7 +83,7 @@ const router = createRouter({
                 },
 
                 {
-                    path: '/pages/missionManage/missionDetail/:id',
+                    path: '/pages/missionManage/missionDetail/:id/:modelConfigId',
                     name: 'missionDetail',
                     component: () => import('@/views/pages/missionManage/missionDetail.vue')
                 },

@@ -126,7 +126,7 @@ const goToNewTaskPage = () => {
 
 // 添加行选择处理函数
 const onRowSelect = (event) => {
-    router.push(`/pages/missionManage/missionDetail/${event.data.id}`);
+    router.push(`/pages/missionManage/missionDetail/${event.data.id}/${event.data.modelConfigId}`);
 };
 
 // 获取任务数据

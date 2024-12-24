@@ -12,6 +12,7 @@ import GetImages from '@/Api/GetImages';
 
 const route = useRoute();
 const taskId = route.params.id;
+const modelConfigId = route.params.modelConfigId;
 const taskDetail = ref(null);
 const trainingResult = ref(null);
 const progress = ref(0);
@@ -446,7 +447,7 @@ const isDownloading = ref(false);
 
 const getTrainingResults = async () => {
     try {
-        const response = await GetTrainingResults.getTrainingResults(taskId);
+        const response = await GetTrainingResults.getTrainingResults(modelConfigId);
         const data = await response.data;
         trainingResult.value = data;
         addLog('成功获取训练结果', 'success');
