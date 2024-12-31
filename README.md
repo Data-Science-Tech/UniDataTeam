@@ -31,7 +31,13 @@
 - 在服务器上启动服务
 
   ```bash
-  sudo docker-compose -f docker-compose.server.yml up
+  sudo docker-compose -f docker-compose.server.yml up -d
+  ```
+
+- 在服务器上关闭服务
+
+  ```bash
+  sudo docker-compose -f docker-compose.server.yml down
   ```
 
   
