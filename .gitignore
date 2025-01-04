@@ -1,4 +1,5 @@
 # General
+backend/
 node_modules/
 .vite/
 dist/
