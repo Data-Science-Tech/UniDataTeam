@@ -1,0 +1,52 @@
+# General
+node_modules/
+.vite/
+dist/
+.DS_Store
+*.log
+.idea/
+.vscode/
+.env
+*.iml
+*.swp
+
+# Vue specific
+/build/
+/config/
+/test/unit/coverage/
+yarn.lock
+
+# Spring Boot specific
+/target/
+*.jar
+*.war
+*.class
+/log/
+*.log
+/build/
+
+# OS generated files
+Thumbs.db
+*.DS_Store
+
+# IDEs and editors
+/.project
+/.classpath
+/.factorypath
+/.settings/
+/.cache/
+/.gradle
+/out
+*.tmp
+*.bak
+*.swp
+
+# Maven specific
+/log/
+.mvn/
+logs/
+!src/main/log
+!/logs/keepfile
+workspace.xml
+train/ssdlite320_mobilenet_v3_large_coco.pth
+train/fasterrcnn_resnet50_fpn_coco-258fb6c6.pth
