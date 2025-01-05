@@ -50,3 +50,5 @@ logs/
 workspace.xml
 train/ssdlite320_mobilenet_v3_large_coco.pth
 train/fasterrcnn_resnet50_fpn_coco-258fb6c6.pth
+frontend_image_deploy.tar
+backend_image_deploy.tar

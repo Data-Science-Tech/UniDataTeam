@@ -11,11 +11,11 @@ const apiClient = axios.create({
 export default {
     // 注册
     register(registerInfo) {
-        return apiClient.post('/api/user/register', registerInfo);
+        return apiClient.post('/api/users/register', registerInfo);
     },
 
     // 登录
     login(loginInfo) {
-        return apiClient.post('/api/user/login', loginInfo);
+        return apiClient.post('/api/users/login', loginInfo);
     }
 };

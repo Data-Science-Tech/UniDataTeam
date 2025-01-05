@@ -93,7 +93,9 @@ const filters = ref({
 const getalltest = async () => {
     try {
         // 传入登录用户的id
-        const response = await GetAllTasksApi.getalltests(1);
+        const globalStore = useGlobalStore();
+        const userId = globalStore.userId;
+        const response = await GetAllTasksApi.getalltests(userId);
         missions.value = response.data;
         console.log('任务数据获取成功:', missions.value);
     } catch (error) {

@@ -3,6 +3,10 @@ import FloatingConfigurator from '@/components/FloatingConfigurator.vue';
 import { ref } from 'vue';
 import RegisterAndLogin from '@/Api/RegisterAndLogin';
 import router from '@/router';
+import { useGlobalStore } from '@/stores/ConfigStore';
+import { useToast } from "primevue/usetoast";
+
+const toast = useToast();
 
 const checked = ref(false);
 const loginInfo = ref({
@@ -17,11 +21,24 @@ const registerInfo = ref({
 
 // 登录逻辑
 const handleLogin = async () => {
+    const globalStore = useGlobalStore();
     try {
         const res = await RegisterAndLogin.login(loginInfo.value);
-        console.log('登录成功:', res.data);
+        globalStore.setUserId(res.data.id);
+        toast.add({
+            severity: 'success',
+            summary: '登录成功',
+            detail: '欢迎回来！',
+            life: 3000
+        });
         await router.push('/workbench');
     } catch (err) {
+        toast.add({
+            severity: 'error',
+            summary: '登录失败',
+            detail: err.response?.data?.message || '请检查用户名和密码',
+            life: 3000
+        });
         console.error('登录失败:', err);
     }
 };
@@ -30,8 +47,27 @@ const handleLogin = async () => {
 const handleRegister = async () => {
     try {
         const res = await RegisterAndLogin.register(registerInfo.value);
+        toast.add({
+            severity: 'success',
+            summary: '注册成功',
+            detail: '请使用新账号登录',
+            life: 3000
+        });
         console.log('注册成功:', res.data);
+        // 清空注册表单
+        registerInfo.value = {
+            username: '',
+            password: ''
+        };
+        // 刷新页面
+        window.location.reload();
     } catch (err) {
+        toast.add({
+            severity: 'error',
+            summary: '注册失败',
+            detail: err.response?.data?.message || '注册失败，密码非法或用户名已存在',
+            life: 3000
+        });
         console.error('注册失败:', err);
     }
 };
@@ -39,6 +75,7 @@ const handleRegister = async () => {
 
 <template>
     <div>
+        <Toast />
         <FloatingConfigurator />
         <div class="bg-surface-50 dark:bg-surface-950 flex items-center justify-center min-h-screen min-w-[100vw] overflow-hidden">
             <div class="flex flex-col items-center justify-center">

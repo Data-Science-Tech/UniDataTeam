@@ -19,6 +19,7 @@ export const useGlobalStore = defineStore('global', {
         configId: useStorage('configId', 1),
         resultId: useStorage('resultId', 1),
         serverId: useStorage('serverId', null),
+        userId: useStorage('userId', 1)
     }),
     actions: {
         setSharedData(key, value) {
@@ -51,6 +52,12 @@ export const useGlobalStore = defineStore('global', {
         getServerId() {
             return this.serverId;
         },
+        setUserId(id) {
+            this.userId = id;
+        },
+        getUserId() {
+            return this.userId;
+        },
         resetForm() {
             this.modelConfig = {
                 algorithm: null,
@@ -68,8 +75,11 @@ export const useGlobalStore = defineStore('global', {
             this.configId = 1;
             this.resultId = 1;
             this.serverId = null;
+        },
+        clearUserInfo() {
+            this.userId = 1;
+            this.resetForm();
+            localStorage.clear(); // 清除所有本地存储的数据
         }
     }
 });
-
-

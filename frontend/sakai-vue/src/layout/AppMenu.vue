@@ -1,6 +1,16 @@
 <script setup>
 import { ref } from 'vue';
 import AppMenuItem from './AppMenuItem.vue';
+import { useRouter } from 'vue-router';
+import { useGlobalStore } from '@/stores/ConfigStore';
+
+const router = useRouter();
+const store = useGlobalStore();
+
+const handleLogout = () => {
+    store.clearUserInfo();
+    router.push('/');
+};
 
 const model = ref([
     {
@@ -35,6 +45,16 @@ const model = ref([
         label: '任务管理',
         items: [
             { label: '任务概览', icon: 'pi pi-fw pi-info-circle', to: '/missionManage/mission' },
+        ]
+    },
+    {
+        label: '系统',
+        items: [
+            { 
+                label: '退出登录', 
+                icon: 'pi pi-fw pi-sign-out',
+                command: () => handleLogout()
+            }
         ]
     },
 ]);
