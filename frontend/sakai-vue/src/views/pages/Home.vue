@@ -11,7 +11,7 @@
     <!-- <div class="example-container">
       <ExampleComponent />
     </div> -->
-    <div class="statistic-container">
+    <!-- <div class="statistic-container">
       <StatisticComponent />
     </div>
     <div class="news-container">
@@ -22,7 +22,7 @@
     </div>
     <div class="footer-container">
       <FooterComponent />
-    </div> 
+    </div>  -->
   </div>
 </template>
 
