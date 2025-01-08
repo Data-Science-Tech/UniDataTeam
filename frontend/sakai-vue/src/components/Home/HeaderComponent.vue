@@ -13,9 +13,9 @@
       </div>
 
       <ul class="navbar-center">
-        <li @click="gotoHome">首页</li>
-        <li @click="gotoModel">模型</li>
-        <li @click="gotoDataset">数据集</li>
+        <li>首页</li>
+        <li>模型</li>
+        <li>数据集</li>
         <li>云服务</li>
         <li>使用文档</li>
         <li>社区</li>
@@ -50,7 +50,7 @@ export default {
   methods: {
     gotoworkbench() {
       console.log("push workbench")
-      this.$router.push('/workbench');
+      this.$router.push('/missionManage/mission');
     },
     gotoHome(){
       console.log("push Home")

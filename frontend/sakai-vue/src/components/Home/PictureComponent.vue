@@ -23,7 +23,7 @@ export default
     methods:{
         gotoworkbench() {
         console.log("push workbench")
-        this.$router.push('/workbench');
+        this.$router.push('/missionManage/mission');
         },
     },
 }

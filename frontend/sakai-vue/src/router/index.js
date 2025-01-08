@@ -16,29 +16,14 @@ const router = createRouter({
                 {
                     path: '',
                     name: 'workbench',
-                    component: () => import('@/views/Dashboard.vue')
-                },
-                {
-                    path: '/uikit/formlayout',
-                    name: 'formlayout',
-                    component: () => import('@/views/uikit/FormLayout.vue')
-                },
-                {
-                    path: '/uikit/input',
-                    name: 'input',
-                    component: () => import('@/views/uikit/InputDoc.vue')
-                },
-                {
-                    path: '/uikit/button',
-                    name: 'button',
-                    component: () => import('@/views/uikit/ButtonDoc.vue')
-                },
-                {
-                    path: '/uikit/table',
-                    name: 'table',
-                    component: () => import('@/views/uikit/TableDoc.vue')
+                    component: () => import('@/views/comingSoon.vue')
                 },
                 // 自定义路由
+                {
+                    path: '/missionManage/mission',
+                    name: 'mission',
+                    component: () => import('@/views/pages/missionManage/mission.vue')
+                },
                 // 服务器选择
                 {
                     path: '/uikit/server',
@@ -71,17 +56,30 @@ const router = createRouter({
                 },
                 // 自定义路由结束
                 {
+                    path: '/uikit/formlayout',
+                    name: 'formlayout',
+                    component: () => import('@/views/comingSoon.vue')
+                },
+                {
+                    path: '/uikit/input',
+                    name: 'input',
+                    component: () => import('@/views/comingSoon.vue')
+                },
+                {
+                    path: '/uikit/button',
+                    name: 'button',
+                    component: () => import('@/views/comingSoon.vue')
+                },
+                {
+                    path: '/uikit/table',
+                    name: 'table',
+                    component: () => import('@/views/comingSoon.vue')
+                },
+                {
                     path: '/uikit/panel',
                     name: 'panel',
                     component: () => import('@/views/uikit/PanelsDoc.vue')
                 },
-
-                {
-                    path: '/missionManage/mission',
-                    name: 'mission',
-                    component: () => import('@/views/pages/missionManage/mission.vue')
-                },
-
                 {
                     path: '/pages/missionManage/missionDetail/:id/:modelConfigId',
                     name: 'missionDetail',

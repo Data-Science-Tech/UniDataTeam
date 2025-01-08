@@ -8,9 +8,9 @@
     <div class="feature-container">
       <FeatureComponent />
     </div>
-    <div class="example-container">
+    <!-- <div class="example-container">
       <ExampleComponent />
-    </div>
+    </div> -->
     <div class="statistic-container">
       <StatisticComponent />
     </div>
